@@ -6,174 +6,29 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StatusBar } from 'expo-status-bar';
 import AntDesign from '@expo/vector-icons/AntDesign';
+export default function History() {
 
-const DATA = [
-  {
-    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    title: 'First Item',
-  },
-  {
-    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-    title: 'Second Item',
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29d7d2',
-    title: 'Third Item',
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29ds72',
-    title: 'Third Item',
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e2f9d72',
-    title: 'Third Item',
-  },
-];
 
-type ItemProps = {title: string};
-
-const Item = ({title}: ItemProps) => (
-          <View style={styles.boxItemList}>
-            <View style={styles.innerItem}>
-              <View>
-                <Image source={ require('../../assets/images/service/list_service1.png') }
-                style={{width: 120, height: 100, borderRadius: 8, gap: 10}} />
-              </View>
-              <View style={styles.detailList}>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>To : </Text>
-                  <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Price : </Text>
-                  <Text style={styles.textMute}>150,000 บาทv</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Total : </Text>
-                  <Text style={styles.textMute}>50 กล่อง</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Status : </Text>
-                  <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                </View>
-                
-              </View>
-            </View>
-          </View>
-);
-
-export default function HomeScreen() {
-  const navigation = useNavigation();
-  useEffect(() => {
-    navigation.setOptions({ headerShown: false });
-  }, [navigation]);
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
-      <StatusBar style="light"  />
+      <StatusBar style="dark"  />
       <ScrollView>
-      <View >
-        
-        <View style={ styles.containerBlue }/>
-          <View style={ styles.container1 }>
-            {/* profileMain  */}
-            <View style={ styles.profileMain }>
-              <View style={ styles.profile }>
-                <Image 
-                style={ styles.userImage }
-                source={{ uri: 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg' }}/>
-                <View>
-                  <Text style={{ color:Colors.white }}>Welcome,</Text>
-                  <Text style={{ color:Colors.white, fontSize:20 }}>Kim kundad,</Text>
-                </View>
-              </View>
-              <View>
-                  <Ionicons name="notifications-outline" size={27} color="white" />
-              </View>
-            </View>
-            {/* profileMain  */}
-            {/* search bar */}
-            <View style={styles.searchBar}>
-              <AntDesign
-              style={styles.iconScan}
-              name="scan1" size={24} color="black" />
-              <TextInput placeholder='Enter your tracking Number'
-                style={styles.TextInput}
-              />
-            </View>
-            {/* search bar */}
-            <View style={styles.boxGiff}>
-
-              <View style={styles.giftContent}>
-                <View style={{ width:'70%' }}>
-                  <View style={styles.headGiff}>
-                    <Text style={styles.textGifforange}>45% </Text>
-                    <Text style={styles.textGiffblack}> Discount</Text>
-                  </View>
-                  <Text style={{ fontSize:12, color: '#999', marginBottom: 8 }}>Get Great Discounts On All your Shipments
-                  in the Summer Seasan.</Text>
-                  <View>
-                      <TouchableOpacity
-                        onPress={() => {
-                          // handle onPress
-                        }}>
-                        <View style={styles.btn}>
-                          <Text style={styles.btnText}>Get Now</Text>
-                        </View>
-                      </TouchableOpacity>
-                  </View>
-                </View>
-                <View>
-                  <Image source={ require('../../assets/images/gift.png') }
-                  style={{width: 100, height: 95}} />
-                </View>
-              </View>
-
-            </View>
-          </View>
-      </View>
-
-      <View style={styles.container}>             
-      {/* content app */}
-      <View style={styles.boxMenoCon}>
-        <View style={{ alignItems: 'center' }}>
-          <View style={styles.boxItem}>
-            <Image source={ require('../../assets/images/box1.png') }
-                style={{width: 55, height: 55}} />
-          </View>
-          <Text style={{ fontSize:13, marginTop: 5 }}>เพิ่มสาขา</Text>
-        </View>
-        <View style={{ alignItems: 'center' }}>
-          <View style={styles.boxItem}>
-            <Image source={ require('../../assets/images/box2.png') }
-                style={{width: 55, height: 55}} />
-          </View>
-          <Text style={{ fontSize:13, marginTop: 5 }}>My Order</Text>
-        </View>
-        <View style={{ alignItems: 'center' }}>
-          <View style={styles.boxItem}>
-            <Image source={ require('../../assets/images/box3.png') }
-                style={{width: 55, height: 55}} />
-          </View>
-          <Text style={{ fontSize:13, marginTop: 5 }}>Track</Text>
-        </View>
-        <View style={{ alignItems: 'center' }}>
-          <View style={styles.boxItem}>
-            <Image source={ require('../../assets/images/box4.png') }
-                style={{width: 55, height: 55}} />
-          </View>
-          <Text style={{ fontSize:13, marginTop: 5 }}>Another</Text>
-        </View>
-      </View>
-      {/* content app */}
+        <View >
+        <View style={styles.container}>             
+      
 
       {/* list item */}
       <View style={styles.listItemCon}>
-        <View style={styles.textListHead}>
-          <Text style={{ fontSize:17, fontWeight: 700 }}>Last Activity</Text>
-          <Text style={{ fontSize:15, color:'#f47524', }}>See All</Text>
-        </View>
 
+        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+        <View style={styles.textListHead}>
+          <Text style={{ fontSize:18, fontWeight: 700 }}>History</Text>
+        </View>
+        <View>
+          <Ionicons name="notifications-outline" size={27} color="black" />
+        </View>
+        </View>
         <View>
 
           <View style={styles.boxItemList}>
@@ -408,34 +263,19 @@ export default function HomeScreen() {
       </View>
       {/* list item */}
       </View>
+        </View>
       </ScrollView>
-     
-
-      
     </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  containerBlue: {
 
-    backgroundColor: '#121F43',
-    borderBottomLeftRadius:25,
-    borderBottomRightRadius:25,
-    height: 250,
-    position:'absolute',
-    width:'100%'
-
-  },
-  container1 : {
-    padding: 20, 
-    marginTop:45
-  },
   container: {
     padding: 20, 
     borderBottomLeftRadius:25,
     borderBottomRightRadius:25,
-
+    marginTop:20
   },
   userImage: {
     width: 45,
@@ -594,3 +434,4 @@ const styles = StyleSheet.create({
     color: '#666'
   }
 });
+

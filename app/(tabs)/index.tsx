@@ -172,6 +172,7 @@ export default function HomeScreen() {
               <Text style={{ fontSize: 12, marginTop: 5, fontFamily: 'Prompt_400Regular' }}>แจ้งวันหยุด</Text>
             </View>
             </Link>
+            <Link replace href="/(warning)">
             <View style={{ alignItems: 'center' }}>
               <View style={styles.boxItem}>
                 <Image source={require('../../assets/images/box3.png')}
@@ -179,6 +180,7 @@ export default function HomeScreen() {
               </View>
               <Text style={{ fontSize: 12, marginTop: 5, fontFamily: 'Prompt_400Regular' }}>เหตุขัดข้อง</Text>
             </View>
+            </Link>
             <Link replace href="/(contact)">
             <View style={{ alignItems: 'center' }}>
               <View style={styles.boxItem}>

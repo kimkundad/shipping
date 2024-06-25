@@ -43,7 +43,7 @@ const Index = () => {
                                     </View>
                                 </View>
                             </Link>
-
+                            <Link href="/(branch)/shop" >
                             <View style={styles.innerItem}>
                                 <View>
                                     <Image source={require('../../assets/images/service/list_service3.png')}
@@ -57,6 +57,7 @@ const Index = () => {
                                         แขวงสะพานสูง, เขตสะพานสูง, จังหวัดกรุงเทพมหานคร, 10240</Text>
                                 </View>
                             </View>
+                            </Link>
 
                             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', }}>
                                 <Link href="/(branch)/createBranch" >

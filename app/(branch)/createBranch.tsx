@@ -15,6 +15,8 @@ const CreateBranch = () => {
     address: '',
     provice: '',
     postcode: '',
+    code: '',
+    timer: '',
   });
 
 
@@ -54,6 +56,30 @@ const CreateBranch = () => {
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}
                   value={form.name} />
+              </View>
+
+
+              <View style={styles.input}>
+                <Text style={styles.inputLabel}>รหัสสาขา</Text>
+                <TextInput
+                  clearButtonMode="while-editing"
+                  onChangeText={code => setForm({ ...form, code })}
+                  placeholder="ZX13248384394"
+                  placeholderTextColor="#6b7280"
+                  style={styles.inputControl}
+                  value={form.code} />
+              </View>
+
+
+              <View style={styles.input}>
+                <Text style={styles.inputLabel}>ช่วงเวลาส่งของ</Text>
+                <TextInput
+                  clearButtonMode="while-editing"
+                  onChangeText={timer => setForm({ ...form, timer })}
+                  placeholder="09.00 - 17.00"
+                  placeholderTextColor="#6b7280"
+                  style={styles.inputControl}
+                  value={form.timer} />
               </View>
 
               <View style={styles.input}>

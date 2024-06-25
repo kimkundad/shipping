@@ -1,11 +1,12 @@
-import { Image, View, Text, StyleSheet, Platform ,TextInput, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import { Image, View, Text, StyleSheet, Dimensions, Platform, TextInput, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Link, useNavigation, router  } from 'expo-router';
+import { Link, useNavigation, router } from 'expo-router';
 import { useEffect } from 'react';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StatusBar } from 'expo-status-bar';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import Carousel from 'react-native-reanimated-carousel';
 
 const DATA = [
   {
@@ -30,36 +31,36 @@ const DATA = [
   },
 ];
 
-type ItemProps = {title: string};
+type ItemProps = { title: string };
 
-const Item = ({title}: ItemProps) => (
-          <View style={styles.boxItemList}>
-            <View style={styles.innerItem}>
-              <View>
-                <Image source={ require('../../assets/images/service/list_service1.png') }
-                style={{width: 120, height: 100, borderRadius: 8, gap: 10}} />
-              </View>
-              <View style={styles.detailList}>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>To : </Text>
-                  <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Price : </Text>
-                  <Text style={styles.textMute}>150,000 บาทv</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Total : </Text>
-                  <Text style={styles.textMute}>50 กล่อง</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Status : </Text>
-                  <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                </View>
-                
-              </View>
-            </View>
-          </View>
+const Item = ({ title }: ItemProps) => (
+  <View style={styles.boxItemList}>
+    <View style={styles.innerItem}>
+      <View>
+        <Image source={require('../../assets/images/service/list_service1.png')}
+          style={{ width: 120, height: 100, borderRadius: 8, gap: 10 }} />
+      </View>
+      <View style={styles.detailList}>
+        <View style={styles.textDetailRight}>
+          <Text style={{ fontWeight: 700 }}>To : </Text>
+          <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
+        </View>
+        <View style={styles.textDetailRight}>
+          <Text style={{ fontWeight: 700 }}>Price : </Text>
+          <Text style={styles.textMute}>150,000 บาทv</Text>
+        </View>
+        <View style={styles.textDetailRight}>
+          <Text style={{ fontWeight: 700 }}>Total : </Text>
+          <Text style={styles.textMute}>50 กล่อง</Text>
+        </View>
+        <View style={styles.textDetailRight}>
+          <Text style={{ fontWeight: 700 }}>Status : </Text>
+          <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
+        </View>
+
+      </View>
+    </View>
+  </View>
 );
 
 export default function HomeScreen() {
@@ -70,33 +71,33 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
-      <StatusBar style="light"  />
+      <StatusBar style="light" />
       <ScrollView>
-      <View >
-        
-        <View style={ styles.containerBlue }/>
-          <View style={ styles.container1 }>
+        <View >
+
+          <View style={styles.containerBlue} />
+          <View style={styles.container1}>
             {/* profileMain  */}
-            <View style={ styles.profileMain }>
-              <View style={ styles.profile }>
-                <Image 
-                style={ styles.userImage }
-                source={{ uri: 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg' }}/>
+            <View style={styles.profileMain}>
+              <View style={styles.profile}>
+                <Image
+                  style={styles.userImage}
+                  source={{ uri: 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg' }} />
                 <View>
-                  <Text style={{ color:Colors.white }}>Welcome,</Text>
-                  <Text style={{ color:Colors.white, fontSize:20 }}>Kim kundad,</Text>
+                  <Text style={{ color: Colors.white }}>Welcome,</Text>
+                  <Text style={{ color: Colors.white, fontSize: 20 }}>Kim kundad,</Text>
                 </View>
               </View>
               <View>
-                  <Ionicons name="notifications-outline" size={27} color="white" />
+                <Ionicons name="notifications-outline" size={27} color="white" />
               </View>
             </View>
             {/* profileMain  */}
             {/* search bar */}
             <View style={styles.searchBar}>
               <AntDesign
-              style={styles.iconScan}
-              name="scan1" size={24} color="black" />
+                style={styles.iconScan}
+                name="scan1" size={24} color="black" />
               <TextInput placeholder='Enter your tracking Number'
                 style={styles.TextInput}
               />
@@ -104,314 +105,337 @@ export default function HomeScreen() {
             {/* search bar */}
             <View style={styles.boxGiff}>
 
+            <View>
+            <Carousel
+                loop
+                width={360}
+                height={100}
+                autoPlay={true}
+                autoPlayInterval={4000}
+                data={[...new Array(6).keys()]}
+                scrollAnimationDuration={1000}
+                renderItem={({ index }) => (
+
               <View style={styles.giftContent}>
-                <View style={{ width:'70%' }}>
+                <View style={{ width: '70%' }}>
                   <View style={styles.headGiff}>
                     <Text style={styles.textGifforange}>45% </Text>
                     <Text style={styles.textGiffblack}> Discount</Text>
                   </View>
-                  <Text style={{ fontSize:12, color: '#999', marginBottom: 8 }}>Get Great Discounts On All your Shipments
-                  in the Summer Seasan.</Text>
+                  <Text style={{ fontSize: 12, color: '#999', marginBottom: 8 }}>Get Great Discounts On All your Shipments
+                    in the Summer Seasan.</Text>
                   <View>
-                      <TouchableOpacity
-                        onPress={() => {
-                          // handle onPress
-                        }}>
-                        <View style={styles.btn}>
-                          <Text style={styles.btnText}>Get Now</Text>
-                        </View>
-                      </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        // handle onPress
+                      }}>
+                      <View style={styles.btn}>
+                        <Text style={styles.btnText}>Get Now</Text>
+                      </View>
+                    </TouchableOpacity>
                   </View>
                 </View>
                 <View>
-                  <Image source={ require('../../assets/images/gift.png') }
-                  style={{width: 100, height: 95}} />
+                  <Image source={require('../../assets/images/gift.png')}
+                    style={{ width: 100, height: 95 }} />
                 </View>
               </View>
 
+)}
+/>
+</View>
+
             </View>
-          </View>
-      </View>
 
-      <View style={styles.container}>             
-      {/* content app */}
-      <View style={styles.boxMenoCon}>
-        <View style={{ alignItems: 'center' }}>
-          <View style={styles.boxItem}>
-            <Image source={ require('../../assets/images/box1.png') }
-                style={{width: 55, height: 55}} />
-          </View>
-          <Text style={{ fontSize:13, marginTop: 5 }}>เพิ่มสาขา</Text>
-        </View>
-        <View style={{ alignItems: 'center' }}>
-          <View style={styles.boxItem}>
-            <Image source={ require('../../assets/images/box2.png') }
-                style={{width: 55, height: 55}} />
-          </View>
-          <Text style={{ fontSize:13, marginTop: 5 }}>My Order</Text>
-        </View>
-        <View style={{ alignItems: 'center' }}>
-          <View style={styles.boxItem}>
-            <Image source={ require('../../assets/images/box3.png') }
-                style={{width: 55, height: 55}} />
-          </View>
-          <Text style={{ fontSize:13, marginTop: 5 }}>Track</Text>
-        </View>
-        <View style={{ alignItems: 'center' }}>
-          <View style={styles.boxItem}>
-            <Image source={ require('../../assets/images/box4.png') }
-                style={{width: 55, height: 55}} />
-          </View>
-          <Text style={{ fontSize:13, marginTop: 5 }}>Another</Text>
-        </View>
-      </View>
-      {/* content app */}
 
-      {/* list item */}
-      <View style={styles.listItemCon}>
-        <View style={styles.textListHead}>
-          <Text style={{ fontSize:17, fontWeight: 700 }}>Last Activity</Text>
-          <Text style={{ fontSize:15, color:'#f47524', }}>See All</Text>
+          </View>
         </View>
 
-        <View>
-
-          <View style={styles.boxItemList}>
-            <View style={styles.innerItem}>
-              <View>
-                <Image source={ require('../../assets/images/service/list_service1.png') }
-                style={{width: 120, height: 100, borderRadius: 8, gap: 10}} />
+        <View style={styles.container}>
+          {/* content app */}
+          <View style={styles.boxMenoCon}>
+            <Link replace href="/(branch)">
+              <View style={{ alignItems: 'center' }}>
+                <View style={styles.boxItem}>
+                  <Image source={require('../../assets/images/box1.png')}
+                    style={{ width: 55, height: 55 }} />
+                </View>
+                <Text style={{ fontSize: 13, marginTop: 5, fontFamily: 'Prompt_400Regular', }}>สาขา</Text>
               </View>
-              <View style={styles.detailList}>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>To : </Text>
-                  <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Price : </Text>
-                  <Text style={styles.textMute}>150,000 บาทv</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Total : </Text>
-                  <Text style={styles.textMute}>50 กล่อง</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Status : </Text>
-                  <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                </View>
-                
+            </Link>
+            <Link replace href="/(holiday)">
+            <View style={{ alignItems: 'center' }}>
+              <View style={styles.boxItem}>
+                <Image source={require('../../assets/images/box2.png')}
+                  style={{ width: 55, height: 55 }} />
               </View>
+              <Text style={{ fontSize: 12, marginTop: 5, fontFamily: 'Prompt_400Regular' }}>แจ้งวันหยุด</Text>
             </View>
-          </View>
-
-          <View style={styles.boxItemList}>
-            <View style={styles.innerItem}>
-              <View>
-                <Image source={ require('../../assets/images/service/list_service2.png') }
-                style={{width: 120, height: 100, borderRadius: 8, gap: 10}} />
+            </Link>
+            <View style={{ alignItems: 'center' }}>
+              <View style={styles.boxItem}>
+                <Image source={require('../../assets/images/box3.png')}
+                  style={{ width: 55, height: 55 }} />
               </View>
-              <View style={styles.detailList}>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>To : </Text>
-                  <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Price : </Text>
-                  <Text style={styles.textMute}>150,000 บาทv</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Total : </Text>
-                  <Text style={styles.textMute}>50 กล่อง</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Status : </Text>
-                  <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                </View>
-                
-              </View>
+              <Text style={{ fontSize: 12, marginTop: 5, fontFamily: 'Prompt_400Regular' }}>เหตุขัดข้อง</Text>
             </View>
-          </View>
-
-
-          <View style={styles.boxItemList}>
-            <View style={styles.innerItem}>
-              <View>
-                <Image source={ require('../../assets/images/service/list_service3.png') }
-                style={{width: 120, height: 100, borderRadius: 8, gap: 10}} />
+            <Link replace href="/(contact)">
+            <View style={{ alignItems: 'center' }}>
+              <View style={styles.boxItem}>
+                <Image source={require('../../assets/images/box4.png')}
+                  style={{ width: 55, height: 55 }} />
               </View>
-              <View style={styles.detailList}>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>To : </Text>
-                  <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Price : </Text>
-                  <Text style={styles.textMute}>150,000 บาทv</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Total : </Text>
-                  <Text style={styles.textMute}>50 กล่อง</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Status : </Text>
-                  <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                </View>
-                
-              </View>
+              <Text style={{ fontSize: 13, marginTop: 5, fontFamily: 'Prompt_400Regular', }}>ติดต่อเรา</Text>
             </View>
+            </Link>
           </View>
+          {/* content app */}
 
-          <View style={styles.boxItemList}>
-            <View style={styles.innerItem}>
-              <View>
-                <Image source={ require('../../assets/images/service/list_service4.jpg') }
-                style={{width: 120, height: 100, borderRadius: 8, gap: 10}} />
-              </View>
-              <View style={styles.detailList}>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>To : </Text>
-                  <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Price : </Text>
-                  <Text style={styles.textMute}>150,000 บาทv</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Total : </Text>
-                  <Text style={styles.textMute}>50 กล่อง</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Status : </Text>
-                  <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                </View>
-                
-              </View>
+          {/* list item */}
+          <View style={styles.listItemCon}>
+            <View style={styles.textListHead}>
+              <Text style={{ fontSize: 17, fontWeight: 700 }}>Last Activity</Text>
+              <Text style={{ fontSize: 15, color: '#f47524', }}>See All</Text>
             </View>
-          </View>
 
-          <View style={styles.boxItemList}>
-            <View style={styles.innerItem}>
-              <View>
-                <Image source={ require('../../assets/images/service/list_service1.png') }
-                style={{width: 120, height: 100, borderRadius: 8, gap: 10}} />
+            <View>
+
+              <View style={styles.boxItemList}>
+                <View style={styles.innerItem}>
+                  <View>
+                    <Image source={require('../../assets/images/service/list_service1.png')}
+                      style={{ width: 120, height: 100, borderRadius: 8, gap: 10 }} />
+                  </View>
+                  <View style={styles.detailList}>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>To : </Text>
+                      <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Price : </Text>
+                      <Text style={styles.textMute}>150,000 บาทv</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Total : </Text>
+                      <Text style={styles.textMute}>50 กล่อง</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Status : </Text>
+                      <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
+                    </View>
+
+                  </View>
+                </View>
               </View>
-              <View style={styles.detailList}>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>To : </Text>
-                  <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
+
+              <View style={styles.boxItemList}>
+                <View style={styles.innerItem}>
+                  <View>
+                    <Image source={require('../../assets/images/service/list_service2.png')}
+                      style={{ width: 120, height: 100, borderRadius: 8, gap: 10 }} />
+                  </View>
+                  <View style={styles.detailList}>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>To : </Text>
+                      <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Price : </Text>
+                      <Text style={styles.textMute}>150,000 บาทv</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Total : </Text>
+                      <Text style={styles.textMute}>50 กล่อง</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Status : </Text>
+                      <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
+                    </View>
+
+                  </View>
                 </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Price : </Text>
-                  <Text style={styles.textMute}>150,000 บาทv</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Total : </Text>
-                  <Text style={styles.textMute}>50 กล่อง</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Status : </Text>
-                  <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                </View>
-                
               </View>
+
+
+              <View style={styles.boxItemList}>
+                <View style={styles.innerItem}>
+                  <View>
+                    <Image source={require('../../assets/images/service/list_service3.png')}
+                      style={{ width: 120, height: 100, borderRadius: 8, gap: 10 }} />
+                  </View>
+                  <View style={styles.detailList}>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>To : </Text>
+                      <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Price : </Text>
+                      <Text style={styles.textMute}>150,000 บาทv</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Total : </Text>
+                      <Text style={styles.textMute}>50 กล่อง</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Status : </Text>
+                      <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
+                    </View>
+
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.boxItemList}>
+                <View style={styles.innerItem}>
+                  <View>
+                    <Image source={require('../../assets/images/service/list_service4.jpg')}
+                      style={{ width: 120, height: 100, borderRadius: 8, gap: 10 }} />
+                  </View>
+                  <View style={styles.detailList}>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>To : </Text>
+                      <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Price : </Text>
+                      <Text style={styles.textMute}>150,000 บาทv</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Total : </Text>
+                      <Text style={styles.textMute}>50 กล่อง</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Status : </Text>
+                      <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
+                    </View>
+
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.boxItemList}>
+                <View style={styles.innerItem}>
+                  <View>
+                    <Image source={require('../../assets/images/service/list_service1.png')}
+                      style={{ width: 120, height: 100, borderRadius: 8, gap: 10 }} />
+                  </View>
+                  <View style={styles.detailList}>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>To : </Text>
+                      <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Price : </Text>
+                      <Text style={styles.textMute}>150,000 บาทv</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Total : </Text>
+                      <Text style={styles.textMute}>50 กล่อง</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Status : </Text>
+                      <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
+                    </View>
+
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.boxItemList}>
+                <View style={styles.innerItem}>
+                  <View>
+                    <Image source={require('../../assets/images/service/list_service2.png')}
+                      style={{ width: 120, height: 100, borderRadius: 8, gap: 10 }} />
+                  </View>
+                  <View style={styles.detailList}>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>To : </Text>
+                      <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Price : </Text>
+                      <Text style={styles.textMute}>150,000 บาทv</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Total : </Text>
+                      <Text style={styles.textMute}>50 กล่อง</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Status : </Text>
+                      <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
+                    </View>
+
+                  </View>
+                </View>
+              </View>
+
+
+              <View style={styles.boxItemList}>
+                <View style={styles.innerItem}>
+                  <View>
+                    <Image source={require('../../assets/images/service/list_service3.png')}
+                      style={{ width: 120, height: 100, borderRadius: 8, gap: 10 }} />
+                  </View>
+                  <View style={styles.detailList}>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>To : </Text>
+                      <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Price : </Text>
+                      <Text style={styles.textMute}>150,000 บาทv</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Total : </Text>
+                      <Text style={styles.textMute}>50 กล่อง</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Status : </Text>
+                      <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
+                    </View>
+
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.boxItemList}>
+                <View style={styles.innerItem}>
+                  <View>
+                    <Image source={require('../../assets/images/service/list_service4.jpg')}
+                      style={{ width: 120, height: 100, borderRadius: 8, gap: 10 }} />
+                  </View>
+                  <View style={styles.detailList}>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>To : </Text>
+                      <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Price : </Text>
+                      <Text style={styles.textMute}>150,000 บาทv</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Total : </Text>
+                      <Text style={styles.textMute}>50 กล่อง</Text>
+                    </View>
+                    <View style={styles.textDetailRight}>
+                      <Text style={{ fontWeight: 700 }}>Status : </Text>
+                      <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
+                    </View>
+
+                  </View>
+                </View>
+              </View>
+
+
             </View>
+
           </View>
-
-          <View style={styles.boxItemList}>
-            <View style={styles.innerItem}>
-              <View>
-                <Image source={ require('../../assets/images/service/list_service2.png') }
-                style={{width: 120, height: 100, borderRadius: 8, gap: 10}} />
-              </View>
-              <View style={styles.detailList}>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>To : </Text>
-                  <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Price : </Text>
-                  <Text style={styles.textMute}>150,000 บาทv</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Total : </Text>
-                  <Text style={styles.textMute}>50 กล่อง</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Status : </Text>
-                  <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                </View>
-                
-              </View>
-            </View>
-          </View>
-
-
-          <View style={styles.boxItemList}>
-            <View style={styles.innerItem}>
-              <View>
-                <Image source={ require('../../assets/images/service/list_service3.png') }
-                style={{width: 120, height: 100, borderRadius: 8, gap: 10}} />
-              </View>
-              <View style={styles.detailList}>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>To : </Text>
-                  <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Price : </Text>
-                  <Text style={styles.textMute}>150,000 บาทv</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Total : </Text>
-                  <Text style={styles.textMute}>50 กล่อง</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Status : </Text>
-                  <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                </View>
-                
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.boxItemList}>
-            <View style={styles.innerItem}>
-              <View>
-                <Image source={ require('../../assets/images/service/list_service4.jpg') }
-                style={{width: 120, height: 100, borderRadius: 8, gap: 10}} />
-              </View>
-              <View style={styles.detailList}>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>To : </Text>
-                  <Text style={styles.textMute}>สาขาเคหะร่มเกล้า</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Price : </Text>
-                  <Text style={styles.textMute}>150,000 บาทv</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Total : </Text>
-                  <Text style={styles.textMute}>50 กล่อง</Text>
-                </View>
-                <View style={styles.textDetailRight}>
-                  <Text style={{ fontWeight: 700 }}>Status : </Text>
-                  <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                </View>
-                
-              </View>
-            </View>
-          </View>
-          
-
+          {/* list item */}
         </View>
-
-      </View>
-      {/* list item */}
-      </View>
       </ScrollView>
-     
 
-      
+
+
     </SafeAreaProvider>
   );
 }
@@ -420,29 +444,29 @@ const styles = StyleSheet.create({
   containerBlue: {
 
     backgroundColor: '#121F43',
-    borderBottomLeftRadius:25,
-    borderBottomRightRadius:25,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
     height: 250,
-    position:'absolute',
-    width:'100%'
+    position: 'absolute',
+    width: '100%'
 
   },
-  container1 : {
-    padding: 20, 
-    marginTop:45
+  container1: {
+    padding: 20,
+    marginTop: 45
   },
   container: {
-    padding: 20, 
-    borderBottomLeftRadius:25,
-    borderBottomRightRadius:25,
+    padding: 20,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
 
   },
   userImage: {
     width: 45,
     height: 45,
-    borderRadius:99,
+    borderRadius: 99,
   },
-  profileMain : {
+  profileMain: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -452,35 +476,35 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    gap:10
+    gap: 10
   },
   TextInput: {
-    padding:7,
-    paddingHorizontal:0,
-    backgroundColor:Colors.white,
+    padding: 7,
+    paddingHorizontal: 0,
+    backgroundColor: Colors.white,
     width: '87%',
-    borderTopRightRadius:10,
-    borderBottomRightRadius:10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
   },
   searchBar: {
-    marginTop:15,
+    marginTop: 15,
     display: 'flex',
     flexDirection: 'row',
-    marginBottom:10,
+    marginBottom: 10,
   },
   iconScan: {
-    backgroundColor:Colors.white,
+    backgroundColor: Colors.white,
     padding: 10,
-    borderTopLeftRadius:10,
-    borderBottomLeftRadius:10,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
     overflow: 'hidden',
   },
-  boxGiff : {
+  boxGiff: {
     position: 'static',
-    backgroundColor:Colors.white,
-    borderRadius:10,
+    backgroundColor: Colors.white,
+    borderRadius: 10,
     padding: 10,
-    marginTop:12,
+    marginTop: 12,
     // iOS shadow properties
     shadowColor: '#000',
     shadowOffset: {
@@ -493,13 +517,13 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   textGiffblack: {
-    color:Colors.gray,
-    fontSize:17,
+    color: Colors.gray,
+    fontSize: 17,
     fontWeight: '700'
   },
   textGifforange: {
-    color:'#f47524',
-    fontSize:18,
+    color: '#f47524',
+    fontSize: 18,
     fontWeight: '700'
   },
   headGiff: {
@@ -518,7 +542,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: '#f47524',
     borderColor: '#f47524',
-    width:80
+    width: 80
   },
   btnText: {
     fontSize: 13,
@@ -537,8 +561,8 @@ const styles = StyleSheet.create({
     marginTop: -20
   },
   boxItem: {
-    backgroundColor:Colors.white,
-    borderRadius:10,
+    backgroundColor: Colors.white,
+    borderRadius: 10,
     padding: 12,
     // iOS shadow properties
     shadowColor: '#000',
@@ -552,10 +576,10 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   boxItemList: {
-    backgroundColor:Colors.white,
-    borderRadius:10,
+    backgroundColor: Colors.white,
+    borderRadius: 10,
     padding: 5,
-    marginTop:12,
+    marginTop: 12,
     // iOS shadow properties
     shadowColor: '#000',
     shadowOffset: {
@@ -581,7 +605,7 @@ const styles = StyleSheet.create({
     marginBottom: 1
   },
   detailList: {
-    padding:5,
+    padding: 5,
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
@@ -591,6 +615,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   textMute: {
-    color: '#666'
+    color: '#666',
+    fontFamily: 'Prompt_400Regular',
   }
 });

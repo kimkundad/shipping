@@ -4,9 +4,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StatusBar } from 'expo-status-bar';
-import { Prompt_400Regular, Prompt_500Medium } from '@expo-google-fonts/prompt';
-import { useFonts } from 'expo-font';
-import { useEffect } from 'react';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -14,15 +11,6 @@ import { Feather } from '@expo/vector-icons';
 
 export default function Setting() {
 
-  let [loaded] = useFonts({
-    Prompt_400Regular,
-    Prompt_500Medium,
-  });
-
-  useEffect(() => {
-    if (loaded) {
-    }
-  }, [loaded]);
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
@@ -198,13 +186,5 @@ const styles = StyleSheet.create({
     borderBottomColor: '#bfbfbf',
     borderBottomWidth: 0.5,
     paddingBottom: 20
-  },
-   promptRegular: {
-    fontFamily: 'Prompt_400Regular',
-    fontSize: 18,
-  },
-  promptMedium: {
-    fontFamily: 'Prompt_500Medium',
-    fontSize: 18,
   },
 });

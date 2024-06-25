@@ -1,9 +1,10 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
+import * as Font from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState  } from 'react';
 import 'react-native-reanimated';
+import AppLoading from 'expo-app-loading';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -12,27 +13,37 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  const loadFonts = async () => {
+    await Font.loadAsync({
+      'Prompt_400Regular': require('../assets/fonts/Prompt-Regular.ttf'),
+      'Prompt_500Medium': require('../assets/fonts/Prompt-Medium.ttf'),
+    });
+    setFontsLoaded(true);
+  };
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    loadFonts();
+  }, []);
 
-  if (!loaded) {
+  if (!fontsLoaded) {
     return null;
   }
 
+  
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(login)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(branch)" options={{ headerShown: false }}/>
+        <Stack.Screen name="(holiday)" options={{ headerShown: false }}/>
+        <Stack.Screen name="(contact)" options={{ headerShown: false }}/>
         <Stack.Screen name="+not-found" />
       </Stack>
     </ThemeProvider>
   );
 }
+

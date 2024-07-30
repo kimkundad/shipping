@@ -41,6 +41,7 @@ export default function RootLayout() {
         <Stack.Screen name="(holiday)" options={{ headerShown: false }}/>
         <Stack.Screen name="(contact)" options={{ headerShown: false }}/>
         <Stack.Screen name="(warning)" options={{ headerShown: false }}/>
+        <Stack.Screen name="(setting)" options={{ headerShown: false }}/>
         <Stack.Screen name="+not-found" />
       </Stack>
     </ThemeProvider>

@@ -5,48 +5,45 @@ import { useEffect } from 'react';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StatusBar } from 'expo-status-bar';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { FontAwesome5 } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
+import { Entypo } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
+
 
 const { width } = Dimensions.get('window');
 
-const Holiday = () => {
+const About = () => {
     return (
-        <SafeAreaProvider style={{ flex: 1, backgroundColor: '#F5F5F5' }} >
+        <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
             <StatusBar style="dark" />
             <ScrollView>
                 <View style={styles.listItemCon}>
                     <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Link href="(tabs)" style={{ padding: 10 }}>
+                        <Link href="/(tabs)/setting" style={{ padding: 10 }}>
                             <Ionicons name="chevron-back" size={30} color="black" />
                         </Link>
                         <View style={styles.textListHead} >
-                            <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium' }}>แจ้งวันหยุด</Text>
+                            <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium' }}>About Us</Text>
                         </View>
-                        <TouchableOpacity
-                  onPress={() => {
-                    // handle onPress
-                    router.push('(setting)/notification');
-                  }}>
-                  <View>
-                    <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
-                  </View>
-                </TouchableOpacity>
+                        <View >
+                            <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
+                        </View>
                     </View>
                 </View>
                 <View>
-                    <View style={{ marginTop: 20, alignItems: 'center' }}>
+                    <View style={{ marginTop: 0, }}>
 
-
-                        <Text style={{ fontSize: 17, fontFamily: 'Prompt_400Regular', marginBottom: 5 }}>วันหยุดปีใหม่ 2567</Text>
-                        <Image source={require('../../assets/images/holiday2.jpg')}
-                            style={styles.image}
-                            resizeMode="cover" />
-
-                        <Text style={{ fontSize: 17, fontFamily: 'Prompt_400Regular', marginBottom: 5, marginTop: 20 }}>วันหยุดสงกรานต์ 2567 </Text>
-                        <Image source={require('../../assets/images/holiday.jpg')}
-                            style={styles.image}
-                            resizeMode="cover" />
-
+                        <View style={{ alignItems: 'center' }}>
+                            <Image source={require('../../assets/images/about/111879_0.jpg')}
+                            style={{ width: 360, height: 526 }} />
+                        </View>
+                        <View style={{ alignItems: 'center' }}>
+                            <Image source={require('../../assets/images/about/111878_0.jpg')}
+                            style={{ width: 360, height: 664 }} />
+                        </View>
+                        
 
                     </View>
                 </View>
@@ -55,16 +52,57 @@ const Holiday = () => {
     )
 }
 
-export default Holiday
+export default About
 
 const styles = StyleSheet.create({
 
     container: {
         padding: 20,
     },
+    header: {
+        fontSize: 16, 
+        fontFamily: 'Prompt_500Medium'
+    },
+    mt10: {
+        marginTop: 10
+    },
+    textDetail: {
+        fontSize: 14, 
+        fontFamily: 'Prompt_400Regular'
+    },
+    textListHead2: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 20,
+        borderBottomColor: '#bfbfbf',
+        borderBottomWidth: 0.5,
+        paddingBottom: 20
+    },
+    textSeting : {
+        fontSize: 16, 
+        fontFamily: 'Prompt_400Regular'
+      },
     image: {
-        width: width, // Full width of the screen
-        height: 200,  // Set the height as needed
+        width: width, // ความกว้าง 100% ของขนาดหน้าจอ
+        height: (width * 202) / 360, // คำนวณความสูงตามอัตราส่วนของภาพ
+    },
+    profile: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10
+    },
+    contactBox: {
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 5,
+        borderWidth: 1,
+        padding: 10,
+        paddingHorizontal: 15,
+        borderColor: '#666',
+        borderRadius: 99,
+        width: 200,
     },
     textListHead: {
         display: 'flex',

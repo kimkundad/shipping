@@ -14,28 +14,22 @@ import { FontAwesome } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
-const Contact = () => {
+const Helpcen = () => {
     return (
         <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
             <StatusBar style="dark" />
             <ScrollView>
                 <View style={styles.listItemCon}>
                     <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Link href="(tabs)" style={{ padding: 10 }}>
+                        <Link href="/(tabs)/setting" style={{ padding: 10 }}>
                             <Ionicons name="chevron-back" size={30} color="black" />
                         </Link>
                         <View style={styles.textListHead} >
                             <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium' }}>Help Center</Text>
                         </View>
-                        <TouchableOpacity
-                  onPress={() => {
-                    // handle onPress
-                    router.push('(setting)/notification');
-                  }}>
-                  <View>
-                    <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
-                  </View>
-                </TouchableOpacity>
+                        <View >
+                            <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
+                        </View>
                     </View>
                 </View>
                 <View>
@@ -124,7 +118,7 @@ const Contact = () => {
     )
 }
 
-export default Contact
+export default Helpcen
 
 const styles = StyleSheet.create({
 

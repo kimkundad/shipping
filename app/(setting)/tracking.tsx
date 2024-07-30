@@ -71,9 +71,17 @@ export default function Tracking() {
       <ScrollView>
         <View style={styles.listItemCon}>
           <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Link href="(tabs)" style={{ padding: 10 }}>
-              <Ionicons name="chevron-back" size={30} color="black" />
-            </Link>
+          <TouchableOpacity
+                                onPress={() => {
+                                // handle onPress to go back to the previous page
+                                router.back();
+                                }}
+                            >
+                                <View style={{ padding: 10 }}>
+                                <Ionicons name="chevron-back" size={28} color="black" />
+                                </View>
+                            
+                            </TouchableOpacity>
             <View style={styles.textListHead} >
               <Text style={{
                 fontSize: 16,

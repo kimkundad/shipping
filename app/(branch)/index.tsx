@@ -18,9 +18,16 @@ const Index = () => {
                         <View style={styles.textListHead} >
                             <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium' }}>สาขา</Text>
                         </View>
-                        <View >
-                            <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
-                        </View>
+                        
+                        <TouchableOpacity
+                  onPress={() => {
+                    // handle onPress
+                    router.push('(setting)/notification');
+                  }}>
+                  <View>
+                    <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
+                  </View>
+                </TouchableOpacity>
                     </View>
                 </View>
                 <View>

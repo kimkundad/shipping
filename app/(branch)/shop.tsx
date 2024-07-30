@@ -23,9 +23,15 @@ const Shop = () => {
                         <View style={styles.textListHead} >
                             <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium' }}>สาขา</Text>
                         </View>
-                        <View >
-                            <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
-                        </View>
+                        <TouchableOpacity
+                            onPress={() => {
+                                // handle onPress
+                                router.push('(setting)/notification');
+                            }}>
+                            <View>
+                                <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
+                            </View>
+                        </TouchableOpacity>
                     </View>
                 </View>
                 <View>
@@ -95,186 +101,184 @@ const Shop = () => {
 
                                 <Text style={{ fontSize: 17, fontFamily: 'Prompt_400Regular', }}>รายการล่าสุด</Text>
 
-                                <View style={styles.innerItem}>
-                                    <View>
-                                        <Image source={require('../../assets/images/service/list_service1.png')}
-                                            style={{ width: 120, height: 70, borderRadius: 8, gap: 10 }} />
+                                <TouchableOpacity
+                onPress={() => {
+                  // handle onPress
+                  router.push('(setting)/tracking');
+                }}>
+                                <View style={styles.boxItemList}>
+                                    <View style={styles.containerOrderMain}>
+                                        <View style={styles.containerOrder}>
+                                            <View >
+                                                <Image source={require('../../assets/images/icon_truck.png')}
+                                                    style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
+                                            </View>
+                                            <View >
+                                                <Text style={{ fontWeight: 700, fontSize: 16 }}>#ORDR1274663</Text>
+                                                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>06 ก.ค. 2024 15.47 น.</Text>
+                                            </View>
+                                        </View>
+                                        <View style={styles.textStatus}>
+                                            <Text style={{ color: '#fff', fontSize: 12 }}>On Devivery</Text>
+                                        </View>
                                     </View>
-                                    <View style={styles.detailList}>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Price : </Text>
-                                            <Text style={styles.textMute}>150,000 บาทv</Text>
+                                    <View style={styles.textBoxDetail}>
+                                        <View style={styles.flexItem}>
+                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
+                                            <Text style={{ fontWeight: 700, fontSize: 13 }}>รามอินทรา กม 8</Text>
                                         </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Total : </Text>
-                                            <Text style={styles.textMute}>50 กล่อง</Text>
+                                        <View style={styles.flexItem}>
+                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
+                                            <Text style={{ fontWeight: 700, fontSize: 13 }}>1.3 kg</Text>
                                         </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Status : </Text>
-                                            <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                                        </View>
+                                    </View>
+                                </View>
+                                </TouchableOpacity>
 
+
+                                <TouchableOpacity
+                onPress={() => {
+                  // handle onPress
+                  router.push('(setting)/tracking');
+                }}>
+                                <View style={styles.boxItemList}>
+                                    <View style={styles.containerOrderMain}>
+                                        <View style={styles.containerOrder}>
+                                            <View >
+                                                <Image source={require('../../assets/images/icon_truck.png')}
+                                                    style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
+                                            </View>
+                                            <View >
+                                                <Text style={{ fontWeight: 700, fontSize: 16 }}>#ORDR1274663</Text>
+                                                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>06 ก.ค. 2024 15.47 น.</Text>
+                                            </View>
+                                        </View>
+                                        <View style={styles.textStatus3}>
+                                            <Text style={{ color: '#fff', fontSize: 12 }}>Accident</Text>
+                                        </View>
+                                    </View>
+                                    <View style={styles.textBoxDetail}>
+                                        <View style={styles.flexItem}>
+                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
+                                            <Text style={{ fontWeight: 700, fontSize: 13 }}>รามอินทรา กม 8</Text>
+                                        </View>
+                                        <View style={styles.flexItem}>
+                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
+                                            <Text style={{ fontWeight: 700, fontSize: 13 }}>1.3 kg</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                                </TouchableOpacity>
+
+                                <View style={styles.boxItemList}>
+                                    <View style={styles.containerOrderMain}>
+                                        <View style={styles.containerOrder}>
+                                            <View >
+                                                <Image source={require('../../assets/images/icon_truck.png')}
+                                                    style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
+                                            </View>
+                                            <View >
+                                                <Text style={{ fontWeight: 700, fontSize: 16 }}>#ORDR1274663</Text>
+                                                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>06 ก.ค. 2024 15.47 น.</Text>
+                                            </View>
+                                        </View>
+                                        <View style={styles.textStatus2}>
+                                            <Text style={{ color: '#fff', fontSize: 12 }}>Success</Text>
+                                        </View>
+                                    </View>
+                                    <View style={styles.textBoxDetail}>
+                                        <View style={styles.flexItem}>
+                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
+                                            <Text style={{ fontWeight: 700, fontSize: 13 }}>รามอินทรา กม 8</Text>
+                                        </View>
+                                        <View style={styles.flexItem}>
+                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
+                                            <Text style={{ fontWeight: 700, fontSize: 13 }}>1.3 kg</Text>
+                                        </View>
                                     </View>
                                 </View>
 
-                                <View style={styles.innerItem}>
-                                    <View>
-                                        <Image source={require('../../assets/images/service/list_service2.png')}
-                                            style={{ width: 120, height: 70, borderRadius: 8, gap: 10 }} />
+                                <View style={styles.boxItemList}>
+                                    <View style={styles.containerOrderMain}>
+                                        <View style={styles.containerOrder}>
+                                            <View >
+                                                <Image source={require('../../assets/images/icon_truck.png')}
+                                                    style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
+                                            </View>
+                                            <View >
+                                                <Text style={{ fontWeight: 700, fontSize: 16 }}>#ORDR1274663</Text>
+                                                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>06 ก.ค. 2024 15.47 น.</Text>
+                                            </View>
+                                        </View>
+                                        <View style={styles.textStatus}>
+                                            <Text style={{ color: '#fff', fontSize: 12 }}>On Devivery</Text>
+                                        </View>
                                     </View>
-                                    <View style={styles.detailList}>
-
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Price : </Text>
-                                            <Text style={styles.textMute}>150,000 บาทv</Text>
+                                    <View style={styles.textBoxDetail}>
+                                        <View style={styles.flexItem}>
+                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
+                                            <Text style={{ fontWeight: 700, fontSize: 13 }}>รามอินทรา กม 8</Text>
                                         </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Total : </Text>
-                                            <Text style={styles.textMute}>50 กล่อง</Text>
+                                        <View style={styles.flexItem}>
+                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
+                                            <Text style={{ fontWeight: 700, fontSize: 13 }}>1.3 kg</Text>
                                         </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Status : </Text>
-                                            <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                                        </View>
-
-                                    </View>
-                                </View>
-
-                                <View style={styles.innerItem}>
-                                    <View>
-                                        <Image source={require('../../assets/images/service/list_service3.png')}
-                                            style={{ width: 120, height: 70, borderRadius: 8, gap: 10 }} />
-                                    </View>
-                                    <View style={styles.detailList}>
-
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Price : </Text>
-                                            <Text style={styles.textMute}>150,000 บาทv</Text>
-                                        </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Total : </Text>
-                                            <Text style={styles.textMute}>50 กล่อง</Text>
-                                        </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Status : </Text>
-                                            <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                                        </View>
-
                                     </View>
                                 </View>
 
-                                <View style={styles.innerItem}>
-                                    <View>
-                                        <Image source={require('../../assets/images/service/list_service4.jpg')}
-                                            style={{ width: 120, height: 70, borderRadius: 8, gap: 10 }} />
+                                <View style={styles.boxItemList}>
+                                    <View style={styles.containerOrderMain}>
+                                        <View style={styles.containerOrder}>
+                                            <View >
+                                                <Image source={require('../../assets/images/icon_truck.png')}
+                                                    style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
+                                            </View>
+                                            <View >
+                                                <Text style={{ fontWeight: 700, fontSize: 16 }}>#ORDR1274663</Text>
+                                                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>06 ก.ค. 2024 15.47 น.</Text>
+                                            </View>
+                                        </View>
+                                        <View style={styles.textStatus3}>
+                                            <Text style={{ color: '#fff', fontSize: 12 }}>Accident</Text>
+                                        </View>
                                     </View>
-                                    <View style={styles.detailList}>
-
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Price : </Text>
-                                            <Text style={styles.textMute}>150,000 บาทv</Text>
+                                    <View style={styles.textBoxDetail}>
+                                        <View style={styles.flexItem}>
+                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
+                                            <Text style={{ fontWeight: 700, fontSize: 13 }}>รามอินทรา กม 8</Text>
                                         </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Total : </Text>
-                                            <Text style={styles.textMute}>50 กล่อง</Text>
+                                        <View style={styles.flexItem}>
+                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
+                                            <Text style={{ fontWeight: 700, fontSize: 13 }}>1.3 kg</Text>
                                         </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Status : </Text>
-                                            <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                                        </View>
-
-                                    </View>
-                                </View>
-
-
-                                <View style={styles.innerItem}>
-                                    <View>
-                                        <Image source={require('../../assets/images/service/list_service1.png')}
-                                            style={{ width: 120, height: 70, borderRadius: 8, gap: 10 }} />
-                                    </View>
-                                    <View style={styles.detailList}>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Price : </Text>
-                                            <Text style={styles.textMute}>150,000 บาทv</Text>
-                                        </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Total : </Text>
-                                            <Text style={styles.textMute}>50 กล่อง</Text>
-                                        </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Status : </Text>
-                                            <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                                        </View>
-
                                     </View>
                                 </View>
 
-                                <View style={styles.innerItem}>
-                                    <View>
-                                        <Image source={require('../../assets/images/service/list_service2.png')}
-                                            style={{ width: 120, height: 70, borderRadius: 8, gap: 10 }} />
+                                <View style={styles.boxItemList}>
+                                    <View style={styles.containerOrderMain}>
+                                        <View style={styles.containerOrder}>
+                                            <View >
+                                                <Image source={require('../../assets/images/icon_truck.png')}
+                                                    style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
+                                            </View>
+                                            <View >
+                                                <Text style={{ fontWeight: 700, fontSize: 16 }}>#ORDR1274663</Text>
+                                                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>06 ก.ค. 2024 15.47 น.</Text>
+                                            </View>
+                                        </View>
+                                        <View style={styles.textStatus2}>
+                                            <Text style={{ color: '#fff', fontSize: 12 }}>Success</Text>
+                                        </View>
                                     </View>
-                                    <View style={styles.detailList}>
-
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Price : </Text>
-                                            <Text style={styles.textMute}>150,000 บาทv</Text>
+                                    <View style={styles.textBoxDetail}>
+                                        <View style={styles.flexItem}>
+                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
+                                            <Text style={{ fontWeight: 700, fontSize: 13 }}>รามอินทรา กม 8</Text>
                                         </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Total : </Text>
-                                            <Text style={styles.textMute}>50 กล่อง</Text>
+                                        <View style={styles.flexItem}>
+                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
+                                            <Text style={{ fontWeight: 700, fontSize: 13 }}>1.3 kg</Text>
                                         </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Status : </Text>
-                                            <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                                        </View>
-
-                                    </View>
-                                </View>
-
-                                <View style={styles.innerItem}>
-                                    <View>
-                                        <Image source={require('../../assets/images/service/list_service3.png')}
-                                            style={{ width: 120, height: 70, borderRadius: 8, gap: 10 }} />
-                                    </View>
-                                    <View style={styles.detailList}>
-
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Price : </Text>
-                                            <Text style={styles.textMute}>150,000 บาทv</Text>
-                                        </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Total : </Text>
-                                            <Text style={styles.textMute}>50 กล่อง</Text>
-                                        </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Status : </Text>
-                                            <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                                        </View>
-
-                                    </View>
-                                </View>
-
-                                <View style={styles.innerItem}>
-                                    <View>
-                                        <Image source={require('../../assets/images/service/list_service4.jpg')}
-                                            style={{ width: 120, height: 70, borderRadius: 8, gap: 10 }} />
-                                    </View>
-                                    <View style={styles.detailList}>
-
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Price : </Text>
-                                            <Text style={styles.textMute}>150,000 บาทv</Text>
-                                        </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Total : </Text>
-                                            <Text style={styles.textMute}>50 กล่อง</Text>
-                                        </View>
-                                        <View style={styles.textDetailRight}>
-                                            <Text style={{ fontWeight: 700 }}>Status : </Text>
-                                            <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-                                        </View>
-
                                     </View>
                                 </View>
 
@@ -300,19 +304,69 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     boxItemList: {
+        backgroundColor: '#fff',
         borderRadius: 10,
-        padding: 5,
+        padding: 8,
         marginTop: 12,
         // iOS shadow properties
         shadowColor: '#000',
         shadowOffset: {
-            width: 0,
-            height: 2,
+          width: 0,
+          height: 2,
         },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         // Android shadow (elevation)
         elevation: 5,
+      },
+    containerOrder: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 2,
+
+    },
+    containerOrderMain: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderBottomWidth: 0.5, // Specifies the width of the bottom border
+        borderBottomColor: '#d7d7d7',
+        paddingBottom: 8
+    },
+    textStatus: {
+        backgroundColor: '#f47524',
+        width: 90,
+        borderRadius: 99,
+        padding: 6,
+        paddingHorizontal: 8,
+        alignItems: 'center'
+    },
+    textStatus2: {
+        backgroundColor: '#28a745',
+        width: 90,
+        borderRadius: 99,
+        padding: 6,
+        paddingHorizontal: 8,
+        alignItems: 'center'
+    },
+    textStatus3: {
+        backgroundColor: '#d9534f',
+        width: 90,
+        borderRadius: 99,
+        padding: 6,
+        paddingHorizontal: 8,
+        alignItems: 'center'
+    },
+    textBoxDetail: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingTop: 5
+    },
+    flexItem: {
+        flex: 0.5,
     },
     detailList: {
         padding: 5,

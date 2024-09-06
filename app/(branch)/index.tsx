@@ -1,11 +1,38 @@
 import { Image, View, Text, StyleSheet, Platform, TextInput, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import React from 'react'
+import React, { useEffect, useContext ,useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useNavigation, router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserContext } from '../../hooks/UserContext';
+import axios from 'axios';
+
+const POLL_INTERVAL = 5000; // Poll every 5 seconds
 
 const Index = () => {
+
+    const { userBranch, setUserBranch } = useContext(UserContext);
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+          try {
+            const token1 = await AsyncStorage.getItem('jwt_token');
+            const response = await axios.get('https://30b7-58-8-226-86.ngrok-free.app/api/user-branch', {
+              headers: { Authorization: `Bearer ${token1}` },
+            });
+            setUserBranch(response.data.branch);
+          } catch (error) {
+            console.error(error);
+          }
+        };
+    
+        fetchOrders();
+        const intervalId = setInterval(fetchOrders, POLL_INTERVAL);
+    
+        return () => clearInterval(intervalId); // Cleanup on unmount
+      }, []);
+
     return (
         <SafeAreaProvider style={{ flex: 1, backgroundColor: '#F5F5F5' }} >
             <StatusBar style="dark" />
@@ -34,23 +61,40 @@ const Index = () => {
                     <View >
                         <Text style={styles.headerPage}>จัดการสาขา</Text>
                         <View style={styles.card}>
-
-                            <Link href="/(branch)/shop" >
+                        {userBranch && userBranch.length > 0 && (
+                            <View>
+                        {userBranch.map(brach => (
+                            <Link key={brach.id} 
+                            // href={`/(branch)/shop/${brach.id}`} // Pass ID as part of the URL
+                            href={{
+                                pathname: "/(branch)/shop",
+                                // /* 1. Navigate to the details route with query params */
+                                params: { id: brach.id },
+                              }}
+                            >
                                 <View style={styles.innerItem}>
                                     <View>
                                         <Image source={require('../../assets/images/service/list_service3.png')}
                                             style={{ width: 75, height: 75, borderRadius: 8, gap: 10 }} />
                                     </View>
                                     <View style={{ width: '78%' }}>
-                                        <Text style={styles.headBranch}>สาขาพระราม 7</Text>
-                                        <Text style={styles.phoneText}>(+66) 95 846 7417</Text>
-                                        <Text style={styles.addressText}>20/426 PRUKSAVILLE รามคำแหง - วงแหวน (ซอยมิสทีน)
-                                            ถนนราษฎร์พัฒนา แขวง สะพานสูง
-                                            แขวงสะพานสูง, เขตสะพานสูง, จังหวัดกรุงเทพมหานคร, 10240</Text>
+                                        <Text style={styles.headBranch}>{brach.name_branch}</Text>
+                                        <Text style={styles.phoneText}>{brach.phone}</Text>
+                                        <View>
+                                        <Text style={styles.addressText} ellipsizeMode='tail' numberOfLines={2}>
+                                             {brach.address_branch}
+                                        </Text>
+                                        </View>
+                                        
                                     </View>
                                 </View>
                             </Link>
-                            <Link href="/(branch)/shop" >
+                            ))}
+                            </View>
+                            )}
+
+
+                            {/* <Link href="/(branch)/shop" >
                             <View style={styles.innerItem}>
                                 <View>
                                     <Image source={require('../../assets/images/service/list_service3.png')}
@@ -64,7 +108,7 @@ const Index = () => {
                                         แขวงสะพานสูง, เขตสะพานสูง, จังหวัดกรุงเทพมหานคร, 10240</Text>
                                 </View>
                             </View>
-                            </Link>
+                            </Link> */}
 
                             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', }}>
                                 <Link href="/(branch)/createBranch" >
@@ -95,6 +139,7 @@ const styles = StyleSheet.create({
 
     container: {
         padding: 20,
+        width: '100%',
     },
     textListHead: {
         display: 'flex',
@@ -157,8 +202,8 @@ const styles = StyleSheet.create({
         fontSize: 11,
         lineHeight: 15,
         marginTop: 5,
-        height: 30,
-        color: '#666'
+        color: '#666',
+        width: Platform.OS === 'android' ? 310 : '100%',
     },
     innerItem: {
         display: 'flex',
@@ -168,6 +213,7 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         borderBottomWidth: 0.5, // Specifies the width of the bottom border
         borderBottomColor: '#d7d7d7',
+        width: '100%',
     },
 });
 

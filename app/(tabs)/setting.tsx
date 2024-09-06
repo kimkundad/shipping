@@ -9,13 +9,23 @@ import { AntDesign } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigation, router } from 'expo-router';
+import { UserContext } from '../../hooks/UserContext';
 
 export default function Setting() {
 
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+  const { logout }  = useContext(UserContext);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
@@ -215,10 +225,8 @@ export default function Setting() {
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => {
-                  // handle onPress
-                  router.push('(alogin)');
-                }}>
+                onPress={handleLogout}
+                >
                 <View style={styles.textListHead2}>
                   <View style={styles.profile}>
                     <View>

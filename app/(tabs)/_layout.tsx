@@ -10,6 +10,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { Prompt_400Regular, Prompt_500Medium } from '@expo-google-fonts/prompt';
+import { UserProvider } from '../../hooks/UserContext';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -29,6 +30,7 @@ export default function TabLayout() {
   }
 
   return (
+    <UserProvider>
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: '#f47524',
@@ -71,6 +73,7 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    </UserProvider>
   );
 }
 

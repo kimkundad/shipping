@@ -264,10 +264,10 @@ export default function Service() {
                             </View>
                         </View>
                         <View style={styles.weightContainer}>
-                            <Text style={styles.label2}>น้ำหนัก*</Text>
+                            <Text style={styles.label2}>จำนวน*</Text>
                             <TextInput 
                                 style={styles.weightInput} 
-                                placeholder="กก." 
+                                placeholder="ชิ้น" 
                                 value={weight}
                                 onChangeText={setWeight}
                                 keyboardType="numeric" // Ensure only numeric input

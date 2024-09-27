@@ -1,70 +1,93 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axiosRetry from 'axios-retry';
+import { useNavigation } from '@react-navigation/native';
 
+// Create Axios instance
 const api = axios.create({
-  baseURL: 'https://30b7-58-8-226-86.ngrok-free.app/api',
+  baseURL: 'https://5575-124-120-34-255.ngrok-free.app/api',
 });
 
 // Configure retry logic
 axiosRetry(api, {
-    retries: 3, // Number of retries
-    retryDelay: axiosRetry.exponentialDelay, // Exponential backoff delay
-    retryCondition: (error) => {
-      // Retry only if the status code is 429
-      return error.response && error.response.status === 429;
-    },
-  });
+  retries: 3,
+  retryDelay: axiosRetry.exponentialDelay,
+  retryCondition: (error) => error.response && error.response.status === 429,
+});
 
+// Refresh token function
 const refreshToken = async () => {
-    try {
-      const refreshToken = await AsyncStorage.getItem('refresh_token');
-      const response = await axios.post('https://30b7-58-8-226-86.ngrok-free.app/api/refresh-token', {}, {
-        headers: {
-          Authorization: `Bearer ${refreshToken}`
-        }
-      });
-  
-      const newToken = response.data.token;
-      await AsyncStorage.setItem('jwt_token', newToken);
-      return newToken;
-    } catch (error) {
-      console.error('Failed to refresh token:', error);
-      throw error; // Ensure the error is thrown to handle it properly
+  try {
+    const storedRefreshToken = await AsyncStorage.getItem('refresh_token');
+    if (!storedRefreshToken) {
+      throw new Error('No refresh token found');
     }
-  };
+
+    console.log('Attempting token refresh with:', storedRefreshToken);
+
+    // Request new token using refresh token
+    const response = await axios.post(
+      'https://5575-124-120-34-255.ngrok-free.app/api/refresh-token',
+      {},
+      {
+        headers: { Authorization: `Bearer ${storedRefreshToken}` },
+      }
+    );
+
+    const newToken = response.data.token;
+    if (!newToken) {
+      throw new Error('Failed to receive new token');
+    }
+
+    console.log('New token received:', newToken);
+
+    // Store the new token in AsyncStorage
+    await AsyncStorage.setItem('jwt_token', newToken);
+    return newToken;
+  } catch (error) {
+    console.error('Token refresh failed:', error.response?.data || error.message);
+    throw error; // Ensure error is thrown to handle logout or retry logic
+  }
+};
 
 // Request interceptor to add JWT token to headers
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('jwt_token');
+ //   console.log('token api', token)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
-// Response interceptor to handle token refresh
+// Response interceptor to handle token expiration and retry logic
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  (response) => {
+    // Check if the response indicates an expired token (even if the status is 200)
+    if (response.data.message === "Token expired" && !response.config._retry) {
+      response.config._retry = true; // Mark the request as retried
 
-    if (error.response.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const newToken = await refreshToken(); // Make sure this function is imported or available
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return api(originalRequest);
-      } catch (refreshError) {
-        console.error('Failed to refresh token:', refreshError);
-        // Handle token refresh failure (e.g., redirect to login)
-      }
+      return refreshToken().then(newToken => {
+        // Update the authorization header with the new token
+        response.config.headers.Authorization = `Bearer ${newToken}`;
+        // Retry the original request with the updated token
+        return api(response.config);
+      }).catch(error => {
+        console.error("Failed to refresh token:", error);
+        return Promise.reject(error);
+      });
     }
 
+    // Return the response if no token issues were found
+    return response;
+  },
+  (error) => {
+    // Handle other types of errors (like 401 or network issues)
     return Promise.reject(error);
   }
 );

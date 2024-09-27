@@ -8,6 +8,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { AntDesign } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 
 const { width } = Dimensions.get('window');
@@ -32,7 +33,7 @@ const Shop = () => {
 
             const token1 = await AsyncStorage.getItem('jwt_token');
         
-            const response = await axios.get(`https://30b7-58-8-226-86.ngrok-free.app/api/user-branch-${id}`, {
+            const response = await axios.get(`https://api.loadmasterth.com/api/user-branch-${id}`, {
               headers: { Authorization: `Bearer ${token1}` },
             });
             console.log('rrrr', response.data.branch)
@@ -91,19 +92,12 @@ const Shop = () => {
                 <View>
                     <View >
 
-                        <Image source={require('../../assets/images/shop1.jpg')}
-                            style={styles.image}
-                            resizeMode="cover" />
-
                         <View style={styles.card}>
-
                             <View style={styles.headBox}>
-
-
 
                                 <View style={{ width: '100%' }}>
                                     <Text style={styles.headBranch}>{data?.name_branch}</Text>
-                                    <Text style={styles.addressText}>{data?.address_branch}</Text>
+                                    <Text style={styles.addressText}>{data?.address_branch} {data?.subdistrict} {data?.district} {data?.province} {data?.postcode}</Text>
                                 </View>
                             </View>
 
@@ -127,7 +121,8 @@ const Shop = () => {
                                         
                                             <Feather name="phone" size={24} color="black" onPress={handlePress} />
                                       
-                                        <Ionicons name="chatbubble-ellipses-outline" size={24} color="black" />
+                                        
+                                        <MaterialCommunityIcons name="tooltip-edit-outline" size={24} color="black" />
                                     </View>
                                 </View>
                                 {/* profileMain  */}
@@ -367,7 +362,7 @@ const styles = StyleSheet.create({
     },
     headBranch: {
         fontFamily: 'Prompt_500Medium',
-        fontSize: 16,
+        fontSize: 18,
         marginTop: -3
     },
     headMenu: {

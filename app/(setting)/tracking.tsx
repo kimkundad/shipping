@@ -1,20 +1,70 @@
-import { StyleSheet, Image, Text, View, Platform, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Image, Text, View, Platform, ScrollView, Alert, Linking, TouchableOpacity } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import Timeline from 'react-native-timeline-flatlist';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import MapViewDirections from 'react-native-maps-directions';
-import { Link, useNavigation, router } from 'expo-router';
+import { Link, useNavigation, useLocalSearchParams, router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
 import { AntDesign } from '@expo/vector-icons';
+import api from '../../hooks/api'; // Axios instance
+import DeviveryStatus from '../../components/DeviveryStatus'
 
 export default function Tracking() {
+
+  const { id } = useLocalSearchParams(); // รับพารามิเตอร์ id
+
+  interface Order {
+    dri_time: string; // กำหนดประเภทให้ชัดเจน เช่น string
+    code_order: string;
+    dri_phone: string;
+    dri_name: string;
+    b_name: string;
+    amount: string;
+    b_recive_name: string;
+    dri_type: string;
+    dri_no_car: string;
+  }
 
   const origin = { latitude: 13.7750069, longitude: 100.7072212 };
   const destination = { latitude: 13.7709242, longitude: 100.702837 };
   const GOOGLE_MAPS_APIKEY = 'AIzaSyCsx9tQ2Mj7WWnunxa8P2blQLcGtjroLVE';
+  const [order, setData] = useState<Order | null>(null);
+
+  useEffect(() => {
+    // ตรวจสอบว่ามี id หรือไม่ก่อนที่จะดึงข้อมูล
+    if (!id) return;
+
+    // ฟังก์ชัน async ที่จะเรียก API
+    const fetchOrder = async () => {
+      try {
+        const response = await api.get(`/getOrderByID/${id}`); // คิดว่า API ต้องการ id เพื่อดึง order ของผู้ใช้
+        setData(response.data.order); // ตั้งค่า order ที่ได้รับจาก API
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+      }
+    };
+
+    fetchOrder(); // เรียกฟังก์ชันดึงข้อมูลเมื่อ id เปลี่ยนแปลง
+  }, [id]); // Depend on id to refetch when it changes
+
+
+  const handlePress = async () => {
+    if (order?.dri_phone) {
+      const url = `tel:${order?.dri_phone}`;
+      try {
+        await Linking.openURL(url);
+      } catch (error) {
+        Alert.alert('Error', 'Unable to make a phone call');
+        console.error('Error:', error);
+      }
+    } else {
+      Alert.alert('Error', 'Phone number is not provided');
+    }
+  };
 
   const data = [
     {
@@ -28,34 +78,6 @@ export default function Tracking() {
       title: 'อยู่ระหว่างการขนส่ง',
       description:
         'พัสดุออกจากศูนย์คัดแยกสินค้า ไปยัง HSAPA-A - สะพานสูง',
-    },
-    {
-      time: '12:00',
-      title: 'อยู่ระหว่างการขนส่ง',
-      description:
-        'พัสดุถูกส่งมอบให้บริษัทขนส่งเรียบร้อยแล้ว: SPX Express - Partner Shop สาขาโครงการอนินทาวน์',
-    },
-    {
-      time: '14:00',
-      title: 'การจัดส่งสำเร็จ',
-      description:
-        'พัสดุถูกจัดส่งสำเร็จแล้ว ผู้รับ: กอล์ฟ. ดูหลักฐานการจัดส่งสินค้า.',
-    }, {
-      time: '12:00',
-      title: 'อยู่ระหว่างการขนส่ง',
-      description:
-        'พัสดุถูกส่งมอบให้บริษัทขนส่งเรียบร้อยแล้ว: SPX Express - Partner Shop สาขาโครงการอนินทาวน์',
-    },
-    {
-      time: '14:00',
-      title: 'การจัดส่งสำเร็จ',
-      description:
-        'พัสดุถูกจัดส่งสำเร็จแล้ว ผู้รับ: กอล์ฟ. ดูหลักฐานการจัดส่งสินค้า.',
-    }, {
-      time: '12:00',
-      title: 'อยู่ระหว่างการขนส่ง',
-      description:
-        'พัสดุถูกส่งมอบให้บริษัทขนส่งเรียบร้อยแล้ว: SPX Express - Partner Shop สาขาโครงการอนินทาวน์',
     },
     {
       time: '54:00',
@@ -72,10 +94,7 @@ export default function Tracking() {
         <View style={styles.listItemCon}>
           <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
           <TouchableOpacity
-                                onPress={() => {
-                                // handle onPress to go back to the previous page
-                                router.back();
-                                }}
+                                onPress={() => router.push('(tabs)')}
                             >
                                 <View style={{ padding: 10 }}>
                                 <Ionicons name="chevron-back" size={28} color="black" />
@@ -87,7 +106,7 @@ export default function Tracking() {
                 fontSize: 16,
                 fontFamily: 'Prompt_500Medium',
                 paddingTop: 5
-              }}>1 ก.ค. 2024 15.45 หลังเที่ยง</Text>
+              }}>{order?.dri_time}</Text>
             </View>
             <TouchableOpacity
                   onPress={() => {
@@ -144,13 +163,19 @@ export default function Tracking() {
                     style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
                 </View>
                 <View >
-                  <Text style={{ fontWeight: 700, fontSize: 16 }}>#ORDR1274663</Text>
-                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>ก่อน 06 ก.ค. 2024 15.47 น.</Text>
+                  <Text style={{ fontWeight: 700, fontSize: 16 }}>#{order?.code_order} </Text>
+                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>{order?.dri_time}</Text>
                 </View>
               </View>
-              <View style={styles.textStatus}>
+              {/* <View style={styles.textStatus}>
                 <Text style={{ color: '#fff', fontSize: 12 }}>On Devivery</Text>
+              </View> */}
+
+              <View>
+                {/* ส่ง order ทั้งก้อนเข้าไปใน DeviveryStatus */}
+                <DeviveryStatus order={order} />
               </View>
+
             </View>
 
             {/* profileMain  */}
@@ -164,34 +189,34 @@ export default function Tracking() {
                   <View style={styles.showflex}>
                     <Image source={require('../../assets/images/icon_truck.png')}
                       style={{ width: 25, height: 25, marginRight: 2 }} />
-                    <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 15 }}>Kim kundad</Text>
+                    <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 15 }}>{order?.dri_name}</Text>
                   </View>
 
                 </View>
               </View>
               <View style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
-                <Feather style={{ borderWidth: 1, borderRadius: 99, padding: 10, borderColor: '#f47524' }} name="phone" size={20} color="#f47524" />
+                <Feather style={{ borderWidth: 1, borderRadius: 99, padding: 10, borderColor: '#f47524' }} onPress={handlePress} name="phone" size={20} color="#f47524" />
               </View>
             </View>
             {/* profileMain  */}
             <View style={styles.textBoxDetail}>
               <View style={styles.flexItem}>
                 <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
-                <Text style={{ fontWeight: 700, fontSize: 13 }}>รามอินทรา กม 8</Text>
+                <Text style={{ fontWeight: 700, fontSize: 13 }}>{ order?.b_name }</Text>
               </View>
               <View style={styles.flexItem2}>
                 <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
-                <Text style={{ fontWeight: 700, fontSize: 13 }}>1.3 kg</Text>
+                <Text style={{ fontWeight: 700, fontSize: 13 }}>{ order?.amount }</Text>
               </View>
             </View>
             <View style={styles.textBoxDetail}>
               <View style={styles.flexItem}>
                 <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ผู้รับสินค้า</Text>
-                <Text style={{ fontWeight: 700, fontSize: 13 }}>เจนจิรา ปานชมพู</Text>
+                <Text style={{ fontWeight: 700, fontSize: 13 }}>{ order?.b_recive_name }</Text>
               </View>
               <View style={styles.flexItem2}>
-                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>Service Type</Text>
-                <Text style={{ fontWeight: 700, fontSize: 13 }}>Standard</Text>
+                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>Type</Text>
+                <Text style={{ fontWeight: 700, fontSize: 13 }}> { order?.dri_type }, { order?.dri_no_car }</Text>
               </View>
             </View>
 
@@ -317,6 +342,22 @@ const styles = StyleSheet.create({
     borderRadius: 99,
     padding: 5,
     paddingHorizontal: 10,
+    alignItems: 'center'
+  },
+  textStatus2: {
+    backgroundColor: '#28a745',
+    width: 90,
+    borderRadius: 99,
+    padding: 6,
+    paddingHorizontal: 8,
+    alignItems: 'center'
+  },
+  textStatus3: {
+    backgroundColor: '#d9534f',
+    width: 90,
+    borderRadius: 99,
+    padding: 6,
+    paddingHorizontal: 8,
     alignItems: 'center'
   },
   boxItemList: {

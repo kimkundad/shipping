@@ -1,6 +1,6 @@
 import { Image, View, Text, StyleSheet, Dimensions, Platform, TextInput, Alert, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Link, useNavigation, router } from 'expo-router';
+import { Link, useNavigation, router, Stack, useRouter  } from 'expo-router';
 import React, { useEffect, useContext ,useState } from 'react';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -10,8 +10,10 @@ import Carousel from 'react-native-reanimated-carousel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../hooks/UserContext';
 import axios from 'axios';
+import api from '../../hooks/api'; // Axios instance
+import { useCameraPermissions } from "expo-camera";
 
-const POLL_INTERVAL = 5000; // Poll every 5 seconds
+const POLL_INTERVAL = 5550000; // Poll every 5 seconds
 
 const DATA = [
   {
@@ -75,6 +77,25 @@ export default function HomeScreen({ navigation }) {
   const [userName, setUserName] = useState('');
   const { userProfile }  = useContext(UserContext);
   const { userOrders, setUserOrders } = useContext(UserContext);
+  const [permission, requestPermission] = useCameraPermissions();
+  const isPermissionGranted = Boolean(permission?.granted);
+
+  const handleScanPress = async () => {
+    if (permission?.granted) {
+      // ถ้าได้รับสิทธิ์แล้ว ไปที่หน้า scanner
+      router.push('/scanner');
+    } else {
+      // ถ้ายังไม่ได้รับสิทธิ์, ขอสิทธิ์
+      const result = await requestPermission();
+      if (result.granted) {
+        // ถ้าอนุญาตสิทธิ์, ไปที่หน้า scanner
+        router.push('/scanner');
+      } else {
+        // ถ้าไม่อนุญาต, แสดงแจ้งเตือน
+        Alert.alert('Permission Denied', 'Camera permission is required to use the scanner.');
+      }
+    }
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -94,22 +115,22 @@ export default function HomeScreen({ navigation }) {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const token1 = await AsyncStorage.getItem('jwt_token');
-        
-        const response = await axios.get('https://30b7-58-8-226-86.ngrok-free.app/api/user-order', {
-          headers: { Authorization: `Bearer ${token1}` },
-        });
-        console.log('response order', response)
-        setUserOrders(response.data.order);
+        // No need to manually fetch the token, as it's added by the interceptor
+        const response = await api.get('/user-order');
+        console.log('Orders response:', response.data);
+        setUserOrders(response.data.order); // Set the orders from the response
       } catch (error) {
-        console.error(error);
+        console.error('Error fetching orders:', error);
       }
     };
 
-    fetchOrders();
+    fetchOrders(); // Fetch once when the component mounts
+
+    // Set up polling with the specified interval
     const intervalId = setInterval(fetchOrders, POLL_INTERVAL);
 
-    return () => clearInterval(intervalId); // Cleanup on unmount
+    // Cleanup: Clear the interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleLogout = async () => {
@@ -166,9 +187,10 @@ export default function HomeScreen({ navigation }) {
             {/* profileMain  */}
             {/* search bar */}
             <View style={styles.searchBar}>
-              <AntDesign
-                style={styles.iconScan}
-                name="scan1" size={24} color="black" />
+                <AntDesign
+                  onPress={handleScanPress}
+                  style={styles.iconScan}
+                  name="scan1" size={24} color="black" />
               <TextInput placeholder='Enter your tracking Number'
                 style={styles.TextInput}
               />
@@ -234,6 +256,15 @@ export default function HomeScreen({ navigation }) {
                 <Text style={{ fontSize: 13, marginTop: 5, fontFamily: 'Prompt_400Regular', }}>สาขา</Text>
               </View>
             </Link>
+            <Link replace href="/(setting)/service">
+              <View style={{ alignItems: 'center' }}>
+                <View style={styles.boxItem}>
+                  <Image source={require('../../assets/images/box3.png')}
+                    style={{ width: 55, height: 55 }} />
+                </View>
+                <Text style={{ fontSize: 12, marginTop: 5, fontFamily: 'Prompt_400Regular' }}>เรียกรถ</Text>
+              </View>
+            </Link>
             <Link replace href="/(holiday)">
               <View style={{ alignItems: 'center' }}>
                 <View style={styles.boxItem}>
@@ -243,15 +274,7 @@ export default function HomeScreen({ navigation }) {
                 <Text style={{ fontSize: 12, marginTop: 5, fontFamily: 'Prompt_400Regular' }}>แจ้งวันหยุด</Text>
               </View>
             </Link>
-            <Link replace href="/(warning)">
-              <View style={{ alignItems: 'center' }}>
-                <View style={styles.boxItem}>
-                  <Image source={require('../../assets/images/box3.png')}
-                    style={{ width: 55, height: 55 }} />
-                </View>
-                <Text style={{ fontSize: 12, marginTop: 5, fontFamily: 'Prompt_400Regular' }}>เหตุขัดข้อง</Text>
-              </View>
-            </Link>
+            
             <Link replace href="/(contact)">
               <View style={{ alignItems: 'center' }}>
                 <View style={styles.boxItem}>
@@ -271,7 +294,6 @@ export default function HomeScreen({ navigation }) {
               <Text style={{ fontSize: 17, fontWeight: 700 }}>Last Activity</Text>
               <Text style={{ fontSize: 13, color: '#f47524', }}>See All</Text>
             </View>
-                
             <View>
             {userOrders && userOrders.length > 0 && (
               <View>
@@ -280,7 +302,10 @@ export default function HomeScreen({ navigation }) {
                   key={order.id}
                   onPress={() => {
                     // handle onPress
-                    router.push('(setting)/tracking');
+                    router.push({
+                      pathname: '(setting)/tracking',
+                      params: { id: order.id }, // ส่งพารามิเตอร์ id ของ order
+                    });
                   }}>
                 <View  style={styles.boxItemList}>
                   <View style={styles.containerOrderMain}>

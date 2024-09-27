@@ -38,7 +38,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!form.email || !form.password) {
-      Alert.alert('Error', 'Please enter both email and password');
+      Alert.alert('Error', 'Please enter both phone and password');
       return;
     }
 
@@ -47,21 +47,39 @@ export default function Login() {
     try {
       console.log('try')
       // Replace with your API endpoint
-      const response = await axios.post('https://30b7-58-8-226-86.ngrok-free.app/api/login', {
-        email: form.email,
+      const response = await axios.post('https://5575-124-120-34-255.ngrok-free.app/api/login', {
+        phone: form.email,
         password: form.password,
       });
-      console.log('Response received:', response);
-      if (response.data.token) {
-        // Save the JWT token refresh_token
-        await AsyncStorage.setItem('jwt_token', response.data.token);
-        await AsyncStorage.setItem('refresh_token', response.data.token);
-        await AsyncStorage.setItem('user_profile', JSON.stringify(response.data.user));
+      
+
+      // Handle different `verify` statuses
+      const { token, verify, user } = response.data;
+      console.log('Response verify:', response.data);
+      
+      if (verify === 0) {
+        // The user has not verified their phone number, prompt them to verify OTP
+        Alert.alert('Verification Required', 'Please verify your phone number with the OTP.');
+        router.push('/verify'); // Redirect to OTP verification screen
+
+        router.push({ pathname: '(alogin)/verify', params: { phone: '+66'+form.email } });
+
+      } else if (verify === 1 && token) {
+        // User is logged in successfully, save the tokens and user info
+        await AsyncStorage.setItem('jwt_token', token);
+        await AsyncStorage.setItem('refresh_token', token); // Assuming refresh_token is the same as the token here
+        await AsyncStorage.setItem('user_profile', JSON.stringify(user));
+        
         Alert.alert('Success', 'Login successful!');
         router.push('(tabs)'); // Navigate to the main app screen after successful login
+      } else if (verify === 2) {
+        // Invalid credentials
+        Alert.alert('Error', 'Invalid phone number or password.');
       } else {
-        Alert.alert('Error', 'Invalid email or password');
+        // Fallback case if something else happens
+        Alert.alert('Error', 'Something went wrong, please try again.');
       }
+
     } catch (error) {
       console.log('Error during login:', error);
     
@@ -97,14 +115,15 @@ export default function Login() {
 
           <View style={styles.form}>
             <View style={styles.input}>
-              <Text style={styles.inputLabel}>Email Address</Text>
+              <Text style={styles.inputLabel}>Phone Number</Text>
               <TextInput
                 autoCapitalize="none"
                 autoCorrect={false}
                 clearButtonMode="while-editing"
+                placeholder="092XXXXXXX"
                 onChangeText={(email) => setForm({ ...form, email })}
-                placeholder="email@gmail.com"
                 placeholderTextColor="#6b7280"
+                keyboardType='number-pad'
                 style={styles.inputControl}
                 value={form.email}
               />
@@ -131,7 +150,11 @@ export default function Login() {
                 </View>
               </TouchableOpacity>
             </View>
+            <TouchableOpacity
+          onPress={() => router.push('/forgot')}
+          style={{ marginTop: 'auto' }}>
             <Text style={styles.formLink}>Forgot password?</Text>
+            </TouchableOpacity>
           </View>
         </KeyboardAwareScrollView>
 

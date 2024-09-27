@@ -15,9 +15,11 @@ import { UserContext } from '../../hooks/UserContext';
 
 export default function Setting() {
 
+  
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
   const { logout }  = useContext(UserContext);
+  const { userProfile }  = useContext(UserContext);
 
   const handleLogout = async () => {
     try {
@@ -60,14 +62,14 @@ export default function Setting() {
               <View style={{ alignItems: 'center' }}>
                 <Text style={{
                   color: Colors.black, fontSize: 18, fontFamily: 'Prompt_500Medium',
-                }}>Kim kundad</Text>
+                }}>{userProfile?.name}</Text>
                 <View style={styles.showflex}>
                   <Text style={{
                     color: Colors.black, fontSize: 14, fontFamily: 'Prompt_500Medium', fontWeight: 700, marginRight: 5
                   }}>รหัสลูกค้า</Text>
                   <Text style={{
                     color: Colors.black, fontSize: 14, fontFamily: 'Prompt_400Regular',
-                  }}>430369051</Text>
+                  }}>{userProfile?.code_user}</Text>
                 </View>
               </View>
             </View>
@@ -224,6 +226,47 @@ export default function Setting() {
                   </View>
                 </View>
               </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  // handle onPress
+                  router.push('(setting)/maps');
+                }}>
+                <View style={styles.textListHead2}>
+                  <View style={styles.profile}>
+                    <View>
+                      <Feather name="info" size={20} color="black" />
+                    </View>
+                    <View>
+                      <Text style={styles.textSeting}>maps</Text>
+                    </View>
+                  </View>
+                  <View>
+                    <Feather name="chevron-right" size={24} color="black" />
+                  </View>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  // handle onPress
+                  router.push('(setting)/service');
+                }}>
+                <View style={styles.textListHead2}>
+                  <View style={styles.profile}>
+                    <View>
+                      <Feather name="info" size={20} color="black" />
+                    </View>
+                    <View>
+                      <Text style={styles.textSeting}>service</Text>
+                    </View>
+                  </View>
+                  <View>
+                    <Feather name="chevron-right" size={24} color="black" />
+                  </View>
+                </View>
+              </TouchableOpacity>
+
+
               <TouchableOpacity
                 onPress={handleLogout}
                 >

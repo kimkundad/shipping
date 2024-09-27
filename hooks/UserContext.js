@@ -15,22 +15,22 @@ export const UserProvider = ({ children }) => {
     const fetchUserProfile = async () => {
       try {
         const token = await AsyncStorage.getItem('jwt_token');
-        console.log('Retrieved token:', token); // Debug token retrieval
+        //console.log('Retrieved token:', token); // Debug token retrieval
         const dataUser = await AsyncStorage.getItem('user_profile');
-        console.log('Retrieved user profile:', dataUser);
+        //console.log('Retrieved user profile:', dataUser);
 
         if (dataUser) {
           setUserProfile(JSON.parse(dataUser));
         }
 
         const ordersResponse = await api.get('/user-order');
-        console.log('Orders response:', ordersResponse.data);
+        console.log('Orders response----> 1:', ordersResponse.data);
         if (ordersResponse) {
           setUserOrders(ordersResponse.data.order);
         }
 
         const branchResponse = await api.get('/user-branch');
-        console.log('branch response:', branchResponse.data);
+      //  console.log('branch response----> 1:', branchResponse.data);
         if (branchResponse) {
           setUserBranch(branchResponse.data.branch);
         }

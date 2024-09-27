@@ -5,6 +5,9 @@ export default function Layout() {
     <Stack>
       {/* Optionally configure static options outside the route.*/}
       <Stack.Screen name="index" options={{}} />
+      <Stack.Screen name="verify" options={{ headerShown: false }} />
+      <Stack.Screen name="forgot" options={{ headerShown: false }} />
+      <Stack.Screen name="resetpass" options={{ headerShown: false }} />
     </Stack>
   );
 }

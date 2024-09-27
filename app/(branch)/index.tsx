@@ -7,8 +7,10 @@ import { Link, useNavigation, router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../hooks/UserContext';
 import axios from 'axios';
+import api from '../../hooks/api'; // Axios instance
 
-const POLL_INTERVAL = 5000; // Poll every 5 seconds
+const POLL_INTERVAL = 555000; // Poll every 5 seconds
+
 
 const Index = () => {
 
@@ -18,9 +20,10 @@ const Index = () => {
         const fetchOrders = async () => {
           try {
             const token1 = await AsyncStorage.getItem('jwt_token');
-            const response = await axios.get('https://30b7-58-8-226-86.ngrok-free.app/api/user-branch', {
+            const response = await api.get('/user-branch', {
               headers: { Authorization: `Bearer ${token1}` },
             });
+          //  console.log('response', response)
             setUserBranch(response.data.branch);
           } catch (error) {
             console.error(error);
@@ -79,10 +82,10 @@ const Index = () => {
                                     </View>
                                     <View style={{ width: '78%' }}>
                                         <Text style={styles.headBranch}>{brach.name_branch}</Text>
-                                        <Text style={styles.phoneText}>{brach.phone}</Text>
+                                        <Text style={styles.phoneText}>เบอร์โทร : {brach.phone}</Text>
                                         <View>
                                         <Text style={styles.addressText} ellipsizeMode='tail' numberOfLines={2}>
-                                             {brach.address_branch}
+                                             {brach.address_branch} {brach.subdistrict} {brach.district} {brach.province} {brach.postcode}
                                         </Text>
                                         </View>
                                         

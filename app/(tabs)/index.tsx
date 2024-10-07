@@ -12,6 +12,7 @@ import { UserContext } from '../../hooks/UserContext';
 import axios from 'axios';
 import api from '../../hooks/api'; // Axios instance
 import { useCameraPermissions } from "expo-camera";
+import DeviveryStatus from '../../components/DeviveryStatus'
 
 const POLL_INTERVAL = 5550000; // Poll every 5 seconds
 
@@ -126,11 +127,6 @@ export default function HomeScreen({ navigation }) {
 
     fetchOrders(); // Fetch once when the component mounts
 
-    // Set up polling with the specified interval
-    const intervalId = setInterval(fetchOrders, POLL_INTERVAL);
-
-    // Cleanup: Clear the interval on component unmount
-    return () => clearInterval(intervalId);
   }, []);
 
   const handleLogout = async () => {
@@ -196,6 +192,7 @@ export default function HomeScreen({ navigation }) {
               />
             </View>
             {/* search bar */}
+            
             <View style={styles.boxGiff}>
 
               <View>
@@ -295,6 +292,7 @@ export default function HomeScreen({ navigation }) {
               <Text style={{ fontSize: 13, color: '#f47524', }}>See All</Text>
             </View>
             <View>
+
             {userOrders && userOrders.length > 0 && (
               <View>
                 {userOrders.map(order => (
@@ -304,7 +302,11 @@ export default function HomeScreen({ navigation }) {
                     // handle onPress
                     router.push({
                       pathname: '(setting)/tracking',
-                      params: { id: order.id }, // ส่งพารามิเตอร์ id ของ order
+                      params: { 
+                        id: order.id ,
+                        getLatitude: order.latitude2 ,
+                        getLongitude: order.longitude2 
+                      }, // ส่งพารามิเตอร์ id ของ order
                     });
                   }}>
                 <View  style={styles.boxItemList}>
@@ -319,9 +321,7 @@ export default function HomeScreen({ navigation }) {
                         <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>{order.dri_time}</Text>
                       </View>
                     </View>
-                    <View style={styles.textStatus}>
-                      <Text style={{ color: '#fff', fontSize: 12 }}>On Devivery</Text>
-                    </View>
+                    <DeviveryStatus order={order} />
                   </View>
                   <View style={styles.textBoxDetail}>
                     <View style={styles.flexItem}>

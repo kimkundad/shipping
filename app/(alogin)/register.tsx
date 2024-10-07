@@ -50,7 +50,7 @@ export default function Register() {
 
     try {
       // API call to register the user
-      const response = await axios.post('https://5575-124-120-34-255.ngrok-free.app/api/register', {
+      const response = await axios.post('https://b577-124-120-218-13.ngrok-free.app/api/register', {
         phone,
         name,
         password,

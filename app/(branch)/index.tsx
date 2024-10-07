@@ -1,6 +1,6 @@
-import { Image, View, Text, StyleSheet, Platform, TextInput, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import { Image, View, Text, StyleSheet, Platform, TextInput, TouchableOpacity, Dimensions, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import React, { useEffect, useContext ,useState } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useNavigation, router } from 'expo-router';
@@ -8,9 +8,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../hooks/UserContext';
 import axios from 'axios';
 import api from '../../hooks/api'; // Axios instance
+import { MaterialIcons } from '@expo/vector-icons';
 
 const POLL_INTERVAL = 555000; // Poll every 5 seconds
-
+const { width } = Dimensions.get('window');
 
 const Index = () => {
 
@@ -18,23 +19,21 @@ const Index = () => {
 
     useEffect(() => {
         const fetchOrders = async () => {
-          try {
-            const token1 = await AsyncStorage.getItem('jwt_token');
-            const response = await api.get('/user-branch', {
-              headers: { Authorization: `Bearer ${token1}` },
-            });
-          //  console.log('response', response)
-            setUserBranch(response.data.branch);
-          } catch (error) {
-            console.error(error);
-          }
+            try {
+                const token1 = await AsyncStorage.getItem('jwt_token');
+                const response = await api.get('/user-branch', {
+                    headers: { Authorization: `Bearer ${token1}` },
+                });
+                //  console.log('response', response)
+                setUserBranch(response.data.branch);
+            } catch (error) {
+                console.error(error);
+            }
         };
-    
+
         fetchOrders();
-        const intervalId = setInterval(fetchOrders, POLL_INTERVAL);
-    
-        return () => clearInterval(intervalId); // Cleanup on unmount
-      }, []);
+     
+    }, []);
 
     return (
         <SafeAreaProvider style={{ flex: 1, backgroundColor: '#F5F5F5' }} >
@@ -48,52 +47,60 @@ const Index = () => {
                         <View style={styles.textListHead} >
                             <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium' }}>สาขา</Text>
                         </View>
-                        
+
                         <TouchableOpacity
-                  onPress={() => {
-                    // handle onPress
-                    router.push('(setting)/notification');
-                  }}>
-                  <View>
-                    <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
-                  </View>
-                </TouchableOpacity>
+                            onPress={() => {
+                                // handle onPress
+                                router.push('(setting)/notification');
+                            }}>
+                            <View>
+                                <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
+                            </View>
+                        </TouchableOpacity>
                     </View>
                 </View>
                 <View>
                     <View >
                         <Text style={styles.headerPage}>จัดการสาขา</Text>
                         <View style={styles.card}>
-                        {userBranch && userBranch.length > 0 && (
-                            <View>
-                        {userBranch.map(brach => (
-                            <Link key={brach.id} 
-                            // href={`/(branch)/shop/${brach.id}`} // Pass ID as part of the URL
-                            href={{
-                                pathname: "/(branch)/shop",
-                                // /* 1. Navigate to the details route with query params */
-                                params: { id: brach.id },
-                              }}
-                            >
-                                <View style={styles.innerItem}>
-                                    <View>
-                                        <Image source={require('../../assets/images/service/list_service3.png')}
-                                            style={{ width: 75, height: 75, borderRadius: 8, gap: 10 }} />
-                                    </View>
-                                    <View style={{ width: '78%' }}>
-                                        <Text style={styles.headBranch}>{brach.name_branch}</Text>
-                                        <Text style={styles.phoneText}>เบอร์โทร : {brach.phone}</Text>
-                                        <View>
-                                        <Text style={styles.addressText} ellipsizeMode='tail' numberOfLines={2}>
-                                             {brach.address_branch} {brach.subdistrict} {brach.district} {brach.province} {brach.postcode}
-                                        </Text>
-                                        </View>
-                                        
-                                    </View>
+                            
+                            {userBranch && userBranch.length > 0 && (
+                                <View>
+                                    {userBranch.map(brach => (
+                                        <TouchableOpacity key={brach.id}
+                                            // href={`/(branch)/shop/${brach.id}`} // Pass ID as part of the URL
+                                            onPress={() => {
+                                                // Use router.push to navigate to the "(branch)/shop" route with the "id" param
+                                                router.push({
+                                                  pathname: '(branch)/shop',
+                                                  params: { id: brach.id }, // Pass the branch id as a parameter
+                                                });
+                                              }}
+                                        >
+
+                                            <View style={styles.innerItem}>
+
+                                            <View style={styles.leftSection}>
+                                                <View style={styles.iconContainer}>
+                                                    <MaterialIcons name="bolt" size={24} color="white" />
+                                                </View>
+                                                <View>
+                                                    <Text style={styles.serviceText}>{brach.name_branch}</Text>
+                                                    <Text style={styles.locationText}>{brach.province}</Text>
+                                                </View>
+                                            </View>
+
+
+                                                <View style={styles.rightSection}>
+                                                    <Text style={styles.dateText}> ผู้ดูแล</Text>
+                                                    <Text style={styles.nameText}>{brach.admin_branch}</Text>
+                                                </View>
+                                                
+                                            </View>
+                                        </TouchableOpacity>
+
+                                    ))}
                                 </View>
-                            </Link>
-                            ))}
-                            </View>
                             )}
 
 
@@ -139,7 +146,57 @@ export default Index
 
 
 const styles = StyleSheet.create({
-
+    innerItem: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 1,
+        paddingVertical: 10,
+        borderBottomWidth: 0.5, // Specifies the width of the bottom border
+        borderBottomColor: '#d7d7d7',
+        width: '100%'
+    },
+    serviceText: {
+        fontSize: 16,
+        fontFamily: 'Prompt_500Medium',
+    },
+    locationText: {
+        fontSize: 12,
+        color: '#666',
+        fontFamily: 'Prompt_400Regular',
+    },
+    leftSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+    iconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 10,
+        backgroundColor: '#ffc107',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 10,
+    },
+    rightSection: {
+        alignItems: 'flex-end',
+    },
+    dateText: {
+        fontSize: 14,
+        fontFamily: 'Prompt_500Medium',
+    },
+    nameText: {
+        fontSize: 12,
+        color: '#666',
+        fontFamily: 'Prompt_400Regular',
+    },
+    iconShop: {
+        backgroundColor: '#f47524',
+        padding: 10,
+        borderRadius: 10,
+        height: 30,
+        width: 30
+    },
     container: {
         padding: 20,
         width: '100%',
@@ -208,15 +265,6 @@ const styles = StyleSheet.create({
         color: '#666',
         width: Platform.OS === 'android' ? 310 : '100%',
     },
-    innerItem: {
-        display: 'flex',
-        flexDirection: 'row',
-        marginBottom: 1,
-        gap: 10,
-        paddingVertical: 10,
-        borderBottomWidth: 0.5, // Specifies the width of the bottom border
-        borderBottomColor: '#d7d7d7',
-        width: '100%',
-    },
+    
 });
 

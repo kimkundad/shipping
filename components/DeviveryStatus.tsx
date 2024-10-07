@@ -24,7 +24,7 @@ const DeviveryStatus = ({ order }) => {
       default:
         return (
           <View style={styles.textStatusDefault}>
-            <Text style={{ color: '#fff', fontSize: 12 }}>Unknown</Text>
+            <Text style={{ color: '#fff', fontSize: 12 }}>รอดำเนินการ</Text>
           </View>
         );
     }

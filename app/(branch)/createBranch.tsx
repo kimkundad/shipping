@@ -1,65 +1,127 @@
-import { Image, View, Text, StyleSheet, Platform, TextInput, TouchableOpacity, ActivityIndicator, Alert, FlatList, ScrollView } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link, useNavigation, router } from 'expo-router';
-import { Picker } from '@react-native-picker/picker'; // นำเข้าจากแพ็กเกจใหม่
-
-import mockAddress from '../../hooks/new_data.json'; // นำเข้าข้อมูลที่อยู่
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Alert, ActivityIndicator, TextInput, Keyboard, TouchableWithoutFeedback, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
+import { Link, router } from 'expo-router';
+import MapView, { Marker, Circle } from 'react-native-maps';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import api from '../../hooks/api'; // Axios instance
 
-
-const CreateBranch = () => {
+export default function CreateBranch() {
 
   const [loading, setLoading] = useState(false);
+  const [location, setLocation] = useState(null);
+  const [pickedLocation, setPickedLocation] = useState(null);
+  const [province, setProvince] = useState('');
+  const navigation = useNavigation();
+  const route = useRoute();
+
+  const pinImage = require('../../assets/images/pin_app.png');
+
   const [form, setForm] = useState({
+    province: '',
     name: '',
     phone: '',
-    email: '',
     address: '',
-    province: '',
-    postcode: '',
-    district: '',
-    subdistrict: '',
     code: '',
     timer: '',
-    admin_branch: ''
+    admin_branch: '',
+    selectedLat2: null, // Initially set to null, will update after selection
+    selectedLng2: null, // Initially set to null, will update after selection
   });
 
-  const MockAddress = mockAddress; // ใช้ข้อมูลที่นำเข้า
-  const [provinceIndex, setProvinceIndex] = useState(0); // เก็บ Index ของจังหวัด
-  const [amphoeIndex, setAmphoeIndex] = useState(0); // เก็บ Index ของอำเภอ
-  const [tambonIndex, setTambonIndex] = useState(0); // เก็บ Index ของตำบล
-  const [zipcode, setZipcode] = useState(''); // เก็บ Zipcode
+  useEffect(() => {
+    (async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission Denied', 'Permission to access location was denied');
+          return;
+        }
 
-  const handleSelectProvince = (itemValue, itemIndex) => {
-    setProvinceIndex(itemIndex);
-    setAmphoeIndex(0); // รีเซ็ตอำเภอ
-    setTambonIndex(0); // รีเซ็ตตำบล
-    setForm({ ...form, province: itemValue }); // อัปเดตฟอร์ม
+        // Fetch the current position
+        let loc = await Location.getCurrentPositionAsync({});
+        const { latitude, longitude } = loc.coords;
+
+        setLocation({
+          latitude,
+          longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        });
+
+        setPickedLocation({
+          latitude,
+          longitude,
+        });
+
+        // Fetch the province name using reverse geocoding
+        const address = await Location.reverseGeocodeAsync({
+          latitude,
+          longitude,
+        });
+
+        if (address && address.length > 0) {
+          const region = address[0].region;
+          setProvince(region);
+
+          // Update the form with the fetched province and coordinates
+          setForm((prevForm) => ({
+            ...prevForm,
+            province: region, // Set the province
+            selectedLat2: latitude, // Set latitude
+            selectedLng2: longitude, // Set longitude
+          }));
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Failed to fetch location');
+      }
+    })();
+  }, []);
+
+  const selectLocationHandler = async (event) => {
+    const selectedLat = event.nativeEvent.coordinate.latitude;
+    const selectedLng = event.nativeEvent.coordinate.longitude;
+
+    // Update picked location state
+    setPickedLocation({
+      latitude: selectedLat,
+      longitude: selectedLng,
+    });
+
+    // Update form state with selected latitude and longitude
+    setForm((prevForm) => ({
+      ...prevForm,
+      selectedLat2: selectedLat,
+      selectedLng2: selectedLng,
+    }));
+
+    const address = await Location.reverseGeocodeAsync({
+      latitude: selectedLat,
+      longitude: selectedLng,
+    });
+
+    if (address && address.length > 0) {
+      setProvince(address[0].region);
+      setForm((prevForm) => ({
+        ...prevForm,
+        province: address[0].region,
+      }));
+    }
   };
-
-  const handleSelectAmphoe = (itemValue, itemIndex) => {
-    setAmphoeIndex(itemIndex);
-    setTambonIndex(0); // รีเซ็ตตำบล
-    setForm({ ...form, district: itemValue }); // อัปเดตฟอร์ม
-  };
-
-  const handleSelectTambon = (itemValue, itemIndex) => {
-    setTambonIndex(itemIndex);
-    const selectedTambon = MockAddress[provinceIndex][1][amphoeIndex][1][itemIndex];
-    setZipcode(selectedTambon[1][0]); // ตั้งค่า Zipcode
-    setForm({ ...form, subdistrict: itemValue, postcode: selectedTambon[1][0] }); // อัปเดตฟอร์ม
-  };
-
-
 
   const handleCreate = async () => {
-    setLoading(true); // เริ่มการโหลด
+    setLoading(true); // Start loading
+    console.log('form', form);
+    if (!form.address || !form.name || !form.phone || !form.province || !form.admin_branch || !form.selectedLat2 || !form.selectedLng2) {
+      Alert.alert('กรอกข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลทุกช่องให้ครบถ้วน');
+      return;
+    }
+
     try {
-      // ส่งคำขอแบบ POST ไปยัง API
-      console.log('form', form)
+      // Send POST request to the API
+     
       const response = await api.post('/user-branch-create', form);
       
       if (response.status === 200) {
@@ -71,248 +133,190 @@ const CreateBranch = () => {
     } catch (error) {
       Alert.alert('ข้อผิดพลาด', error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
     } finally {
-      setLoading(false); // หยุดการโหลด
+      setLoading(false); // Stop loading
     }
   };
 
   return (
-    <SafeAreaProvider style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
-      <StatusBar style="dark" />
-      <ScrollView>
-        <View style={styles.listItemCon}>
-          <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Link href="/(branch)" style={{ padding: 10 }}>
-              <Ionicons name="chevron-back" size={30} color="black" />
-            </Link>
-            <View style={styles.textListHead}>
-              <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium' }}>สร้างสาขาใหม่</Text>
-            </View>
-            <View>
-              <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.card}>
-          <View style={styles.form}>
-
-            <View style={styles.input}>
-              <Text style={styles.inputLabel}>ชื่อสาขา</Text>
-              <TextInput
-                clearButtonMode="while-editing"
-                onChangeText={name => setForm({ ...form, name })}
-                placeholder="สาขาพระรามเก้า"
-                placeholderTextColor="#6b7280"
-                style={styles.inputControl}
-                value={form.name}
-              />
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+    >
+      {/* Wrap the entire UI in TouchableWithoutFeedback */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
+          <View style={styles.container}>
+            <View style={styles.backButtonContainer}>
+              <View style={styles.btnBack}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                  <Ionicons name="chevron-back" size={30} color="black" />
+                </TouchableOpacity>
+              </View>
             </View>
 
-            <View style={styles.input}>
-              <Text style={styles.inputLabel}>รหัสสาขา</Text>
-              <TextInput
-                clearButtonMode="while-editing"
-                onChangeText={code => setForm({ ...form, code })}
-                placeholder="ZX13248384394"
-                placeholderTextColor="#6b7280"
-                style={styles.inputControl}
-                value={form.code}
-              />
-            </View>
+            {location ? (
+              <MapView
+                style={styles.map}
+                initialRegion={location}
+                liteMode={false}
+                onPress={selectLocationHandler}
+              >
+                <Marker
+                  coordinate={{ latitude: location.latitude, longitude: location.longitude }}
+                  title="Your Location"
+                  pinColor="blue"
+                />
 
-            <View style={styles.input}>
-              <Text style={styles.inputLabel}>ชื่อเจ้าหน้าที่รับของ</Text>
-              <TextInput
-                clearButtonMode="while-editing"
-                onChangeText={admin_branch => setForm({ ...form, admin_branch })}
-                placeholder="คุณอ้อ"
-                placeholderTextColor="#6b7280"
-                style={styles.inputControl}
-                value={form.admin_branch}
-              />
-            </View>
+                <Circle
+                  center={{ latitude: location.latitude, longitude: location.longitude }}
+                  radius={100}
+                  strokeColor="rgba(0, 112, 255, 0.5)"
+                  fillColor="rgba(0, 112, 255, 0.2)"
+                />
 
-            <View style={styles.input}>
-              <Text style={styles.inputLabel}>ช่วงเวลาส่งของ</Text>
-              <TextInput
-                clearButtonMode="while-editing"
-                onChangeText={timer => setForm({ ...form, timer })}
-                placeholder="09.00 - 17.00"
-                placeholderTextColor="#6b7280"
-                style={styles.inputControl}
-                value={form.timer}
-              />
-            </View>
+                {pickedLocation && (
+                  <Marker
+                    title="Selected Location"
+                    coordinate={pickedLocation}
+                    image={pinImage}
+                    onPress={() => {
+                      if (pickedLocation) {
+                        Alert.alert('Selected Location', `Lat: ${pickedLocation.latitude}, Lng: ${pickedLocation.longitude}`);
+                      } else {
+                        Alert.alert('Error', 'No location selected');
+                      }
+                    }}
+                  />
+                )}
+              </MapView>
+            ) : (
+              <ActivityIndicator size="large" color="#0000ff" />
+            )}
 
-            <View style={styles.input}>
-              <Text style={styles.inputLabel}>เบอร์ติดต่อ</Text>
-              <TextInput
-                autoCapitalize="none"
-                autoCorrect={false}
-                clearButtonMode="while-editing"
-                keyboardType="number-pad"
-                onChangeText={phone => setForm({ ...form, phone })}
-                placeholder="09578512xxx"
-                placeholderTextColor="#6b7280"
-                style={styles.inputControl}
-                value={form.phone}
-              />
-            </View>
+            {pickedLocation && (
+              <View style={styles.botfrom}>
+                <View style={styles.form}>
+                  <View style={styles.input}>
+                    <Text style={styles.inputLabel}>ที่อยู่</Text>
+                    <TextInput
+                      clearButtonMode="while-editing"
+                      onChangeText={address => setForm({ ...form, address })}
+                      placeholder="ระบุที่อยู่"
+                      placeholderTextColor="#6b7280"
+                      style={styles.inputControl}
+                      value={form.address}
+                    />
+                  </View>
 
-            <View style={styles.input}>
-              <Text style={styles.inputLabel}>อีเมล</Text>
-              <TextInput
-                clearButtonMode="while-editing"
-                onChangeText={email => setForm({ ...form, email })}
-                placeholder="email@email.com"
-                placeholderTextColor="#6b7280"
-                style={styles.inputControl}
-                value={form.email}
-              />
-            </View>
+                  <View style={styles.input}>
+                    <Text style={styles.inputLabel}>ชื่อสาขา</Text>
+                    <TextInput
+                      clearButtonMode="while-editing"
+                      onChangeText={name => setForm({ ...form, name })}
+                      placeholder="สาขาพระรามเก้า"
+                      placeholderTextColor="#6b7280"
+                      style={styles.inputControl}
+                      value={form.name}
+                    />
+                  </View>
 
-            <View style={styles.input}>
-              <Text style={styles.inputLabel}>ที่อยู่สาขา</Text>
-              <TextInput
-                clearButtonMode="while-editing"
-                onChangeText={address => setForm({ ...form, address })}
-                placeholder="บ้านเลขที่ ซอย หมู่ ถนน"
-                placeholderTextColor="#6b7280"
-                style={styles.inputControl}
-                value={form.address}
-              />
-            </View>
+                  <View style={styles.input}>
+                    <Text style={styles.inputLabel}>รหัสสาขา</Text>
+                    <TextInput
+                      clearButtonMode="while-editing"
+                      onChangeText={code => setForm({ ...form, code })}
+                      placeholder="ZX13248384394"
+                      placeholderTextColor="#6b7280"
+                      style={styles.inputControl}
+                      value={form.code}
+                    />
+                  </View>
 
-            {/* Picker สำหรับเลือกจังหวัด, อำเภอ, ตำบล */}
-            <View style={styles.container}>
-              <Text style={styles.label}>กรุณาเลือกจังหวัด</Text>
-              <Picker selectedValue={MockAddress[provinceIndex][0]} onValueChange={handleSelectProvince}>
-                {MockAddress.map((province, index) => (
-                  <Picker.Item key={index} label={province[0]} value={province[0]} />
-                ))}
-              </Picker>
+                  <View style={styles.input}>
+                    <Text style={styles.inputLabel}>ชื่อเจ้าหน้าที่รับของ</Text>
+                    <TextInput
+                      clearButtonMode="while-editing"
+                      onChangeText={admin_branch => setForm({ ...form, admin_branch })}
+                      placeholder="คุณอ้อ"
+                      placeholderTextColor="#6b7280"
+                      style={styles.inputControl}
+                      value={form.admin_branch}
+                    />
+                  </View>
 
-              <Text style={styles.label}>กรุณาเลือกอำเภอ</Text>
-              <Picker selectedValue={MockAddress[provinceIndex][1][amphoeIndex][0]} onValueChange={handleSelectAmphoe}>
-                {MockAddress[provinceIndex][1].map((amphoe, index) => (
-                  <Picker.Item key={index} label={amphoe[0]} value={amphoe[0]} />
-                ))}
-              </Picker>
+                  <View style={styles.input}>
+                    <Text style={styles.inputLabel}>ช่วงเวลาส่งของ</Text>
+                    <TextInput
+                      clearButtonMode="while-editing"
+                      onChangeText={timer => setForm({ ...form, timer })}
+                      placeholder="09.00 - 17.00"
+                      placeholderTextColor="#6b7280"
+                      style={styles.inputControl}
+                      value={form.timer}
+                    />
+                  </View>
 
-              <Text style={styles.label}>กรุณาเลือกตำบล</Text>
-              <Picker selectedValue={MockAddress[provinceIndex][1][amphoeIndex][1][tambonIndex][0]} onValueChange={handleSelectTambon}>
-                {MockAddress[provinceIndex][1][amphoeIndex][1].map((tambon, index) => (
-                  <Picker.Item key={index} label={tambon[0]} value={tambon[0]} />
-                ))}
-              </Picker>
+                  <View style={styles.input}>
+                    <Text style={styles.inputLabel}>เบอร์ติดต่อ</Text>
+                    <TextInput
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      clearButtonMode="while-editing"
+                      keyboardType="number-pad"
+                      onChangeText={phone => setForm({ ...form, phone })}
+                      placeholder="09578512xxx"
+                      placeholderTextColor="#6b7280"
+                      style={styles.inputControl}
+                      value={form.phone}
+                    />
+                  </View>
 
-              <Text style={styles.label}>รหัสไปรษณีย์: {zipcode}</Text>
-            </View>
-
-            <View style={styles.formAction}>
-              <TouchableOpacity onPress={handleCreate} disabled={loading}>
-                <View style={styles.btn}>
-                  {loading ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                  ) : (
-                    <Text style={styles.btnText}>สร้าง</Text>
+                  {province && (
+                    <View style={styles.input}>
+                      <Text style={styles.inputLabel}>จังหวัด</Text>
+                      <TextInput
+                        clearButtonMode="while-editing"
+                        editable={false}
+                        placeholder="จังหวัด"
+                        placeholderTextColor="#6b7280"
+                        style={styles.inputControl}
+                        value={province}
+                      />
+                    </View>
                   )}
                 </View>
-              </TouchableOpacity>
-            </View>
+
+                <TouchableOpacity
+                  style={styles.greenButton}
+                  onPress={handleCreate}
+                  disabled={loading}
+                >
+                  <Text style={styles.greenButtonText}>สร้างสาขา</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
-        </View>
-      </ScrollView>
-    </SafeAreaProvider>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
-};
-
-export default CreateBranch
-
+}
 
 const styles = StyleSheet.create({
-
   container: {
-    padding: 20,
-  },
-  textListHead: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 10,
-    fontFamily: 'Prompt_400Regular',
-  },
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 4,
-    color: 'black',
-    paddingRight: 30, // To ensure the text is never behind the icon
-  },
-  inputAndroid: {
-    height: 45,
-    backgroundColor: '#F8FAFC',
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#222',
-    borderWidth: 1,
-    borderColor: '#666',
-    borderStyle: 'solid',
-    marginBottom: 10
-  },
-  btn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 30,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderWidth: 1,
-    backgroundColor: '#121F43',
-    borderColor: '#121F43',
-  },
-  btnText: {
-    fontSize: 16,
-    lineHeight: 26,
-    fontWeight: '600',
-    color: '#fff',
-    fontFamily: 'Prompt_500Medium',
-  },
-  label: {
-    fontFamily: 'Prompt_400Regular',
-    fontSize: 14
-  },
-  formAction: {
-  
-    marginTop: 10,
-    marginBottom: 50
-  },
-  iconAdd: {
-    color: '#f47524',
-  },
-  addBranch: {
-    display: 'flex',
-    flexDirection: 'row',
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 10,
-    gap: 1
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   form: {
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: 0,
-  },
-  headerPage: {
-    padding: 20,
-    fontFamily: 'Prompt_500Medium',
-    fontSize: 18,
-    marginTop: -5
   },
   input: {
     marginBottom: 10,
@@ -336,54 +340,49 @@ const styles = StyleSheet.create({
     borderColor: '#E5E5E5',
     borderStyle: 'solid',
   },
-  listItemCon: {
-    paddingTop: 40,
-    paddingHorizontal: 0,
+  btnBack: {
     backgroundColor: '#fff',
-    // iOS shadow properties
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 1,
-    // Android shadow (elevation)
-    elevation: 10,
+    width: 45,
+    borderRadius: 99,
+    padding: 6,
+    alignItems: 'center'
   },
-  card: {
-    paddingTop: 15,
-    position: 'static',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    padding: 10,
-  },
-  headBranch: {
-    fontFamily: 'Prompt_500Medium',
-    fontSize: 15,
-    marginTop: -3
-  },
-  phoneText: {
-    fontFamily: 'Prompt_400Regular',
-    fontSize: 12,
-    marginTop: -5
-  },
-  addressText: {
-    fontFamily: 'Prompt_400Regular',
-    fontSize: 11,
-    lineHeight: 15,
-    marginTop: 5,
-    height: 30,
-    color: '#666'
-  },
-  innerItem: {
-    display: 'flex',
+  backButtonContainer: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 1,
     flexDirection: 'row',
-    marginBottom: 1,
-    gap: 10,
-    paddingVertical: 10,
-    borderBottomWidth: 0.5, // Specifies the width of the bottom border
-    borderBottomColor: '#d7d7d7',
+    alignItems: 'center',
+  },
+  backButtonText: {
+    fontSize: 18,
+    marginLeft: 10,
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  botfrom: {
+    position: 'absolute',
+    width: '100%',
+        bottom: 0,
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        padding: 20,
+  },
+  greenButton: {
+    
+    backgroundColor: '#28a745', // สีเขียว
+    paddingVertical: 8,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  greenButtonText: {
+    color: '#fff',
+    fontSize: 17,
+    fontFamily: 'Prompt_500Medium',
   },
 });

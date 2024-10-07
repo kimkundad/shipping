@@ -1,6 +1,6 @@
 import React, { useState, useEffect  } from 'react';
 import { RouteProp, useRoute } from '@react-navigation/native'; // Import useRoute
-import { Image, View, Text, TouchableOpacity, StyleSheet, TextInput, Dimensions, ScrollView, Alert } from 'react-native';
+import { Image, View, Text, TouchableOpacity, StyleSheet, TextInput, Dimensions, ScrollView, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Stack, router } from 'expo-router';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
@@ -19,16 +19,19 @@ type RootStackParamList = {
         name: string;
         phone: string;
         remark: string;
+        province: string;
         adddress2: string;
         name2: string;
         phone2: string;
         remark2: string;
+        province2: string
       };
     };
   };
 
 const { width } = Dimensions.get('window');
 const img_height = 110; // ปรับความสูงของภาพตามความต้องการ
+const imgsize_height = 160;
 
 export default function Service() {
 
@@ -36,31 +39,51 @@ export default function Service() {
     const navigation = useNavigation(); // สำหรับปุ่ม Back
     const bg = require('../../assets/images/feature-bg.png'); // ระบุตำแหน่งรูปภาพ
 
-    const [selectedSize, setSelectedSize] = useState('XL'); // Default size selection
+    const img_s = require('../../assets/images/size_s.png');
+    const img_m = require('../../assets/images/size_m.png');
+    const img_L = require('../../assets/images/size_L.png');
+    const img_XL = require('../../assets/images/size_XL.png');
+
+    const [selectedSize, setSelectedSize] = useState('S'); // Default size selection
     const [selectedDeliveryType, setSelectedDeliveryType] = useState('พื้นฐาน'); // Default delivery type
-    const [selectedType, setSelectedType] = useState('เสื้อผ้า'); // Default selected type
+    const [selectedType, setSelectedType] = useState([]); // Default selected type
 
     const [locationre, setLocationre] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationSend, setLocationSend] = useState<{ latitude: number; longitude: number } | null>(null);
   const [formData, setFormData] = useState(null);
   const [weight, setWeight] = useState(''); // น้ำหนักสินค้า
   const [loading, setLoading] = useState(false);
+  const [price, setPrice] = useState(0); // เก็บค่ารวมของราคาที่คำนวณแล้ว
+
+  // Function to dynamically return the correct image based on the selected size
+const getImageForSize = (size) => {
+    switch (size) {
+      case 'S':
+        return img_s;
+      case 'M':
+        return img_m;
+      case 'L':
+        return img_L;
+      case 'XL':
+        return img_XL;
+      default:
+        return img_s; // Default image if no size is selected
+    }
+  };
 
   useEffect(() => {
-    // ตรวจสอบและรวมข้อมูลจาก MapsReceiver
-    if (route.params?.selectedLat && route.params?.selectedLng && route.params?.form) {
-      setLocationre({
-        latitude: route.params.selectedLat,
-        longitude: route.params.selectedLng,
+
+    setLocationre({
+        latitude: 13.5116094,
+        longitude: 100.68715,
       });
-      setFormData((prevData) => ({
-        ...prevData,
-        adddress: route.params.form.adddress,
-        name: route.params.form.name,
-        phone: route.params.form.phone,
-        remark: route.params.form.remark,
-      }));
-    }
+      setFormData({
+        adddress: 'TIP 9 ถ. สุขุมวิท ตำบล บางปูใหม่ อำเภอเมืองสมุทรปราการ สมุทรปราการ 10280',
+        name: 'TIP 9 Industrial Project',
+        phone: '-',
+        remark: '-',
+        province: 'จ.สมุทรปราการ',
+  });
   
     // ตรวจสอบและรวมข้อมูลจาก MapsDestination
     if (route.params?.selectedLat2 && route.params?.selectedLng2 && route.params?.form) {
@@ -74,9 +97,50 @@ export default function Service() {
         name2: route.params.form.name2,
         phone2: route.params.form.phone2,
         remark2: route.params.form.remark2,
+        province2: route.params.form.province2,
       }));
     }
   }, [route.params]);
+
+  useEffect(() => {
+    const calculatePrice = async () => {
+      if (formData?.province2 && weight) {
+        try {
+          const getProvince = { province2: formData?.province2 };
+          const response = await api.post('/getProvince', getProvince);
+          
+          let pricePerUnit = 0;
+          const parsedWeight = parseFloat(weight);
+
+          // เลือกใช้ค่าที่เหมาะสมตาม weight
+          if (parsedWeight <= 10) {
+            pricePerUnit = response?.data?.province?.tenbox || 0;
+          } else if (parsedWeight <= 20) {
+            pricePerUnit = response?.data?.province?.twentybox || 0;
+          } else if (parsedWeight <= 30) {
+            pricePerUnit = response?.data?.province?.thirtybox || 0;
+          } else if (parsedWeight <= 40) {
+            pricePerUnit = response?.data?.province?.fortybox || 0;
+          } else if (parsedWeight <= 50) {
+            pricePerUnit = response?.data?.province?.fiftybox || 0;
+          } else if (parsedWeight <= 60) {
+            pricePerUnit = response?.data?.province?.sixtybox || 0;
+          } else {
+            pricePerUnit = response?.data?.province?.sixtybox || 0;
+          }
+
+          // คำนวณราคาจาก pricePerUnit และน้ำหนัก (weight)
+          const calculatedPrice = pricePerUnit * parsedWeight;
+          setPrice(calculatedPrice); // อัพเดทผลรวมของราคา
+
+        } catch (error) {
+          Alert.alert('Error', error.message || 'เกิดข้อผิดพลาดในการคำนวณราคา');
+        }
+      }
+    };
+
+    calculatePrice();
+  }, [formData?.province2, weight]);
 
     const sizes = ['S', 'M', 'L', 'XL'];
     const deliveryTypes = [
@@ -91,10 +155,30 @@ export default function Service() {
         { type: 'วาฟเฟิล', icon: 'shirt' },
     ];
 
+    // Toggle package type selection
+    const togglePackageType = (type) => {
+        if (selectedType.includes(type)) {
+            // Remove the type if already selected
+            setSelectedType((prevSelectedTypes) =>
+                prevSelectedTypes.filter((item) => item !== type)
+            );
+        } else {
+            // Add the type if not selected
+            setSelectedType((prevSelectedTypes) => [...prevSelectedTypes, type]);
+        }
+    };
+
     const handleCreate = async () => {
+
+        console.log('formData:', formData);
         // ตรวจสอบว่ากรอกข้อมูลครบถ้วนหรือไม่
-        if (!formData?.adddress || !formData?.name || !formData?.phone || !formData?.adddress2 || !formData?.name2 || !formData?.phone2 || !selectedSize || !selectedType || !weight) {
+        if (!formData?.adddress || !formData?.name || !formData?.phone || !formData?.adddress2 || !formData?.name2 || !formData?.phone2 || !selectedSize || !weight) {
             Alert.alert('Error', 'กรุณากรอกข้อมูลให้ครบทุกช่อง');
+            return;
+        }
+
+        if (selectedType.length === 0) {
+            Alert.alert('Error', 'กรุณาเลือกประเภทพัสดุ');
             return;
         }
 
@@ -102,10 +186,10 @@ export default function Service() {
         try {
           // รวบรวมข้อมูลทั้งหมด
           const orderData = {
-            selectedLat: locationre?.latitude,
-            selectedLng: locationre?.longitude,
-            selectedLat2: locationSend?.latitude,
-            selectedLng2: locationSend?.longitude,
+            latitude: locationre?.latitude,
+            longitude: locationre?.longitude,
+            latitude2: locationSend?.latitude,
+            longitude2: locationSend?.longitude,
             adddress: formData?.adddress,
             name: formData?.name,
             phone: formData?.phone,
@@ -117,16 +201,23 @@ export default function Service() {
             size: selectedSize, // ขนาด
             type: selectedType, // ประเภทพัสดุ
             weight, // น้ำหนักสินค้า
+            province2: formData?.province2,
+            province: formData?.province,
+            branch_id: 0,
+            price: price
           };
     
           console.log('Creating order with data:', orderData);
           
-          // ส่งคำขอแบบ POST ไปยัง API
+         // ส่งคำขอแบบ POST ไปยัง API
           const response = await api.post('/createOrdere', orderData);
-          
-          if (response.status === 200) {
+          console.log('response', response.data)
+          if (response.data.success === true) {
             Alert.alert('สำเร็จ', 'สร้างออเดอร์ใหม่สำเร็จแล้ว');
-            router.push('(branch)');
+            router.push({
+                pathname: '(setting)/tracking',
+                params: { id: response.data.order.id }, // ส่งพารามิเตอร์ id ของ order
+              });
           } else {
             Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างออเดอร์ได้');
           }
@@ -139,6 +230,7 @@ export default function Service() {
 
     return (
         <>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={{ flex: 1, backgroundColor: '#fff' }}>
                 <Stack.Screen options={{
                     headerTransparent: true,
@@ -183,28 +275,17 @@ export default function Service() {
                     <View style={styles.boxGiff}>
 
                         <View style={styles.addressContainer}>
-                            {locationre ? (
-                                <View>
-                                    <TouchableOpacity onPress={() => router.push('(setting)/mapsReceiver')}>
+                        <View>
+                                    <TouchableOpacity >
                                     <View style={styles.row}>
                                         <Ionicons name="location-sharp" size={22} color="#3498db" />
                                         <Text style={styles.addressTitle} numberOfLines={1} ellipsizeMode="tail">
-                                            {formData?.adddress}
+                                        TIP 9 Industrial Project
                                         </Text>
                                     </View>
-                                    <Text style={styles.recipient}>{formData?.name} • {formData?.phone}</Text>
+                                    <Text style={styles.recipient}>ถ.สุขุมวิท บางปูใหม่ สมุทรปราการ 10280</Text>
                                     </TouchableOpacity>
                                 </View>
-                            ) : (
-                                <View>
-                                    <View style={styles.row}>
-                                        <Ionicons name="location-sharp" size={22} color="#3498db" />
-                                        <TouchableOpacity onPress={() => router.push('(setting)/mapsReceiver')}>
-                                            <Text style={styles.linkTextnull}>เพิ่มข้อมูลผู้รับ *</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            )}
                         </View>
 
                         <View style={styles.addressContainer2}>
@@ -239,30 +320,37 @@ export default function Service() {
                         ข้อมูลนี้จะช่วยให้คนขับดูแลพัสดุของคุณได้อย่างเหมาะสม
                     </Text>
 
+                    <View style={{ alignItems: 'center' }}>
+                    <Image source={getImageForSize(selectedSize)} style={styles.sizeImg} />
+                    </View>
+
                     <View style={styles.rows}>
 
-                        <View style={{ display: 'flex' }}>
-                            <Text style={styles.label}>ขนาด*</Text>
-                            <View style={styles.sizeSelector}>
-                                {sizes.map((size) => (
-                                    <TouchableOpacity
-                                        key={size}
-                                        style={[
-                                            styles.sizeOption,
-                                            size === selectedSize && styles.sizeOptionSelected,
-                                        ]}
-                                        onPress={() => setSelectedSize(size)}
-                                    >
-                                        <Text style={[
-                                            styles.sizeText,
-                                            size === selectedSize && styles.sizeTextSelected
-                                        ]}>
-                                            {size}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
+                    <View style={{ display: 'flex' }}>
+                        <Text style={styles.label}>ขนาด*</Text>
+                        <View style={styles.sizeSelector}>
+                        {sizes.map((size) => (
+                            <TouchableOpacity
+                            key={size}
+                            style={[
+                                styles.sizeOption,
+                                size === selectedSize && styles.sizeOptionSelected,
+                            ]}
+                            onPress={() => setSelectedSize(size)}
+                            >
+                            <Text
+                                style={[
+                                styles.sizeText,
+                                size === selectedSize && styles.sizeTextSelected,
+                                ]}
+                            >
+                                {size}
+                            </Text>
+                            </TouchableOpacity>
+                        ))}
                         </View>
+                        </View>
+                        
                         <View style={styles.weightContainer}>
                             <Text style={styles.label2}>จำนวน*</Text>
                             <TextInput 
@@ -271,8 +359,10 @@ export default function Service() {
                                 value={weight}
                                 onChangeText={setWeight}
                                 keyboardType="numeric" // Ensure only numeric input
+                                blurOnSubmit={true}
                             />
                         </View>
+                       
                     </View>
 
                     {/* Type of Package */}
@@ -285,19 +375,21 @@ export default function Service() {
                                     key={index}
                                     style={[
                                         styles.typeOption,
-                                        selectedType === pkg.type && styles.typeOptionSelected, // Highlight selected option
+                                        selectedType.includes(pkg.type) && styles.typeOptionSelected, // Highlight multiple selections
                                     ]}
-                                    onPress={() => setSelectedType(pkg.type)} // Set selected type
+                                    onPress={() => togglePackageType(pkg.type)} // Toggle the selected type
                                 >
                                     <Ionicons
                                         name={pkg.icon}
                                         size={16}
-                                        color={selectedType === pkg.type ? '#fff' : '#f47524'} // Change icon color when selected
+                                        color={selectedType.includes(pkg.type) ? '#fff' : '#f47524'} // Change icon color when selected
                                     />
-                                    <Text style={[
-                                        styles.typeText2,
-                                        selectedType === pkg.type && styles.typeTextSelected, // Change text color when selected
-                                    ]}>
+                                    <Text
+                                        style={[
+                                            styles.typeText2,
+                                            selectedType.includes(pkg.type) && styles.typeTextSelected, // Change text color when selected
+                                        ]}
+                                    >
                                         {pkg.type}
                                     </Text>
                                 </TouchableOpacity>
@@ -310,7 +402,7 @@ export default function Service() {
                 <View style={styles.footcard}>
                     <View style={styles.priceBox}>
                         <Text style={styles.priceHead}>รวมทั้งหมด</Text>
-                        <Text style={styles.priceSum}>฿45</Text>
+                        <Text style={styles.priceSum}>฿ {price.toFixed(2)}</Text>
                     </View>
                     <View style={styles.footer}>
                         <TouchableOpacity style={styles.checkButton} onPress={handleCreate} disabled={loading}>
@@ -319,6 +411,7 @@ export default function Service() {
                     </View>
                 </View>
             </View>
+            </TouchableWithoutFeedback>
         </>
     );
 }
@@ -330,6 +423,10 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    sizeImg: {
+        width: '100%',
+        height: imgsize_height
     },
     rows: {
         flexDirection: 'row',

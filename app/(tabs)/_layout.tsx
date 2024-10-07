@@ -11,6 +11,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { Prompt_400Regular, Prompt_500Medium } from '@expo-google-fonts/prompt';
 import { UserProvider } from '../../hooks/UserContext';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -55,11 +56,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="history"
+        name="help"
         options={{
-          title: 'History',
+          title: 'Help',
           tabBarIcon: ({ color, focused }) => (
-            <FontAwesome name="history" size={28} color={color} />
+            <Ionicons name="chatbox-ellipses-sharp" size={28} color={color} />
           ),
         }}
       />

@@ -24,7 +24,6 @@ export const UserProvider = ({ children }) => {
         }
 
         const ordersResponse = await api.get('/user-order');
-        console.log('Orders response----> 1:', ordersResponse.data);
         if (ordersResponse) {
           setUserOrders(ordersResponse.data.order);
         }

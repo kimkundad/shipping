@@ -17,8 +17,13 @@ export default function Tracking() {
 
   const { id } = useLocalSearchParams(); // รับพารามิเตอร์ id
 
+  const getCurrentTime = () => {
+    const now = new Date();
+    return now.toTimeString().split(' ')[0]; // แสดงเวลาในรูปแบบ HH:MM:SS
+  };
+
   interface Order {
-    dri_time: string; // กำหนดประเภทให้ชัดเจน เช่น string
+    dri_time: string;
     code_order: string;
     dri_phone: string;
     dri_name: string;
@@ -27,12 +32,16 @@ export default function Tracking() {
     b_recive_name: string;
     dri_type: string;
     dri_no_car: string;
+    latitude: number;      // เพิ่ม latitude
+    longitude: number;     // เพิ่ม longitude
+    latitude2: number;     // เพิ่ม latitude2
+    longitude2: number;    // เพิ่ม longitude2
   }
 
-  const origin = { latitude: 13.7750069, longitude: 100.7072212 };
-  const destination = { latitude: 13.7709242, longitude: 100.702837 };
-  const GOOGLE_MAPS_APIKEY = 'AIzaSyCsx9tQ2Mj7WWnunxa8P2blQLcGtjroLVE';
   const [order, setData] = useState<Order | null>(null);
+  const [origin, setOrigin] = useState({ latitude: 0, longitude: 0 }); // เก็บตำแหน่งต้นทาง
+  const [destination, setDestination] = useState({ latitude: 0, longitude: 0 }); // เก็บตำแหน่งปลายทาง
+  const GOOGLE_MAPS_APIKEY = 'AIzaSyCsx9tQ2Mj7WWnunxa8P2blQLcGtjroLVE';
 
   useEffect(() => {
     // ตรวจสอบว่ามี id หรือไม่ก่อนที่จะดึงข้อมูล
@@ -41,10 +50,16 @@ export default function Tracking() {
     // ฟังก์ชัน async ที่จะเรียก API
     const fetchOrder = async () => {
       try {
-        const response = await api.get(`/getOrderByID/${id}`); // คิดว่า API ต้องการ id เพื่อดึง order ของผู้ใช้
-        setData(response.data.order); // ตั้งค่า order ที่ได้รับจาก API
+        const response = await api.get(`/getOrderByID/${id}`); // เรียก API เพื่อดึง order ข้อมูลผู้ใช้
+        const orderData = response.data.order;
+
+        setData(orderData); // ตั้งค่า order ที่ได้รับจาก API
+
+        // อัพเดทตำแหน่งต้นทางและปลายทาง
+        setOrigin({ latitude: orderData.latitude, longitude: orderData.longitude });
+        setDestination({ latitude: orderData.latitude2, longitude: orderData.longitude2 });
       } catch (error) {
-        console.error('Error fetching orders:', error);
+        console.error('Error fetching order:', error);
       }
     };
 
@@ -66,26 +81,31 @@ export default function Tracking() {
     }
   };
 
-  const data = [
-    {
-      time: '09:00',
-      title: 'กำลังเตรียมพัสดุ',
-      description:
-        'ผู้ส่งกำลังเตรียมพัสดุ',
-    },
-    {
-      time: '10:45',
-      title: 'อยู่ระหว่างการขนส่ง',
-      description:
-        'พัสดุออกจากศูนย์คัดแยกสินค้า ไปยัง HSAPA-A - สะพานสูง',
-    },
-    {
-      time: '54:00',
-      title: 'การจัดส่งสำเร็จ',
-      description:
-        'พัสดุถูกจัดส่งสำเร็จแล้ว ผู้รับ: กอล์ฟ. ดูหลักฐานการจัดส่งสินค้า.',
-    }
-  ];
+  const data = order?.order_status === 0
+    ? [
+        {
+          time: getCurrentTime(), // ใช้เวลาปัจจุบัน
+          title: 'กำลังค้นหารถขนส่ง',
+          description: 'กำลังค้นหารถขนส่ง',
+        },
+      ]
+    : [
+        {
+          time: '09:00',
+          title: 'กำลังเตรียมพัสดุ',
+          description: 'ผู้ส่งกำลังเตรียมพัสดุ',
+        },
+        {
+          time: '10:45',
+          title: 'อยู่ระหว่างการขนส่ง',
+          description: 'พัสดุออกจากศูนย์คัดแยกสินค้า ไปยัง HSAPA-A - สะพานสูง',
+        },
+        {
+          time: '54:00',
+          title: 'การจัดส่งสำเร็จ',
+          description: 'พัสดุถูกจัดส่งสำเร็จแล้ว ผู้รับ: กอล์ฟ. ดูหลักฐานการจัดส่งสินค้า.',
+        },
+      ];
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#f5f5f5' }} >
@@ -124,8 +144,8 @@ export default function Tracking() {
             initialRegion={{
               latitude: 13.7758339,
               longitude: 100.7054306,
-              latitudeDelta: 0.0222,
-              longitudeDelta: 0.0221,
+              latitudeDelta: 0.4222,
+              longitudeDelta: 0.4221,
             }}
             style={styles.map} >
             <MapViewDirections
@@ -138,11 +158,11 @@ export default function Tracking() {
               language='th'
             />
             <Marker
-              coordinate={origin}
+              coordinate={destination}
               title="Starting Point"
             />
             <Marker
-              coordinate={destination}
+              coordinate={origin}
               title="Destination Point"
             >
               <Image source={require('../../assets/images/truck.png')} style={{ height: 35, width: 35 }} />
@@ -205,11 +225,27 @@ export default function Tracking() {
                 <Text style={{ fontWeight: 700, fontSize: 13 }}>{ order?.b_name }</Text>
               </View>
               <View style={styles.flexItem2}>
-                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
-                <Text style={{ fontWeight: 700, fontSize: 13 }}>{ order?.amount }</Text>
+                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>จำนวน</Text>
+                <Text style={{ fontWeight: 700, fontSize: 13 }}>{ order?.weight }</Text>
               </View>
             </View>
-            <View style={styles.textBoxDetail}>
+
+            { order?.branch_id === 0 ? (
+
+              <View style={styles.textBoxDetail}>
+              <View style={styles.flexItem}>
+                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ผู้รับสินค้า</Text>
+                <Text style={{ fontWeight: 700, fontSize: 13 }}>{ order?.b_recive_name }</Text>
+              </View>
+              <View style={styles.flexItem2}>
+                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>Type</Text>
+                <Text style={{ fontWeight: 700, fontSize: 13 }}> { order?.type }, size : { order?.size }</Text>
+              </View>
+              </View>
+
+            ) : (
+
+              <View style={styles.textBoxDetail}>
               <View style={styles.flexItem}>
                 <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ผู้รับสินค้า</Text>
                 <Text style={{ fontWeight: 700, fontSize: 13 }}>{ order?.b_recive_name }</Text>
@@ -219,6 +255,9 @@ export default function Tracking() {
                 <Text style={{ fontWeight: 700, fontSize: 13 }}> { order?.dri_type }, { order?.dri_no_car }</Text>
               </View>
             </View>
+
+            )}
+            
 
           </View>
 
@@ -244,6 +283,8 @@ export default function Tracking() {
               innerCircle={'dot'}
             />
           </View>
+
+
         </View>
       </ScrollView>
 

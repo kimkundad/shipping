@@ -5,10 +5,12 @@ import * as Location from 'expo-location';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { useNavigation, useRoute } from '@react-navigation/native'; // ใช้สำหรับการทำงานของปุ่ม back
 import { Stack, router } from 'expo-router';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 
 export default function MapsReceiver() {
   const [location, setLocation] = useState(null);
   const [pickedLocation, setPickedLocation] = useState(null); // ตำแหน่งที่ผู้ใช้เลือก
+  const [province, setProvince] = useState(''); // State to hold province name
   const navigation = useNavigation(); // สำหรับปุ่ม Back
   const route = useRoute(); // ใช้ useRoute เพื่อเข้าถึง route.params
   const pinImage = require('../../assets/images/pin_app.png'); // ระบุตำแหน่งรูปภาพ
@@ -18,6 +20,7 @@ export default function MapsReceiver() {
     name: '',
     phone: '',
     remark: '',
+    province: ''
   });
 
   // ขอสิทธิ์การเข้าถึงตำแหน่งและดึงตำแหน่ง GPS
@@ -33,27 +36,54 @@ export default function MapsReceiver() {
       setLocation({
         latitude: loc.coords.latitude,
         longitude: loc.coords.longitude,
-        latitudeDelta: 0.005, // ขนาดเล็กลงเพื่อประสิทธิภาพ
+        latitudeDelta: 0.005,
         longitudeDelta: 0.005,
       });
 
-      // ปักหมุดตำแหน่งปัจจุบันโดยอัตโนมัติ
       setPickedLocation({
         latitude: loc.coords.latitude,
         longitude: loc.coords.longitude,
       });
+
+      // Fetch province name through reverse geocoding
+      const address = await Location.reverseGeocodeAsync({
+        latitude: loc.coords.latitude,
+        longitude: loc.coords.longitude,
+      });
+
+      if (address && address.length > 0) {
+        setProvince(address[0].region); // Save province name from reverse geocode
+      }
     })();
   }, []);
-
+  
   // ฟังก์ชันสำหรับการเลือกตำแหน่งจากแผนที่
-  const selectLocationHandler = (event) => {
+  const selectLocationHandler = async (event) => {
+    const selectedLat = event.nativeEvent.coordinate.latitude;
+    const selectedLng = event.nativeEvent.coordinate.longitude;
+
     setPickedLocation({
-      latitude: event.nativeEvent.coordinate.latitude,
-      longitude: event.nativeEvent.coordinate.longitude,
+      latitude: selectedLat,
+      longitude: selectedLng,
     });
+
+    // Fetch province name for selected location
+    const address = await Location.reverseGeocodeAsync({
+      latitude: selectedLat,
+      longitude: selectedLng,
+    });
+
+    if (address && address.length > 0) {
+      setProvince(address[0].region); // Update province based on selected location
+    }
   };
 
   return (
+    <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjusts behavior based on platform
+    keyboardVerticalOffset={Platform.OS === 'ios' ? 5 : 0} // Adjust if needed to prevent overlapping
+  >
     <View style={styles.container}>
       {/* ปุ่ม Back */}
       <View style={styles.backButtonContainer}>
@@ -162,10 +192,34 @@ export default function MapsReceiver() {
   />
 </View>
 
+{/* <View>
+{province && (
+  <View style={styles.input}>
+    <Text style={styles.inputLabel}>จังหวัด</Text>
+    <TextInput
+      clearButtonMode="while-editing"
+      editable={false}  // Make this field non-editable, since it's auto-populated
+      placeholder="จังหวัด"
+      placeholderTextColor="#6b7280"
+      style={styles.inputControl}
+      value={province}  // Display the province from the reverse geocode
+    />
+  </View>
+)}
+</View> */}
+
+
 </View>
 <TouchableOpacity
   style={styles.greenButton}
   onPress={() => {
+
+    // Validate form inputs before submitting
+    if (!form.adddress || !form.name || !form.phone ) {
+      Alert.alert('กรอกข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลทุกช่องให้ครบถ้วน');
+      return; // Prevent navigation if validation fails
+    }
+
     navigation.navigate('service', {
       ...route.params, // รวมข้อมูลที่มีอยู่แล้ว (ข้อมูลจาก MapsDestination หากมี)
       selectedLat: pickedLocation.latitude,
@@ -176,6 +230,7 @@ export default function MapsReceiver() {
         name: form.name,
         phone: form.phone,
         remark: form.remark,
+        province: province,
       },
     });
   }}
@@ -185,6 +240,7 @@ export default function MapsReceiver() {
         </View>
       )}
     </View>
+    </KeyboardAvoidingView>
   );
 }
 

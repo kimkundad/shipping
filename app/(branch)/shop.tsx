@@ -9,7 +9,7 @@ import { AntDesign } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import DeviveryStatus from '../../components/DeviveryStatus'
 
 const { width } = Dimensions.get('window');
 
@@ -155,40 +155,41 @@ const Shop = () => {
                                 {data?.order && data?.order.length > 0 && (
                                 <View>
                                     {data?.order.map(order => (
-                                <TouchableOpacity
-                                key={order.id}
-                                onPress={() => {
-                                  // handle onPress
-                                  router.push('(setting)/tracking');
-                                }}>
-                              <View  style={styles.boxItemList}>
-                                <View style={styles.containerOrderMain}>
-                                  <View style={styles.containerOrder}>
-                                    <View >
-                                      <Image source={require('../../assets/images/icon_truck.png')}
-                                        style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
-                                    </View>
-                                    <View >
-                                      <Text style={{ fontWeight: 700, fontSize: 16 }}>#{order.code_order}</Text>
-                                      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>{order.dri_time}</Text>
-                                    </View>
+                              <TouchableOpacity
+                              key={order.id}
+                              onPress={() => {
+                                // handle onPress
+                                router.push({
+                                  pathname: '(setting)/tracking',
+                                  params: { id: order.id }, // ส่งพารามิเตอร์ id ของ order
+                                });
+                              }}>
+                            <View  style={styles.boxItemList}>
+                              <View style={styles.containerOrderMain}>
+                                <View style={styles.containerOrder}>
+                                  <View >
+                                    <Image source={require('../../assets/images/icon_truck.png')}
+                                      style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
                                   </View>
-                                  <View style={styles.textStatus}>
-                                    <Text style={{ color: '#fff', fontSize: 12 }}>On Devivery</Text>
+                                  <View >
+                                    <Text style={{ fontWeight: 700, fontSize: 16 }}>#{order.code_order}</Text>
+                                    <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>{order.dri_time}</Text>
                                   </View>
                                 </View>
-                                <View style={styles.textBoxDetail}>
-                                  <View style={styles.flexItem}>
-                                    <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
-                                    <Text style={{ fontWeight: 700, fontSize: 13 }}>{order.b_name}</Text>
-                                  </View>
-                                  <View style={styles.flexItem}>
-                                    <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
-                                    <Text style={{ fontWeight: 700, fontSize: 13 }}>{order.amount} kg</Text>
-                                  </View>
+                                <DeviveryStatus order={order} />
+                              </View>
+                              <View style={styles.textBoxDetail}>
+                                <View style={styles.flexItem}>
+                                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
+                                  <Text style={{ fontWeight: 700, fontSize: 13 }}>{order.b_name}</Text>
+                                </View>
+                                <View style={styles.flexItem}>
+                                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
+                                  <Text style={{ fontWeight: 700, fontSize: 13 }}>{order.amount} kg</Text>
                                 </View>
                               </View>
-                              </TouchableOpacity>
+                            </View>
+                            </TouchableOpacity>
                                 ))}
                                 </View>
                               )}
@@ -219,19 +220,11 @@ const styles = StyleSheet.create({
     },
     boxItemList: {
         backgroundColor: '#fff',
-        borderRadius: 10,
-        padding: 8,
-        marginTop: 12,
-        // iOS shadow properties
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        // Android shadow (elevation)
-        elevation: 5,
+        borderRadius:10,
+        padding: 10,
+        borderWidth: 1,
+        borderColor: '#dadee3',
+        marginTop:20,
       },
     containerOrder: {
         display: 'flex',

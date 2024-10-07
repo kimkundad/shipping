@@ -40,7 +40,7 @@ export default function Resetpass() {
 
         try {
 
-            const response = await axios.post('https://5575-124-120-34-255.ngrok-free.app/api/reserPass', {
+            const response = await axios.post('https://b577-124-120-218-13.ngrok-free.app/api/reserPass', {
                 password,
                 c_password: confirmPassword,
                 phone

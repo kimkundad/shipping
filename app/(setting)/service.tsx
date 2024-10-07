@@ -52,6 +52,7 @@ export default function Service() {
   const [locationSend, setLocationSend] = useState<{ latitude: number; longitude: number } | null>(null);
   const [formData, setFormData] = useState(null);
   const [weight, setWeight] = useState(''); // น้ำหนักสินค้า
+  const [warb, setWarb] = useState(''); // น้ำหนักสินค้า
   const [loading, setLoading] = useState(false);
   const [price, setPrice] = useState(0); // เก็บค่ารวมของราคาที่คำนวณแล้ว
 
@@ -204,7 +205,8 @@ const getImageForSize = (size) => {
             province2: formData?.province2,
             province: formData?.province,
             branch_id: 0,
-            price: price
+            price: price,
+            warb: formData?.warb
           };
     
           console.log('Creating order with data:', orderData);
@@ -395,6 +397,22 @@ const getImageForSize = (size) => {
                                 </TouchableOpacity>
                             ))}
                         </ScrollView>
+
+                        {selectedType.includes('วาฟเฟิล') && (
+                            <View style={styles.warbContainer}>
+                                <Text style={styles.label3}>จำนวนวาฟเฟิล*</Text>
+                                <TextInput 
+                                style={styles.warbInput} 
+                                placeholder="จำนวนวาฟเฟิล" 
+                                value={warb}
+                                onChangeText={setWarb}
+                                keyboardType="numeric" // Ensure only numeric input
+                                blurOnSubmit={true}
+                                />
+                            </View>
+                            )}
+
+
                     </View>
 
                 </View>
@@ -472,6 +490,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         width: '100%'
     },
+    label3: {
+        fontSize: 18,
+        fontFamily: 'Prompt_500Medium',
+        width: '100%'
+    },
     sizeSelector: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -499,6 +522,9 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'flex-start',
     },
+    warbContainer: {
+        marginTop: 10
+    },
     weightInput: {
         borderWidth: 1,
         borderColor: '#ddd',
@@ -506,6 +532,16 @@ const styles = StyleSheet.create({
         marginTop: 10,
         padding: 5,
         width: 80,
+        textAlign: 'center',
+        fontFamily: 'Prompt_400Regular',
+    },
+    warbInput: {
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 10,
+        marginTop: 10,
+        padding: 5,
+        width: 120,
         textAlign: 'center',
         fontFamily: 'Prompt_400Regular',
     },

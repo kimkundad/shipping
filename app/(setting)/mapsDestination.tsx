@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Button, TouchableOpacity, Alert, ActivityIndicator, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { useNavigation, useRoute } from '@react-navigation/native'; 
 import { KeyboardAvoidingView, Platform } from 'react-native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Stack, router } from 'expo-router';
 
 export default function MapsDestination() {
   const [location, setLocation] = useState(null);
@@ -50,7 +51,14 @@ export default function MapsDestination() {
       });
 
       if (address && address.length > 0) {
+
+        const addr = address[0];
+      const formattedAddress = `${addr.street || ''} ${addr.district || ''} ${addr.subregion || ''} ${addr.region || ''} ${addr.country || ''} ${addr.postalCode || ''}`.trim();
+
+
+
         setProvince(address[0].region);
+        setForm((prevForm) => ({ ...prevForm, adddress2: formattedAddress }));
       }
     })();
   }, []);
@@ -70,7 +78,13 @@ export default function MapsDestination() {
     });
 
     if (address && address.length > 0) {
+
+      const addr = address[0];
+      const formattedAddress = `${addr.street || ''} ${addr.district || ''} ${addr.subregion || ''} ${addr.region || ''} ${addr.country || ''} ${addr.postalCode || ''}`.trim();
+
+
       setProvince(address[0].region);
+      setForm((prevForm) => ({ ...prevForm, adddress2: formattedAddress }));
     }
   };
 
@@ -78,18 +92,54 @@ export default function MapsDestination() {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
     >
+      <Stack.Screen options={{
+                    headerTransparent: true,
+                    headerTitle: ' ',
+                    headerTitleStyle: {
+                        color: 'white', // กำหนดสีของ headerTitle
+                        fontFamily: 'Prompt_500Medium', // กำหนดฟอนต์
+                        fontSize: 18
+                    },
+                    headerLeft: () => (
+                        <TouchableOpacity style={styles.btnBack} onPress={() =>  navigation.goBack()}>
+                            <View
+                                style={{
+                                    backgroundColor: '#fff',
+                                    padding: 6,
+                                    borderRadius: 10
+                                }}
+                            >
+                                <Ionicons name="chevron-back" size={20} color="black" />
+                            </View>
+                        </TouchableOpacity>
+                    ),
+                    headerRight: () => (
+                        <TouchableOpacity style={styles.btnBackText} onPress={() => router.push('(setting)/selectBarnch')}>
+                            <View
+                                style={{
+                                  backgroundColor: '#fff',
+                                    padding: 4,
+                                    borderRadius: 10,
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    gap:0
+                                }}
+                            >
+                                <MaterialIcons name="bookmark-border" size={20} color="black" />
+                                <Text style={styles.inbtnBackText}> เลือกจากสาขาที่สร้างไว้</Text>
+                            </View>
+                        </TouchableOpacity>
+                    )
+                }} />
       {/* Wrap the entire UI in TouchableWithoutFeedback */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+
+      
+
         <View style={styles.container}>
-          <View style={styles.backButtonContainer}>
-            <View style={styles.btnBack}>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Ionicons name="chevron-back" size={30} color="black" />
-              </TouchableOpacity>
-            </View>
-          </View>
+          
 
           {location ? (
             <MapView
@@ -134,19 +184,18 @@ export default function MapsDestination() {
             <View style={styles.botfrom}>
               <View style={styles.form}>
                 <View style={styles.input}>
-                  <Text style={styles.inputLabel}>ที่อยู่</Text>
                   <TextInput
                     clearButtonMode="while-editing"
                     onChangeText={adddress2 => setForm({ ...form, adddress2 })}
                     placeholder="ระบุบ้านเลขที่"
                     placeholderTextColor="#6b7280"
-                    style={styles.inputControl}
+                    style={[styles.inputControl, { height: 80 }]}
                     value={form.adddress2}
+                    multiline={true}
                   />
                 </View>
 
                 <View style={styles.input}>
-                  <Text style={styles.inputLabel}>ขื่อสำหรับติดต่อ</Text>
                   <TextInput
                     clearButtonMode="while-editing"
                     onChangeText={name2 => setForm({ ...form, name2 })}
@@ -158,7 +207,6 @@ export default function MapsDestination() {
                 </View>
 
                 <View style={styles.input}>
-                  <Text style={styles.inputLabel}>เบอร์สำหรับติดต่อ</Text>
                   <TextInput
                     clearButtonMode="while-editing"
                     onChangeText={phone2 => setForm({ ...form, phone2 })}
@@ -170,7 +218,6 @@ export default function MapsDestination() {
                 </View>
 
                 <View style={styles.input}>
-                  <Text style={styles.inputLabel}>หมายเหตุ</Text>
                   <TextInput
                     clearButtonMode="while-editing"
                     onChangeText={remark2 => setForm({ ...form, remark2 })}
@@ -181,7 +228,7 @@ export default function MapsDestination() {
                   />
                 </View>
 
-                {province && (
+                {/* {province && (
                   <View style={styles.input}>
                     <Text style={styles.inputLabel}>จังหวัด</Text>
                     <TextInput
@@ -193,7 +240,7 @@ export default function MapsDestination() {
                       value={province}
                     />
                   </View>
-                )}
+                )} */}
               </View>
 
               <TouchableOpacity
@@ -236,6 +283,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  btnBranch: {
+    backgroundColor: '#fff',
+    width: 45,
+    borderRadius: 99,
+    padding: 6,
+    alignItems: 'center'
+  },
   form: {
     flexGrow: 1,
     flexShrink: 1,
@@ -264,11 +318,23 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
   },
   btnBack: {
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(0, 19, 255, 0.2)',
     width: 45,
     borderRadius: 99,
     padding: 6,
     alignItems: 'center'
+  },
+  btnBackText: {
+    backgroundColor: 'rgba(0, 19, 255, 0.2)',
+    width: 200,
+    borderRadius: 99,
+    padding: 6,
+    alignItems: 'center'
+  },
+  inbtnBackText: {
+    fontSize: 15,
+    fontFamily: 'Prompt_500Medium',
+    color: '#333',
   },
   backButtonContainer: {
     position: 'absolute',

@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View, Platform, ScrollView, Alert, Linking, TouchableOpacity } from 'react-native';
+import { StyleSheet, Image, Text, View, Platform, LogBox, KeyboardAvoidingView, ScrollView, Alert, Linking, TouchableOpacity } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import React, { useEffect, useState } from 'react';
@@ -9,13 +9,24 @@ import MapViewDirections from 'react-native-maps-directions';
 import { Link, useNavigation, useLocalSearchParams, router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import api from '../../hooks/api'; // Axios instance
 import DeviveryStatus from '../../components/DeviveryStatus'
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import * as WebBrowser from 'expo-web-browser';
+import { Buffer } from 'buffer';
+
+LogBox.ignoreLogs([
+  'VirtualizedLists should never be nested', // Example of specific warning to ignore
+  'MapViewDirections Error: Error on GMAPS route request', // Your warning here
+  'Failed prop type: Invalid prop `destination`',
+]);
 
 export default function Tracking() {
 
   const { id } = useLocalSearchParams(); // รับพารามิเตอร์ id
+  const [loading, setLoading] = useState(false);
 
   const getCurrentTime = () => {
     const now = new Date();
@@ -39,9 +50,14 @@ export default function Tracking() {
   }
 
   const [order, setData] = useState<Order | null>(null);
-  const [origin, setOrigin] = useState({ latitude: 0, longitude: 0 }); // เก็บตำแหน่งต้นทาง
-  const [destination, setDestination] = useState({ latitude: 0, longitude: 0 }); // เก็บตำแหน่งปลายทาง
-  const GOOGLE_MAPS_APIKEY = 'AIzaSyCsx9tQ2Mj7WWnunxa8P2blQLcGtjroLVE';
+  const [origin, setOrigin] = useState({ latitude: 13.5116094, longitude: 100.68715 }); // เก็บตำแหน่งต้นทาง
+  const [destination, setDestination] = useState({ latitude: 13.5116094, longitude: 100.68715 }); // เก็บตำแหน่งปลายทาง
+  const [carTack, setCarTack] = useState({ latitude: 0, longitude: 0 }); // เก็บตำแหน่งปลายทาง
+  const GOOGLE_MAPS_APIKEY = 'AIzaSyDtcFHSNerbvIWPVv5OStj-czBq_6RMbRg';
+
+  const [form, setForm] = useState({
+    id: id
+  });
 
   useEffect(() => {
     // ตรวจสอบว่ามี id หรือไม่ก่อนที่จะดึงข้อมูล
@@ -55,9 +71,20 @@ export default function Tracking() {
 
         setData(orderData); // ตั้งค่า order ที่ได้รับจาก API
 
+        
         // อัพเดทตำแหน่งต้นทางและปลายทาง
-        setOrigin({ latitude: orderData.latitude, longitude: orderData.longitude });
-        setDestination({ latitude: orderData.latitude2, longitude: orderData.longitude2 });
+        setOrigin({
+          latitude: parseFloat(orderData.latitude),
+          longitude: parseFloat(orderData.longitude),
+        });
+        setDestination({
+          latitude: parseFloat(orderData.latitude2),
+          longitude: parseFloat(orderData.longitude2),
+        });
+        setCarTack({
+          latitude: parseFloat(orderData.d_lat),
+          longitude: parseFloat(orderData.d_long),
+        });
       } catch (error) {
         console.error('Error fetching order:', error);
       }
@@ -107,6 +134,68 @@ export default function Tracking() {
         },
       ];
 
+      const handleSendInvoice = () => {
+        Alert.alert('Invoice Sent', 'Sent to: Pairat8409@gmail.com');
+      };
+    
+      const handleDownloadPDF = async (id) => {
+
+        setLoading(true); // Start loading
+        try {
+      // Send POST request to the API
+
+      const response = await api.post('/generate-pdf', { id }, { responseType: 'arraybuffer' });
+      console.log('-->', response.data)
+
+      // Check if the response is valid
+      if (!response || !response.data) {
+        throw new Error('Failed to generate PDF');
+      }
+
+     // Convert the response data to a base64 string
+    const base64Data = Buffer.from(response.data, 'binary').toString('base64');
+
+    // Define the file path to save the PDF
+    const fileUri = `${FileSystem.documentDirectory}${id}.pdf`;
+
+    // Save the PDF to the filesystem
+    await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    // Alert the user and offer to open the PDF
+    Alert.alert('PDF Downloaded', 'Do you want to open it?', [
+      {
+        text: 'Open',
+        onPress: () => handleOpenPDF(fileUri),
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+
+      } catch (error) {
+        Alert.alert('ข้อผิดพลาด', error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
+      } finally {
+        setLoading(false); // Stop loading
+      }
+
+      };
+
+   
+      const handleOpenPDF = async (fileUri) => {
+        try {
+          const isAvailable = await Sharing.isAvailableAsync();
+          if (!isAvailable) {
+            Alert.alert('Error', 'Sharing is not available on this device');
+            return;
+          }
+      
+          // Use the Sharing API to open the PDF
+          await Sharing.shareAsync(fileUri);
+        } catch (error) {
+          Alert.alert('Error', error.message || 'Failed to open the PDF');
+        }
+      };
+
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#f5f5f5' }} >
       <StatusBar style="dark" />
@@ -139,38 +228,58 @@ export default function Tracking() {
                 </TouchableOpacity>
           </View>
         </View>
-        <View>
-          <MapView
-            initialRegion={{
-              latitude: 13.7758339,
-              longitude: 100.7054306,
-              latitudeDelta: 0.4222,
-              longitudeDelta: 0.4221,
-            }}
-            style={styles.map} >
-            <MapViewDirections
-              origin={origin}
-              destination={destination}
-              apikey={GOOGLE_MAPS_APIKEY}
-              strokeWidth={3}
-              strokeColor="hotpink"
-              mode='WALKING'
-              language='th'
-            />
-            <Marker
-              coordinate={destination}
-              title="Starting Point"
-            />
-            <Marker
-              coordinate={origin}
-              title="Destination Point"
-            >
-              <Image source={require('../../assets/images/truck.png')} style={{ height: 35, width: 35 }} />
-            </Marker>
-          </MapView>
-        </View>
 
 
+        {destination && (
+          <View>
+
+            <MapView
+              initialRegion={{
+                latitude: 13.7758339,
+                longitude: 100.7054306,
+                latitudeDelta: 0.4222,
+                longitudeDelta: 0.4221,
+              }}
+              style={styles.map} >
+              {carTack && (
+                <>
+                  <MapViewDirections
+                    origin={carTack}
+                    destination={destination}
+                    apikey={GOOGLE_MAPS_APIKEY}
+                    strokeWidth={3}
+                    strokeColor="hotpink"
+                    mode='DRIVING'
+                    language='th'
+                  />
+                  <MapViewDirections
+                    origin={origin}
+                    destination={destination}
+                    apikey={GOOGLE_MAPS_APIKEY}
+                    strokeWidth={3}
+                    strokeColor="hotpink"
+                    mode='DRIVING'
+                    language='th'
+                  />
+                  <Marker
+                    coordinate={destination}
+                    title="Starting Point"
+                  />
+                  <Marker
+                    coordinate={carTack}
+                    title="Destination Point"
+                  >
+                    <Image source={require('../../assets/images/truck.png')} style={{ height: 35, width: 35 }} />
+                  </Marker>
+                </>
+              )}
+
+
+            </MapView>
+
+
+          </View>
+        )}
 
         <View style={styles.container}>
 
@@ -205,7 +314,7 @@ export default function Tracking() {
                   style={styles.userImage}
                   source={{ uri: 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg' }} />
                 <View>
-                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 13, color: '#666' }}>พนักงานขนส่ง,</Text>
+                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 13, color: '#666' }}>พนักงานขนส่ง, 1</Text>
                   <View style={styles.showflex}>
                     <Image source={require('../../assets/images/icon_truck.png')}
                       style={{ width: 25, height: 25, marginRight: 2 }} />
@@ -284,6 +393,31 @@ export default function Tracking() {
             />
           </View>
 
+         
+         {order?.order_status === 2 &&
+          (
+            <View>
+
+      <TouchableOpacity style={styles.button} onPress={handleSendInvoice}>
+        <MaterialIcons name="email" size={24} color="#e67e22" />
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>ส่งใบเสร็จรับเงิน</Text>
+          <Text style={styles.subtitle}>ส่งไปที่ Pairat8409@gmail.com</Text>
+        </View>
+      </TouchableOpacity>
+
+      {/* Download PDF Button */}
+      <TouchableOpacity style={styles.button} onPress={() => handleDownloadPDF(order?.id)}>
+        <Feather name="download" size={24} color="#e67e22" />
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>ดาวน์โหลด PDF</Text>
+        </View>
+      </TouchableOpacity>
+
+            </View>
+          )
+         }
+
 
         </View>
       </ScrollView>
@@ -296,6 +430,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 15,
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderWidth: 0.4,
+    borderColor: '#666',
+    borderRadius: 10,
+    marginTop: 20,
+    backgroundColor: '#fff',
+    paddingHorizontal: 8
+  },
+  textContainer: {
+    marginLeft: 15,
+  },
+  title: {
+    fontSize: 16,
+    fontFamily: 'Prompt_500Medium',
+    color: '#000',
+
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    fontFamily: 'Prompt_400Regular',
   },
   userImage: {
     width: 45,

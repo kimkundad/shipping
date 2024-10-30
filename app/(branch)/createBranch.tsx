@@ -63,7 +63,13 @@ export default function CreateBranch() {
         });
 
         if (address && address.length > 0) {
+          
           const region = address[0].region;
+
+          const addr = address[0];
+          const formattedAddress = `${addr.street || ''} ${addr.district || ''} ${addr.subregion || ''} ${addr.region || ''} ${addr.country || ''} ${addr.postalCode || ''}`.trim();
+
+          
           setProvince(region);
 
           // Update the form with the fetched province and coordinates
@@ -72,8 +78,10 @@ export default function CreateBranch() {
             province: region, // Set the province
             selectedLat2: latitude, // Set latitude
             selectedLng2: longitude, // Set longitude
+            address: formattedAddress,
           }));
         }
+
       } catch (error) {
         Alert.alert('Error', 'Failed to fetch location');
       }
@@ -103,10 +111,15 @@ export default function CreateBranch() {
     });
 
     if (address && address.length > 0) {
+      
+      const addr = address[0];
+      const formattedAddress = `${addr.street || ''} ${addr.district || ''} ${addr.subregion || ''} ${addr.region || ''} ${addr.country || ''} ${addr.postalCode || ''}`.trim();
+
       setProvince(address[0].region);
       setForm((prevForm) => ({
         ...prevForm,
         province: address[0].region,
+        address: formattedAddress,
       }));
     }
   };
@@ -198,23 +211,22 @@ export default function CreateBranch() {
               <View style={styles.botfrom}>
                 <View style={styles.form}>
                   <View style={styles.input}>
-                    <Text style={styles.inputLabel}>ที่อยู่</Text>
                     <TextInput
                       clearButtonMode="while-editing"
                       onChangeText={address => setForm({ ...form, address })}
                       placeholder="ระบุที่อยู่"
                       placeholderTextColor="#6b7280"
-                      style={styles.inputControl}
+                      style={[styles.inputControl, { height: 80 }]}
                       value={form.address}
+                      multiline={true}
                     />
                   </View>
 
                   <View style={styles.input}>
-                    <Text style={styles.inputLabel}>ชื่อสาขา</Text>
                     <TextInput
                       clearButtonMode="while-editing"
                       onChangeText={name => setForm({ ...form, name })}
-                      placeholder="สาขาพระรามเก้า"
+                      placeholder="ชื่อสาขา"
                       placeholderTextColor="#6b7280"
                       style={styles.inputControl}
                       value={form.name}
@@ -222,11 +234,10 @@ export default function CreateBranch() {
                   </View>
 
                   <View style={styles.input}>
-                    <Text style={styles.inputLabel}>รหัสสาขา</Text>
                     <TextInput
                       clearButtonMode="while-editing"
                       onChangeText={code => setForm({ ...form, code })}
-                      placeholder="ZX13248384394"
+                      placeholder="รหัสสาขา"
                       placeholderTextColor="#6b7280"
                       style={styles.inputControl}
                       value={form.code}
@@ -234,11 +245,10 @@ export default function CreateBranch() {
                   </View>
 
                   <View style={styles.input}>
-                    <Text style={styles.inputLabel}>ชื่อเจ้าหน้าที่รับของ</Text>
                     <TextInput
                       clearButtonMode="while-editing"
                       onChangeText={admin_branch => setForm({ ...form, admin_branch })}
-                      placeholder="คุณอ้อ"
+                      placeholder="ชื่อเจ้าหน้าที่รับของ"
                       placeholderTextColor="#6b7280"
                       style={styles.inputControl}
                       value={form.admin_branch}
@@ -246,11 +256,10 @@ export default function CreateBranch() {
                   </View>
 
                   <View style={styles.input}>
-                    <Text style={styles.inputLabel}>ช่วงเวลาส่งของ</Text>
                     <TextInput
                       clearButtonMode="while-editing"
                       onChangeText={timer => setForm({ ...form, timer })}
-                      placeholder="09.00 - 17.00"
+                      placeholder="ช่วงเวลาส่งของ 09.00 - 17.00"
                       placeholderTextColor="#6b7280"
                       style={styles.inputControl}
                       value={form.timer}
@@ -258,21 +267,20 @@ export default function CreateBranch() {
                   </View>
 
                   <View style={styles.input}>
-                    <Text style={styles.inputLabel}>เบอร์ติดต่อ</Text>
                     <TextInput
                       autoCapitalize="none"
                       autoCorrect={false}
                       clearButtonMode="while-editing"
                       keyboardType="number-pad"
                       onChangeText={phone => setForm({ ...form, phone })}
-                      placeholder="09578512xxx"
+                      placeholder="เบอร์ติดต่อ 09578512xxx"
                       placeholderTextColor="#6b7280"
                       style={styles.inputControl}
                       value={form.phone}
                     />
                   </View>
 
-                  {province && (
+                  {/* {province && (
                     <View style={styles.input}>
                       <Text style={styles.inputLabel}>จังหวัด</Text>
                       <TextInput
@@ -284,7 +292,7 @@ export default function CreateBranch() {
                         value={province}
                       />
                     </View>
-                  )}
+                  )} */}
                 </View>
 
                 <TouchableOpacity

@@ -1,6 +1,6 @@
 import React, { useState, useEffect  } from 'react';
 import { RouteProp, useRoute } from '@react-navigation/native'; // Import useRoute
-import { Image, View, Text, TouchableOpacity, StyleSheet, TextInput, Dimensions, ScrollView, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { Image, View, Text, TouchableOpacity, StyleSheet, Platform, TextInput, Dimensions, KeyboardAvoidingView, ScrollView, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Stack, router } from 'expo-router';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
@@ -85,7 +85,7 @@ const getImageForSize = (size) => {
         remark: '-',
         province: 'จ.สมุทรปราการ',
   });
-  
+  console.log('-->', route.params)
     // ตรวจสอบและรวมข้อมูลจาก MapsDestination
     if (route.params?.selectedLat2 && route.params?.selectedLng2 && route.params?.form) {
       setLocationSend({
@@ -106,6 +106,8 @@ const getImageForSize = (size) => {
   useEffect(() => {
     const calculatePrice = async () => {
       if (formData?.province2 && weight) {
+
+        
         try {
           const getProvince = { province2: formData?.province2 };
           const response = await api.post('/getProvince', getProvince);
@@ -206,12 +208,12 @@ const getImageForSize = (size) => {
             province: formData?.province,
             branch_id: 0,
             price: price,
-            warb: formData?.warb
+            warb
           };
     
           console.log('Creating order with data:', orderData);
           
-         // ส่งคำขอแบบ POST ไปยัง API
+        //  // ส่งคำขอแบบ POST ไปยัง API
           const response = await api.post('/createOrdere', orderData);
           console.log('response', response.data)
           if (response.data.success === true) {
@@ -232,7 +234,14 @@ const getImageForSize = (size) => {
 
     return (
         <>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+       <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+    >
+      {/* Wrap the entire UI in TouchableWithoutFeedback */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
             <View style={{ flex: 1, backgroundColor: '#fff' }}>
                 <Stack.Screen options={{
                     headerTransparent: true,
@@ -256,7 +265,7 @@ const getImageForSize = (size) => {
                         </TouchableOpacity>
                     ),
                     headerRight: () => (
-                        <TouchableOpacity style={styles.btnBack} onPress={() => navigation.goBack()}>
+                        <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(setting)/selectBarnch')}>
                             <View
                                 style={{
                                     backgroundColor: Colors.white,
@@ -429,7 +438,9 @@ const getImageForSize = (size) => {
                     </View>
                 </View>
             </View>
-            </TouchableWithoutFeedback>
+            </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
         </>
     );
 }
@@ -656,13 +667,12 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     footcard: {
-        position: 'absolute',
-        bottom: 0,
         borderTopLeftRadius: 25,
         borderTopRightRadius: 25,
         backgroundColor: '#ffeee4',
         borderRadius: 8,
         padding: 20,
+        marginTop: 30
     },
     footer: {
         flexDirection: 'row',

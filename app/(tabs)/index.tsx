@@ -117,7 +117,7 @@ export default function HomeScreen({ navigation }) {
     const fetchOrders = async () => {
       try {
         // No need to manually fetch the token, as it's added by the interceptor
-        const response = await api.get('/user-order');
+        const response = await api.get('/user-order-cus');
         console.log('Orders response:', response.data);
         setUserOrders(response.data.order); // Set the orders from the response
       } catch (error) {
@@ -136,7 +136,6 @@ export default function HomeScreen({ navigation }) {
   };
 
   if (!isAuthenticated) return null; // Prevent rendering until authenticated
-
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >

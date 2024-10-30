@@ -23,7 +23,7 @@ export default function Verify() {
         
         try {
 
-            const response = await axios.post('https://b577-124-120-218-13.ngrok-free.app/api/reverify', {
+            const response = await axios.post('https://170e-124-120-218-0.ngrok-free.app/api/reverify', {
                 phone_number: '+66'+form.phone, // Phone number from params
               });
 

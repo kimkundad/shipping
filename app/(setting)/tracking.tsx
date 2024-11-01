@@ -71,7 +71,7 @@ export default function Tracking() {
 
         setData(orderData); // ตั้งค่า order ที่ได้รับจาก API
 
-        
+
         // อัพเดทตำแหน่งต้นทางและปลายทาง
         setOrigin({
           latitude: parseFloat(orderData.latitude),
@@ -110,38 +110,38 @@ export default function Tracking() {
 
   const data = order?.order_status === 0
     ? [
-        {
-          time: getCurrentTime(), // ใช้เวลาปัจจุบัน
-          title: 'กำลังค้นหารถขนส่ง',
-          description: 'กำลังค้นหารถขนส่ง',
-        },
-      ]
+      {
+        time: getCurrentTime(), // ใช้เวลาปัจจุบัน
+        title: 'กำลังค้นหารถขนส่ง',
+        description: order?.remark_dri1,
+      },
+    ]
     : [
-        {
-          time: '09:00',
-          title: 'กำลังเตรียมพัสดุ',
-          description: 'ผู้ส่งกำลังเตรียมพัสดุ',
-        },
-        {
-          time: '10:45',
-          title: 'อยู่ระหว่างการขนส่ง',
-          description: 'พัสดุออกจากศูนย์คัดแยกสินค้า ไปยัง HSAPA-A - สะพานสูง',
-        },
-        {
-          time: '54:00',
-          title: 'การจัดส่งสำเร็จ',
-          description: 'พัสดุถูกจัดส่งสำเร็จแล้ว ผู้รับ: กอล์ฟ. ดูหลักฐานการจัดส่งสินค้า.',
-        },
-      ];
+      {
+        time: '09:00',
+        title: 'กำลังเตรียมพัสดุ',
+        description: order?.remark_dri1,
+      },
+      {
+        time: '10:45',
+        title: 'อยู่ระหว่างการขนส่ง',
+        description: 'พัสดุออกจากคลังสินค้า ไปยัง ' + order?.province2 + '' + order?.adddress_re,
+      },
+      {
+        time: '54:00',
+        title: 'การจัดส่งสำเร็จ',
+        description: 'พัสดุถูกจัดส่งสำเร็จแล้ว ผู้รับ: กอล์ฟ. ดูหลักฐานการจัดส่งสินค้า.',
+      },
+    ];
 
-      const handleSendInvoice = () => {
-        Alert.alert('Invoice Sent', 'Sent to: Pairat8409@gmail.com');
-      };
-    
-      const handleDownloadPDF = async (id) => {
+  const handleSendInvoice = () => {
+    Alert.alert('Invoice Sent', 'Sent to: Pairat8409@gmail.com');
+  };
 
-        setLoading(true); // Start loading
-        try {
+  const handleDownloadPDF = async (id) => {
+
+    setLoading(true); // Start loading
+    try {
       // Send POST request to the API
 
       const response = await api.post('/generate-pdf', { id }, { responseType: 'arraybuffer' });
@@ -152,49 +152,72 @@ export default function Tracking() {
         throw new Error('Failed to generate PDF');
       }
 
-     // Convert the response data to a base64 string
-    const base64Data = Buffer.from(response.data, 'binary').toString('base64');
+      // Convert the response data to a base64 string
+      const base64Data = Buffer.from(response.data, 'binary').toString('base64');
 
-    // Define the file path to save the PDF
-    const fileUri = `${FileSystem.documentDirectory}${id}.pdf`;
+      // Define the file path to save the PDF
+      const fileUri = `${FileSystem.documentDirectory}${id}.pdf`;
 
-    // Save the PDF to the filesystem
-    await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+      // Save the PDF to the filesystem
+      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
 
-    // Alert the user and offer to open the PDF
-    Alert.alert('PDF Downloaded', 'Do you want to open it?', [
-      {
-        text: 'Open',
-        onPress: () => handleOpenPDF(fileUri),
-      },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
+      // Alert the user and offer to open the PDF
+      Alert.alert('PDF Downloaded', 'Do you want to open it?', [
+        {
+          text: 'Open',
+          onPress: () => handleOpenPDF(fileUri),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]);
 
-      } catch (error) {
-        Alert.alert('ข้อผิดพลาด', error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
-      } finally {
-        setLoading(false); // Stop loading
+    } catch (error) {
+      Alert.alert('ข้อผิดพลาด', error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
+    } finally {
+      setLoading(false); // Stop loading
+    }
+
+  };
+
+
+  const handleOpenPDF = async (fileUri) => {
+    try {
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        Alert.alert('Error', 'Sharing is not available on this device');
+        return;
       }
 
-      };
+      // Use the Sharing API to open the PDF
+      await Sharing.shareAsync(fileUri);
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to open the PDF');
+    }
+  };
 
-   
-      const handleOpenPDF = async (fileUri) => {
-        try {
-          const isAvailable = await Sharing.isAvailableAsync();
-          if (!isAvailable) {
-            Alert.alert('Error', 'Sharing is not available on this device');
-            return;
-          }
-      
-          // Use the Sharing API to open the PDF
-          await Sharing.shareAsync(fileUri);
-        } catch (error) {
-          Alert.alert('Error', error.message || 'Failed to open the PDF');
-        }
-      };
+  const renderDetail = (rowData) => {
+    const { title, description } = rowData;
+
+    const textColor = order?.status_dri === 1 ? '#121F43' : '#cfcfcf';
+    console.log('order?.status_dri', order?.status_dri)
+    // Conditional styling based on title
+    const titleStyle = {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: title === 'อยู่ระหว่างการขนส่ง' ? textColor : '#121F43', // Orange for "อยู่ระหว่างการขนส่ง"
+    };
+    const descriptionStyle = {
+        color: title === 'อยู่ระหว่างการขนส่ง' ? textColor : '#121F43', // Orange for "อยู่ระหว่างการขนส่ง"
+    };
+
+    return (
+        <View>
+            <Text style={titleStyle}>{title}</Text>
+            <Text style={descriptionStyle}>{description}</Text>
+        </View>
+    );
+};
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#f5f5f5' }} >
@@ -202,14 +225,14 @@ export default function Tracking() {
       <ScrollView>
         <View style={styles.listItemCon}>
           <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-          <TouchableOpacity
-                                onPress={() => router.push('(tabs)')}
-                            >
-                                <View style={{ padding: 10 }}>
-                                <Ionicons name="chevron-back" size={28} color="black" />
-                                </View>
-                            
-                            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.push('(tabs)')}
+            >
+              <View style={{ padding: 10 }}>
+                <Ionicons name="chevron-back" size={28} color="black" />
+              </View>
+
+            </TouchableOpacity>
             <View style={styles.textListHead} >
               <Text style={{
                 fontSize: 16,
@@ -218,14 +241,14 @@ export default function Tracking() {
               }}>{order?.dri_time}</Text>
             </View>
             <TouchableOpacity
-                  onPress={() => {
-                    // handle onPress
-                    router.push('(setting)/notification');
-                  }}>
-                  <View>
-                    <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
-                  </View>
-                </TouchableOpacity>
+              onPress={() => {
+                // handle onPress
+                router.push('(setting)/notification');
+              }}>
+              <View>
+                <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -243,15 +266,7 @@ export default function Tracking() {
               style={styles.map} >
               {carTack && (
                 <>
-                  <MapViewDirections
-                    origin={carTack}
-                    destination={destination}
-                    apikey={GOOGLE_MAPS_APIKEY}
-                    strokeWidth={3}
-                    strokeColor="hotpink"
-                    mode='DRIVING'
-                    language='th'
-                  />
+                  
                   <MapViewDirections
                     origin={origin}
                     destination={destination}
@@ -265,12 +280,37 @@ export default function Tracking() {
                     coordinate={destination}
                     title="Starting Point"
                   />
-                  <Marker
-                    coordinate={carTack}
-                    title="Destination Point"
-                  >
-                    <Image source={require('../../assets/images/truck.png')} style={{ height: 35, width: 35 }} />
-                  </Marker>
+                  {order?.status_dri === 1 ? (
+                    <>
+                    <MapViewDirections
+                    origin={carTack}
+                    destination={destination}
+                    apikey={GOOGLE_MAPS_APIKEY}
+                    strokeWidth={3}
+                    strokeColor="hotpink"
+                    mode='DRIVING'
+                    language='th'
+                  />
+                    <Marker
+                      coordinate={carTack}
+                      title="Destination Point"
+                    >
+                      <Image source={require('../../assets/images/truck.png')} style={{ height: 35, width: 35 }} />
+                    </Marker>
+                    </>
+                  ) : (
+
+                    <Marker
+                      coordinate={origin}
+                      title="Destination Point"
+                    >
+                      <Image source={require('../../assets/images/truck.png')} style={{ height: 35, width: 35 }} />
+                    </Marker>
+
+                  )
+
+                  }
+
                 </>
               )}
 
@@ -331,92 +371,93 @@ export default function Tracking() {
             <View style={styles.textBoxDetail}>
               <View style={styles.flexItem}>
                 <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
-                <Text style={{ fontWeight: 700, fontSize: 13 }}>{ order?.b_name }</Text>
+                <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.b_name}</Text>
               </View>
               <View style={styles.flexItem2}>
                 <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>จำนวน</Text>
-                <Text style={{ fontWeight: 700, fontSize: 13 }}>{ order?.weight }</Text>
+                <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.weight}</Text>
               </View>
             </View>
 
-            { order?.branch_id === 0 ? (
+            {order?.branch_id === 0 ? (
 
               <View style={styles.textBoxDetail}>
-              <View style={styles.flexItem}>
-                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ผู้รับสินค้า</Text>
-                <Text style={{ fontWeight: 700, fontSize: 13 }}>{ order?.b_recive_name }</Text>
-              </View>
-              <View style={styles.flexItem2}>
-                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>Type</Text>
-                <Text style={{ fontWeight: 700, fontSize: 13 }}> { order?.type }, size : { order?.size }</Text>
-              </View>
+                <View style={styles.flexItem}>
+                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ผู้รับสินค้า</Text>
+                  <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.b_recive_name}</Text>
+                </View>
+                <View style={styles.flexItem2}>
+                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>Type</Text>
+                  <Text style={{ fontWeight: 700, fontSize: 13 }}> {order?.type}, size : {order?.size}</Text>
+                </View>
               </View>
 
             ) : (
 
               <View style={styles.textBoxDetail}>
-              <View style={styles.flexItem}>
-                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ผู้รับสินค้า</Text>
-                <Text style={{ fontWeight: 700, fontSize: 13 }}>{ order?.b_recive_name }</Text>
+                <View style={styles.flexItem}>
+                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ผู้รับสินค้า</Text>
+                  <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.b_recive_name}</Text>
+                </View>
+                <View style={styles.flexItem2}>
+                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>Type</Text>
+                  <Text style={{ fontWeight: 700, fontSize: 13 }}> {order?.dri_type}, {order?.dri_no_car}</Text>
+                </View>
               </View>
-              <View style={styles.flexItem2}>
-                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>Type</Text>
-                <Text style={{ fontWeight: 700, fontSize: 13 }}> { order?.dri_type }, { order?.dri_no_car }</Text>
-              </View>
-            </View>
 
             )}
-            
+
 
           </View>
 
 
           <View style={styles.boxItemList}>
-            <Timeline
-              data={data}
-              circleSize={20}
-              circleColor='#121F43'
-              lineColor='#f47524'
-              timeContainerStyle={{ minWidth: 52, marginTop: -5 }}
-              timeStyle={{
+          <Timeline
+            data={data}
+            circleSize={20}
+            circleColor="#121F43"
+            lineColor="#f47524"
+            timeContainerStyle={{ minWidth: 52, marginTop: -5 }}
+            timeStyle={{
                 textAlign: 'center',
                 color: '#121F43',
                 padding: 5,
-                fontWeight: 700,
+                fontWeight: '700',
                 borderRadius: 13,
-              }}
-              descriptionStyle={{ color: 'gray' }}
-              options={{
-                style: { paddingTop: 10 }
-              }}
-              innerCircle={'dot'}
-            />
+            }}
+            descriptionStyle={{ color: 'gray' }}
+            options={{
+                style: { paddingTop: 10 },
+            }}
+            innerCircle="dot"
+            renderDetail={renderDetail} // Use customized renderDetail
+        />
           </View>
 
-         
-         {order?.order_status === 2 &&
-          (
-            <View>
 
-      <TouchableOpacity style={styles.button} onPress={handleSendInvoice}>
-        <MaterialIcons name="email" size={24} color="#e67e22" />
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>ส่งใบเสร็จรับเงิน</Text>
-          <Text style={styles.subtitle}>ส่งไปที่ Pairat8409@gmail.com</Text>
-        </View>
-      </TouchableOpacity>
+          {order?.order_status === 2 &&
+            (
+              <View>
 
-      {/* Download PDF Button */}
-      <TouchableOpacity style={styles.button} onPress={() => handleDownloadPDF(order?.id)}>
-        <Feather name="download" size={24} color="#e67e22" />
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>ดาวน์โหลด PDF</Text>
-        </View>
-      </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={handleSendInvoice}>
+                  <MaterialIcons name="email" size={24} color="#e67e22" />
+                  <View style={styles.textContainer}>
+                    <Text style={styles.title}>ส่งใบเสร็จรับเงิน</Text>
+                    <Text style={styles.subtitle}>ส่งไปที่ Pairat8409@gmail.com</Text>
+                  </View>
+                </TouchableOpacity>
 
-            </View>
-          )
-         }
+                {/* Download PDF Button */}
+                <TouchableOpacity style={styles.button} onPress={() => handleDownloadPDF(order?.id)}>
+                  <Feather name="download" size={24} color="#e67e22" />
+                  <View style={styles.textContainer}>
+                    <Text style={styles.title}>ดาวน์โหลด PDF</Text>
+                  </View>
+                </TouchableOpacity>
+
+              </View>
+            )
+          }
 
 
         </View>

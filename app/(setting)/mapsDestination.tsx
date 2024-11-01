@@ -6,6 +6,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
+import provinceData from '../../assets/raw/raw_database.json';
 
 export default function MapsDestination() {
   const [location, setLocation] = useState(null);
@@ -53,13 +54,20 @@ export default function MapsDestination() {
       if (address && address.length > 0) {
 
         const addr = address[0];
-      const formattedAddress = `${addr.street || ''} ${addr.district || ''} ${addr.subregion || ''} ${addr.region || ''} ${addr.country || ''} ${addr.postalCode || ''}`.trim();
+        const formattedAddress = `${addr.street || ''} ${addr.district || ''} ${addr.subregion || ''} ${addr.region || ''} ${addr.country || ''} ${addr.postalCode || ''}`.trim();
+        const zipcode = address[0].postalCode;
 
 
+        const provinceEntry = provinceData.find(
+          (entry) => entry.zipcode.toString() === zipcode
+        );
 
-        setProvince(address[0].region);
+        if (provinceEntry) {
+          setProvince(provinceEntry.province);
+        }
         setForm((prevForm) => ({ ...prevForm, adddress2: formattedAddress }));
       }
+
     })();
   }, []);
 
@@ -79,13 +87,21 @@ export default function MapsDestination() {
 
     if (address && address.length > 0) {
 
-      const addr = address[0];
-      const formattedAddress = `${addr.street || ''} ${addr.district || ''} ${addr.subregion || ''} ${addr.region || ''} ${addr.country || ''} ${addr.postalCode || ''}`.trim();
+        const addr = address[0];
+        const formattedAddress = `${addr.street || ''} ${addr.district || ''} ${addr.subregion || ''} ${addr.region || ''} ${addr.country || ''} ${addr.postalCode || ''}`.trim();
+        const zipcode = address[0].postalCode;
 
 
-      setProvince(address[0].region);
-      setForm((prevForm) => ({ ...prevForm, adddress2: formattedAddress }));
-    }
+        const provinceEntry = provinceData.find(
+          (entry) => entry.zipcode.toString() === zipcode
+        );
+
+        if (provinceEntry) {
+          setProvince(provinceEntry.province);
+        }
+        setForm((prevForm) => ({ ...prevForm, adddress2: formattedAddress }));
+      }
+
   };
 
   return (

@@ -7,6 +7,7 @@ import MapView, { Marker, Circle } from 'react-native-maps';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import api from '../../hooks/api'; // Axios instance
+import provinceData from '../../assets/raw/raw_database.json';
 
 export default function CreateBranch() {
 
@@ -64,18 +65,28 @@ export default function CreateBranch() {
 
         if (address && address.length > 0) {
           
-          const region = address[0].region;
+          const zipcode = address[0].postalCode;
 
           const addr = address[0];
           const formattedAddress = `${addr.street || ''} ${addr.district || ''} ${addr.subregion || ''} ${addr.region || ''} ${addr.country || ''} ${addr.postalCode || ''}`.trim();
 
           
-          setProvince(region);
+          // Find matching province from JSON based on postal code
+          const provinceEntry = provinceData.find(
+            (entry) => entry.zipcode.toString() === zipcode
+          );
+
+          if (provinceEntry) {
+          setProvince(provinceEntry.province);
+          console.log('Matched Province:', provinceEntry.province);
+          }else {
+            console.warn('Province not found for this postal code');
+          }
 
           // Update the form with the fetched province and coordinates
           setForm((prevForm) => ({
             ...prevForm,
-            province: region, // Set the province
+            province: province, // Set the province
             selectedLat2: latitude, // Set latitude
             selectedLng2: longitude, // Set longitude
             address: formattedAddress,
@@ -115,10 +126,23 @@ export default function CreateBranch() {
       const addr = address[0];
       const formattedAddress = `${addr.street || ''} ${addr.district || ''} ${addr.subregion || ''} ${addr.region || ''} ${addr.country || ''} ${addr.postalCode || ''}`.trim();
 
-      setProvince(address[0].region);
+      const zipcode = address[0].postalCode;
+
+      const provinceEntry = provinceData.find(
+        (entry) => entry.zipcode.toString() === zipcode
+      );
+
+      if (provinceEntry) {
+        setProvince(provinceEntry.province);
+        console.log('Matched Province:', provinceEntry.province);
+      } else {
+        console.warn('Province not found for this postal code');
+      }
+
+ 
       setForm((prevForm) => ({
         ...prevForm,
-        province: address[0].region,
+        province: province,
         address: formattedAddress,
       }));
     }

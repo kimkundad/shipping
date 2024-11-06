@@ -1,4 +1,4 @@
-import { Image, View, Text, StyleSheet, Platform ,TextInput, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import { Image, View, Text, StyleSheet, RefreshControl ,TextInput, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Link, useNavigation, router  } from 'expo-router';
 import React, { useEffect, useContext ,useState } from 'react';
@@ -14,27 +14,37 @@ import DeviveryStatus from '../../components/DeviveryStatus'
 export default function History() {
 
   const { userOrders, setUserOrders } = useContext(UserContext);
+  const [refreshing, setRefreshing] = useState(false); // Track refresh state
+
+  const fetchOrders = async () => {
+    try {
+      const response = await api.get('/user-order');
+      console.log('Orders response:', response.data);
+      setUserOrders(response.data.order); // Set the orders from the response
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  };
+
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchOrders(); // Fetch data again when refreshing
+    setRefreshing(false);
+  };
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        // No need to manually fetch the token, as it's added by the interceptor
-        const response = await api.get('/user-order');
-        console.log('Orders response:', response.data);
-        setUserOrders(response.data.order); // Set the orders from the response
-      } catch (error) {
-        console.error('Error fetching orders:', error);
-      }
-    };
-
     fetchOrders(); // Fetch once when the component mounts
-
   }, []);
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
       <StatusBar style="dark"  />
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <View >
         <View style={styles.container}>             
       

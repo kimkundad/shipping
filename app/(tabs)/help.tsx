@@ -84,7 +84,7 @@ const Helpcen = () => {
                         <View style={styles.container}>
 
                         <View style={{ alignItems: 'center' }}>
-                        <Image source={require('../../assets/images/help.png')}
+                        <Image source={require('../../assets/images/help_center.webp')}
                             style={{ width: 360, height: 202 }} />
                             <View>
                                 <Text style={{ 

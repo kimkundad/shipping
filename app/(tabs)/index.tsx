@@ -1,9 +1,8 @@
-import { Image, View, Text, StyleSheet, Dimensions, Platform, TextInput, Alert, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import { Image, View, Text, StyleSheet, Dimensions, RefreshControl, Platform, TextInput, Alert, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Link, useNavigation, router, Stack, useRouter  } from 'expo-router';
-import React, { useEffect, useContext ,useState } from 'react';
+import React, { useEffect, useContext ,useState, useRef } from 'react';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { StatusBar } from 'expo-status-bar';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Carousel from 'react-native-reanimated-carousel';
@@ -13,31 +12,7 @@ import axios from 'axios';
 import api from '../../hooks/api'; // Axios instance
 import { useCameraPermissions } from "expo-camera";
 import DeviveryStatus from '../../components/DeviveryStatus'
-
-const POLL_INTERVAL = 5550000; // Poll every 5 seconds
-
-const DATA = [
-  {
-    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    title: 'First Item',
-  },
-  {
-    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-    title: 'Second Item',
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29d7d2',
-    title: 'Third Item',
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29ds72',
-    title: 'Third Item',
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e2f9d72',
-    title: 'Third Item',
-  },
-];
+import { Ionicons, Feather, MaterialIcons } from '@expo/vector-icons';
 
 type ItemProps = { title: string };
 
@@ -75,11 +50,25 @@ const Item = ({ title }: ItemProps) => (
 export default function HomeScreen({ navigation }) {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userName, setUserName] = useState('');
   const { userProfile }  = useContext(UserContext);
   const { userOrders, setUserOrders } = useContext(UserContext);
   const [permission, requestPermission] = useCameraPermissions();
   const isPermissionGranted = Boolean(permission?.granted);
+  const [searchInput, setSearchInput] = useState('');
+  const [refreshing, setRefreshing] = useState(false); // Track refresh state
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    // Here you can re-fetch data or any other logic for refreshing content
+    try {
+      const response = await api.get('/user-order-cus');
+      setUserOrders(response.data.order); // Refresh user orders
+    } catch (error) {
+      console.error('Error refreshing orders:', error);
+    }
+    setRefreshing(false);
+  };
+
 
   const handleScanPress = async () => {
     if (permission?.granted) {
@@ -135,12 +124,38 @@ export default function HomeScreen({ navigation }) {
     navigation.navigate('Login');
   };
 
+  const handleSearch = async () => {
+    try {
+      
+      const response = await api.post('/checkQrcode', { qrcode: searchInput });
+      console.log('response', response.data)
+      if (response.data.success === true) {
+        Alert.alert('สำเร็จ', 'กำลังโหลดข้อมูล');
+  
+        router.push({
+          pathname: '(setting)/tracking',
+          params: { id: response.data.order.id },
+        });
+      } else {
+        Alert.alert('ข้อผิดพลาด', 'ไม่พบข้อมูลของท่าน');
+      }
+    } catch (error) {
+      console.error('Error checking QR code:', error);
+      Alert.alert('Error', 'Error checking the QR code.');
+    }
+  };
+
   if (!isAuthenticated) return null; // Prevent rendering until authenticated
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
       <StatusBar style="light" />
-      <ScrollView>
+      <ScrollView
+      
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      >
         <View >
 
           <View style={styles.containerBlue} />
@@ -181,15 +196,28 @@ export default function HomeScreen({ navigation }) {
             </View>
             {/* profileMain  */}
             {/* search bar */}
-            <View style={styles.searchBar}>
-                <AntDesign
-                  onPress={handleScanPress}
-                  style={styles.iconScan}
-                  name="scan1" size={24} color="black" />
-              <TextInput placeholder='Enter your tracking Number'
-                style={styles.TextInput}
+            <View style={styles.inputContainer}>
+              <AntDesign
+                onPress={handleScanPress}
+                style={styles.iconScan}
+                name="scan1"
+                size={24}
+                color="black"
               />
-            </View>
+              <TextInput
+                placeholder="Enter your tracking Number"
+                style={styles.TextInput}
+                value={searchInput}
+                onChangeText={setSearchInput}
+              />
+              <Feather
+                style={styles.searchIcon}
+                name="search"
+                size={24}
+                color="gray"
+                onPress={handleSearch}
+              />
+          </View>
             {/* search bar */}
             
             <View style={styles.boxGiff}>
@@ -338,112 +366,7 @@ export default function HomeScreen({ navigation }) {
               </View>
             )}
 
-            {/* <TouchableOpacity
-                onPress={() => {
-                  // handle onPress
-                  router.push('(setting)/tracking');
-                }}>
-              <View style={styles.boxItemList}>
-                <View style={styles.containerOrderMain}>
-                  <View style={styles.containerOrder}>
-                    <View >
-                      <Image source={require('../../assets/images/icon_truck.png')}
-                        style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
-                    </View>
-                    <View >
-                      <Text style={{ fontWeight: 700, fontSize: 16 }}>#ORDR1274663</Text>
-                      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>06 ก.ค. 2024 15.47 น.</Text>
-                    </View>
-                  </View>
-                  <View style={styles.textStatus}>
-                    <Text style={{ color: '#fff', fontSize: 12 }}>On Devivery</Text>
-                  </View>
-                </View>
-                <View style={styles.textBoxDetail}>
-                  <View style={styles.flexItem}>
-                    <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
-                    <Text style={{ fontWeight: 700, fontSize: 13 }}>รามอินทรา กม 8</Text>
-                  </View>
-                  <View style={styles.flexItem}>
-                    <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
-                    <Text style={{ fontWeight: 700, fontSize: 13 }}>1.3 kg</Text>
-                  </View>
-                </View>
-              </View>
-              </TouchableOpacity>
-
-
-              <TouchableOpacity
-                onPress={() => {
-                  // handle onPress
-                  router.push('(setting)/tracking');
-                }}>
-              <View style={styles.boxItemList}>
-                <View style={styles.containerOrderMain}>
-                  <View style={styles.containerOrder}>
-                    <View >
-                      <Image source={require('../../assets/images/icon_truck.png')}
-                        style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
-                    </View>
-                    <View >
-                      <Text style={{ fontWeight: 700, fontSize: 16 }}>#ORDR1274663</Text>
-                      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>06 ก.ค. 2024 15.47 น.</Text>
-                    </View>
-                  </View>
-                  <View style={styles.textStatus3}>
-                    <Text style={{ color: '#fff', fontSize: 12 }}>Accident</Text>
-                  </View>
-                </View>
-                <View style={styles.textBoxDetail}>
-                  <View style={styles.flexItem}>
-                    <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
-                    <Text style={{ fontWeight: 700, fontSize: 13 }}>รามอินทรา กม 8</Text>
-                  </View>
-                  <View style={styles.flexItem}>
-                    <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
-                    <Text style={{ fontWeight: 700, fontSize: 13 }}>1.3 kg</Text>
-                  </View>
-                </View>
-              </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => {
-                  // handle onPress
-                  router.push('(setting)/tracking');
-                }}>
-              <View style={styles.boxItemList}>
-                <View style={styles.containerOrderMain}>
-                  <View style={styles.containerOrder}>
-                    <View >
-                      <Image source={require('../../assets/images/icon_truck.png')}
-                        style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
-                    </View>
-                    <View >
-                      <Text style={{ fontWeight: 700, fontSize: 16 }}>#ORDR1274663</Text>
-                      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>06 ก.ค. 2024 15.47 น.</Text>
-                    </View>
-                  </View>
-                  <View style={styles.textStatus2}>
-                    <Text style={{ color: '#fff', fontSize: 12 }}>Success</Text>
-                  </View>
-                </View>
-                <View style={styles.textBoxDetail}>
-                  <View style={styles.flexItem}>
-                    <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
-                    <Text style={{ fontWeight: 700, fontSize: 13 }}>รามอินทรา กม 8</Text>
-                  </View>
-                  <View style={styles.flexItem}>
-                    <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
-                    <Text style={{ fontWeight: 700, fontSize: 13 }}>1.3 kg</Text>
-                  </View>
-                </View>
-              </View>
-              </TouchableOpacity> */}
-
-             
-
-
+           
             </View>
 
           </View>
@@ -465,6 +388,9 @@ const styles = StyleSheet.create({
     height: 250,
     position: 'absolute',
     width: '100%'
+  },
+  searchIcon: {
+    padding: 10,
   },
   containerOrderMain: {
     display: 'flex',
@@ -547,22 +473,30 @@ const styles = StyleSheet.create({
     gap: 10
   },
   TextInput: {
-    padding: 7,
-    paddingHorizontal: 0,
-    backgroundColor: Colors.white,
-    width: '87%',
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
+    flex: 1, // ใช้ flex 1 เพื่อให้ช่องป้อนข้อมูลขยายได้เต็มที่
+    paddingHorizontal: 10, // เพิ่ม padding ภายใน TextInput
   },
   searchBar: {
     marginTop: 15,
     display: 'flex',
     flexDirection: 'row',
     marginBottom: 10,
+    justifyContent: 'space-between'
+  },
+  inputContainer: {
+    marginTop: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    marginBottom: 10,
+    borderWidth: 0.5,
+    borderColor: '#999',
+    paddingHorizontal: 10, // เพิ่ม padding เพื่อให้มีระยะห่างภายใน container
   },
   iconScan: {
-    backgroundColor: Colors.white,
     padding: 10,
+    backgroundColor: Colors.white,
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
     overflow: 'hidden',

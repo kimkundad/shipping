@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View, Platform, LogBox, KeyboardAvoidingView, ScrollView, Alert, Linking, TouchableOpacity } from 'react-native';
+import { StyleSheet, Image, Text, View, Platform, FlatList, LogBox, KeyboardAvoidingView, ScrollView, Alert, Linking, TouchableOpacity, RefreshControl  } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import React, { useEffect, useState } from 'react';
@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import Timeline from 'react-native-timeline-flatlist';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import MapViewDirections from 'react-native-maps-directions';
-import { Link, useNavigation, useLocalSearchParams, router } from 'expo-router';
+import { Link, useNavigation, useLocalSearchParams, router, Stack } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
@@ -17,6 +17,7 @@ import * as Sharing from 'expo-sharing';
 import * as WebBrowser from 'expo-web-browser';
 import { Buffer } from 'buffer';
 
+
 LogBox.ignoreLogs([
   'VirtualizedLists should never be nested', // Example of specific warning to ignore
   'MapViewDirections Error: Error on GMAPS route request', // Your warning here
@@ -24,14 +25,6 @@ LogBox.ignoreLogs([
 ]);
 
 export default function Tracking() {
-
-  const { id } = useLocalSearchParams(); // รับพารามิเตอร์ id
-  const [loading, setLoading] = useState(false);
-
-  const getCurrentTime = () => {
-    const now = new Date();
-    return now.toTimeString().split(' ')[0]; // แสดงเวลาในรูปแบบ HH:MM:SS
-  };
 
   interface Order {
     dri_time: string;
@@ -49,49 +42,54 @@ export default function Tracking() {
     longitude2: number;    // เพิ่ม longitude2
   }
 
+  const { id } = useLocalSearchParams(); // รับพารามิเตอร์ id
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [timeLine, setTimeLine] = useState([]);
+
   const [order, setData] = useState<Order | null>(null);
   const [origin, setOrigin] = useState({ latitude: 13.5116094, longitude: 100.68715 }); // เก็บตำแหน่งต้นทาง
   const [destination, setDestination] = useState({ latitude: 13.5116094, longitude: 100.68715 }); // เก็บตำแหน่งปลายทาง
   const [carTack, setCarTack] = useState({ latitude: 0, longitude: 0 }); // เก็บตำแหน่งปลายทาง
   const GOOGLE_MAPS_APIKEY = 'AIzaSyDtcFHSNerbvIWPVv5OStj-czBq_6RMbRg';
 
-  const [form, setForm] = useState({
-    id: id
-  });
+  const fetchOrder = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get(`/getOrderByID/${id}`);
+      const orderData = response.data.order;
+      setData(orderData);
+      setTimeLine(response?.data?.timeline);
+      setOrigin({
+        latitude: parseFloat(orderData.latitude),
+        longitude: parseFloat(orderData.longitude),
+      });
+      setDestination({
+        latitude: parseFloat(orderData.latitude2),
+        longitude: parseFloat(orderData.longitude2),
+      });
+      setCarTack({
+        latitude: parseFloat(orderData.d_lat),
+        longitude: parseFloat(orderData.d_long),
+      });
+    } catch (error) {
+      console.error('Error fetching order:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchOrder();
+    setRefreshing(false);
+  };
 
   useEffect(() => {
-    // ตรวจสอบว่ามี id หรือไม่ก่อนที่จะดึงข้อมูล
-    if (!id) return;
-
-    // ฟังก์ชัน async ที่จะเรียก API
-    const fetchOrder = async () => {
-      try {
-        const response = await api.get(`/getOrderByID/${id}`); // เรียก API เพื่อดึง order ข้อมูลผู้ใช้
-        const orderData = response.data.order;
-
-        setData(orderData); // ตั้งค่า order ที่ได้รับจาก API
-
-
-        // อัพเดทตำแหน่งต้นทางและปลายทาง
-        setOrigin({
-          latitude: parseFloat(orderData.latitude),
-          longitude: parseFloat(orderData.longitude),
-        });
-        setDestination({
-          latitude: parseFloat(orderData.latitude2),
-          longitude: parseFloat(orderData.longitude2),
-        });
-        setCarTack({
-          latitude: parseFloat(orderData.d_lat),
-          longitude: parseFloat(orderData.d_long),
-        });
-      } catch (error) {
-        console.error('Error fetching order:', error);
-      }
-    };
-
-    fetchOrder(); // เรียกฟังก์ชันดึงข้อมูลเมื่อ id เปลี่ยนแปลง
-  }, [id]); // Depend on id to refetch when it changes
+    if (id) {
+      fetchOrder();
+    }
+  }, [id]);
 
 
   const handlePress = async () => {
@@ -107,32 +105,6 @@ export default function Tracking() {
       Alert.alert('Error', 'Phone number is not provided');
     }
   };
-
-  const data = order?.order_status === 0
-    ? [
-      {
-        time: getCurrentTime(), // ใช้เวลาปัจจุบัน
-        title: 'กำลังค้นหารถขนส่ง',
-        description: order?.remark_dri1,
-      },
-    ]
-    : [
-      {
-        time: '09:00',
-        title: 'กำลังเตรียมพัสดุ',
-        description: order?.remark_dri1,
-      },
-      {
-        time: '10:45',
-        title: 'อยู่ระหว่างการขนส่ง',
-        description: 'พัสดุออกจากคลังสินค้า ไปยัง ' + order?.province2 + '' + order?.adddress_re,
-      },
-      {
-        time: '54:00',
-        title: 'การจัดส่งสำเร็จ',
-        description: 'พัสดุถูกจัดส่งสำเร็จแล้ว ผู้รับ: กอล์ฟ. ดูหลักฐานการจัดส่งสินค้า.',
-      },
-    ];
 
   const handleSendInvoice = () => {
     Alert.alert('Invoice Sent', 'Sent to: Pairat8409@gmail.com');
@@ -196,61 +168,72 @@ export default function Tracking() {
     }
   };
 
-  const renderDetail = (rowData) => {
-    const { title, description } = rowData;
 
-    const textColor = order?.status_dri === 1 ? '#121F43' : '#cfcfcf';
-    console.log('order?.status_dri', order?.status_dri)
-    // Conditional styling based on title
-    const titleStyle = {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: title === 'อยู่ระหว่างการขนส่ง' ? textColor : '#121F43', // Orange for "อยู่ระหว่างการขนส่ง"
-    };
-    const descriptionStyle = {
-        color: title === 'อยู่ระหว่างการขนส่ง' ? textColor : '#121F43', // Orange for "อยู่ระหว่างการขนส่ง"
-    };
+const TimelineItem = ({ item , isLastItem }) => {
+  const icon = item.icon || 'circle';
 
-    return (
-        <View>
-            <Text style={titleStyle}>{title}</Text>
-            <Text style={descriptionStyle}>{description}</Text>
+  return (
+    <View style={styles.timelineItem}>
+      {/* Icon */}
+      <View style={[styles.iconContainer, item.active ? styles.activeIcon : styles.inactiveIcon]}>
+        <MaterialIcons name={icon} size={24} color={item.active ? '#f47524' : '#cfcfcf'} />
+      </View>
+      {/* Line */}
+      {!isLastItem && (
+        <View style={styles.lineContainer}>
+          <View style={styles.line} />
         </View>
-    );
+      )}
+      {/* Date and Details */}
+      <View style={styles.textContainer}>
+        <Text style={[styles.dateText, item.active ? styles.activeText : styles.inactiveText]}>
+          {item.date} {isLastItem}
+        </Text>
+        {item.status && (
+          <Text style={[styles.statusText, item.active ? styles.activeText : styles.inactiveText]}>
+            {item.status}
+          </Text>
+        )}
+        <Text style={[styles.descriptionText, item.active ? styles.activeText : styles.inactiveText]}>
+          {item.description}
+        </Text>
+      </View>
+    </View>
+  );
 };
+
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#f5f5f5' }} >
       <StatusBar style="dark" />
-      <ScrollView>
-        <View style={styles.listItemCon}>
-          <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-            <TouchableOpacity
-              onPress={() => router.push('(tabs)')}
-            >
-              <View style={{ padding: 10 }}>
-                <Ionicons name="chevron-back" size={28} color="black" />
-              </View>
-
-            </TouchableOpacity>
-            <View style={styles.textListHead} >
-              <Text style={{
-                fontSize: 16,
-                fontFamily: 'Prompt_500Medium',
-                paddingTop: 5
-              }}>{order?.dri_time}</Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => {
-                // handle onPress
-                router.push('(setting)/notification');
-              }}>
-              <View>
-                <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
+      <Stack.Screen options={{
+                    headerTransparent: true,
+                    headerTitle: ' ',
+                    headerTitleStyle: {
+                        color: 'white', // กำหนดสีของ headerTitle
+                        fontFamily: 'Prompt_500Medium', // กำหนดฟอนต์
+                        fontSize: 18
+                    },
+                    headerLeft: () => (
+                        <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(tabs)')}>
+                            <View
+                                style={{
+                                    backgroundColor: Colors.white,
+                                    padding: 6,
+                                    borderRadius: 10
+                                }}
+                            >
+                                <Ionicons name="chevron-back" size={20} color="black" />
+                            </View>
+                        </TouchableOpacity>
+                    ),
+                }} />
+      <ScrollView
+       refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      >
+       
 
 
         {destination && (
@@ -336,9 +319,6 @@ export default function Tracking() {
                   <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>{order?.dri_time}</Text>
                 </View>
               </View>
-              {/* <View style={styles.textStatus}>
-                <Text style={{ color: '#fff', fontSize: 12 }}>On Devivery</Text>
-              </View> */}
 
               <View>
                 {/* ส่ง order ทั้งก้อนเข้าไปใน DeviveryStatus */}
@@ -346,6 +326,7 @@ export default function Tracking() {
               </View>
 
             </View>
+
 
             {/* profileMain  */}
             <View style={styles.profileMain}>
@@ -411,28 +392,19 @@ export default function Tracking() {
           </View>
 
 
-          <View style={styles.boxItemList}>
-          <Timeline
-            data={data}
-            circleSize={20}
-            circleColor="#121F43"
-            lineColor="#f47524"
-            timeContainerStyle={{ minWidth: 52, marginTop: -5 }}
-            timeStyle={{
-                textAlign: 'center',
-                color: '#121F43',
-                padding: 5,
-                fontWeight: '700',
-                borderRadius: 13,
-            }}
-            descriptionStyle={{ color: 'gray' }}
-            options={{
-                style: { paddingTop: 10 },
-            }}
-            innerCircle="dot"
-            renderDetail={renderDetail} // Use customized renderDetail
-        />
-          </View>
+
+          <View style={styles.boxItemList2}>
+          <FlatList
+        data={timeLine}
+        renderItem={({ item, index }) => (
+          <TimelineItem item={item} isLastItem={index === timeLine?.length - 1} />
+        )}
+        keyExtractor={(item) => item.id}
+      />
+      </View>
+
+
+          
 
 
           {order?.order_status === 2 &&
@@ -472,6 +444,71 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 15,
   },
+  timelineItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+    position: 'relative',
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
+  },
+  activeIcon: {
+    backgroundColor: '#ffe8d9', // Light green background for active items
+  },
+  inactiveIcon: {
+    backgroundColor: '#f0f0f0', // Light gray background for inactive items
+  },
+  btnBack: {
+    backgroundColor: 'rgba(0, 19, 255, 0.2)',
+    borderRadius: 10,
+    padding: 4,
+    alignItems: 'center',
+},
+  lineContainer: {
+    position: 'absolute',
+    left: 19,
+    top: 40,
+    bottom: -30, // This makes the line stretch to the bottom of the container
+    width: 2,
+    flexGrow: 1, // Allow the container to grow with the content
+  },
+  line: {
+    flex: 1,
+    backgroundColor: '#cfcfcf',
+  },
+  textContainer: {
+    marginLeft: 20,
+    flexShrink: 1,
+  },
+  dateText: {
+    fontFamily: 'Prompt_400Regular',
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  statusText: {
+    fontSize: 14,
+    fontFamily: 'Prompt_500Medium',
+    color: '#1abc9c',
+    marginBottom: 4,
+  },
+  descriptionText: {
+    fontSize: 14,
+    color: '#666',
+    flexWrap: 'wrap', // Allow wrapping
+    flexShrink: 1, // Shrink text to fit within the available space
+    fontFamily: 'Prompt_400Regular',
+  },
+  activeText: {
+    color: '#121F43',
+  },
+  inactiveText: {
+    color: '#666',
+  },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -482,9 +519,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     backgroundColor: '#fff',
     paddingHorizontal: 8
-  },
-  textContainer: {
-    marginLeft: 15,
   },
   title: {
     fontSize: 16,
@@ -606,6 +640,25 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderRadius: 10,
     padding: 5,
+    marginTop: 12,
+    // iOS shadow properties
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    // Android shadow (elevation)
+    elevation: 0.8,
+  },
+  boxItemList2: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    padding: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
     marginTop: 12,
     // iOS shadow properties
     shadowColor: '#000',

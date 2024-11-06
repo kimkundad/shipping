@@ -1,6 +1,6 @@
-import { Image, View, Text, StyleSheet, Platform, TextInput, Dimensions, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import { Image, View, Text, StyleSheet, Platform, TextInput, Linking, Alert, Dimensions, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Link, useNavigation, router } from 'expo-router';
+import { Link, useNavigation, router, Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -14,35 +14,101 @@ import { FontAwesome } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
+const handlePress = async () => {
+
+      const url = `tel:0992762487`;
+      try {
+        await Linking.openURL(url);
+      } catch (error) {
+        Alert.alert('Error', 'Unable to make a phone call');
+        console.error('Error:', error);
+      }
+   
+  };
+
+  const handleLinePress = async () => {
+    const lineUrl = 'https://line.me/R/ti/p/@563mmsdp'; // Link to Line Add Friend page
+
+    try {
+        const supported = await Linking.canOpenURL(lineUrl);
+        if (supported) {
+            await Linking.openURL(lineUrl);
+        } else {
+            Alert.alert(
+                'Cannot Open Line',
+                'It seems Line app is not installed or supported on your device.'
+            );
+        }
+    } catch (error) {
+        console.error('An error occurred', error);
+        Alert.alert('Error', 'An unexpected error occurred while trying to open Line.');
+    }
+};
+
+  const handleEmailPress = async () => {
+    const email = 'Loadmasterlogisticsth@gmail.com';
+    const url = `mailto:${email}`;
+
+    try {
+        const supported = await Linking.canOpenURL(url);
+        if (supported) {
+            await Linking.openURL(url);
+        } else {
+            Alert.alert(
+                'Email Not Supported',
+                'No email app is available to open this link. Please configure an email client and try again.'
+            );
+        }
+    } catch (error) {
+        console.error('An error occurred', error);
+        Alert.alert('Error', 'An unexpected error occurred while trying to open the email app.');
+    }
+};
+
+
 const Helpcen = () => {
+
+    const navigation = useNavigation(); // For Back button functionality
+
     return (
         <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
+            <Stack.Screen
+                    options={{
+                        headerTransparent: true,
+                        headerTitle: 'Help Cente',
+                        headerTitleAlign: 'center', // Center the header title
+                        headerTitleStyle: {
+                            color: 'black',
+                            fontFamily: 'Prompt_500Medium',
+                            fontSize: 17,
+                        },
+                        headerStyle: {
+                            backgroundColor: '#fff', // Set the background color here
+                        },
+                        headerLeft: () => (
+                            <TouchableOpacity style={styles.backIcon} onPress={() => navigation.goBack()}>
+                                <View style={{ backgroundColor: Colors.white, padding: 6, borderRadius: 50 }}>
+                                    <Ionicons name="chevron-back" size={20} color="black" />
+                                </View>
+                            </TouchableOpacity>
+                        ),
+                    }}
+                />
             <StatusBar style="dark" />
             <ScrollView>
-                <View style={styles.listItemCon}>
-                    <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Link href="/(tabs)/setting" style={{ padding: 10 }}>
-                            <Ionicons name="chevron-back" size={30} color="black" />
-                        </Link>
-                        <View style={styles.textListHead} >
-                            <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium' }}>Help Center</Text>
-                        </View>
-                        <View >
-                            <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
-                        </View>
-                    </View>
-                </View>
+               
+               
                 <View>
                     <View style={{ marginTop: 0, }}>
 
                         <View style={styles.container}>
 
                         <View style={{ alignItems: 'center' }}>
-                        <Image source={require('../../assets/images/help.png')}
-                            style={{ width: 360, height: 202 }} />
+                        <Image source={require('../../assets/images/help_center.webp')}
+                            style={{ width: 360, height: 202, marginBottom: 10, borderRadius: 8 }} />
                             <View>
                                 <Text style={{ 
-                    color:Colors.black, fontSize:18, fontFamily: 'Prompt_500Medium', marginTop: 10, marginBottom: 20
+                    color:Colors.black, fontSize:17, fontFamily: 'Prompt_500Medium', marginTop: 10, marginBottom: 20
                     }}>
                                     อยากให้เราช่วยเรื่องอะไร บอกมาได้เลย
                                 </Text>
@@ -62,41 +128,45 @@ const Helpcen = () => {
                                 
                             </View>
 
-                            <View style={styles.textListHead2}>
+                            <View style={styles.textListHead2} >
+                                <TouchableOpacity onPress={handlePress}>
                                 <View style={styles.profile}>
                                     <View>
                                         <Feather name="phone" size={24} color="black" />
                                     </View>
                                     <View>
-                                        <Text style={ styles.textSeting}> 0958467417</Text>
+                                        <Text style={ styles.textSeting}> 099-276-2487</Text>
                                     </View>
                                 </View>
-                                
+                                </TouchableOpacity>
                             </View>
                             
                             <View style={styles.textListHead2}>
-                                <View style={styles.profile}>
-                                    <View>
-                                        <Entypo name="email" size={24} color="black" />
+                                <TouchableOpacity onPress={handleEmailPress}>
+                                    <View style={styles.profile}>
+                                        <View>
+                                            <Entypo name="email" size={24} color="black" />
+                                        </View>
+                                        <View>
+                                            <Text style={ styles.textSeting}> Loadmasterlogisticsth@gmail.com</Text>
+                                        </View>
                                     </View>
-                                    <View>
-                                        <Text style={ styles.textSeting}> LoadMaster@gmail.com</Text>
-                                    </View>
-                                </View>
-                                
+                                </TouchableOpacity>
                             </View>
                             <View style={styles.textListHead2}>
+                            <TouchableOpacity onPress={handleLinePress}>
                                 <View style={styles.profile}>
                                     <View>
                                         <Ionicons name="chatbubble-ellipses-outline" size={24} color="black" />
                                     </View>
                                     <View>
-                                        <Text style={ styles.textSeting}> Line ID : @mac2hand</Text>
+                                        <Text style={ styles.textSeting}> Line ID : @563mmsdp</Text>
                                     </View>
                                 </View>
+                                </TouchableOpacity>
                                 
                             </View>
-                            <View style={styles.textListHead2}>
+                            {/* <View style={styles.textListHead2}>
                                 <View style={styles.profile}>
                                     <View>
                                         <FontAwesome name="fax" size={24} color="black" />
@@ -106,7 +176,7 @@ const Helpcen = () => {
                                     </View>
                                 </View>
                                 
-                            </View>
+                            </View> */}
 
 
                         </View>
@@ -122,8 +192,19 @@ export default Helpcen
 
 const styles = StyleSheet.create({
 
+    backIcon: {
+        backgroundColor: 'rgba(50, 209, 145, 0.2)',
+        padding: 3,
+        borderRadius: 50,
+    },
     container: {
         padding: 20,
+        backgroundColor: '#fff',
+        marginTop: Platform.select({
+            ios: 80,
+            android: 75,
+        }),
+        flex: 1,
     },
     textListHead2: {
         display: 'flex',

@@ -53,8 +53,14 @@ export default function Service() {
   const [formData, setFormData] = useState(null);
   const [weight, setWeight] = useState(''); // น้ำหนักสินค้า
   const [warb, setWarb] = useState(''); // น้ำหนักสินค้า
+  const [machinery, setMachinery] = useState(''); // น้ำหนักสินค้า
   const [loading, setLoading] = useState(false);
   const [price, setPrice] = useState(0); // เก็บค่ารวมของราคาที่คำนวณแล้ว
+  const [selected, setSelected] = useState(false);
+
+  const handleSelect = () => {
+    setSelected(!selected);
+  };
 
   // Function to dynamically return the correct image based on the selected size
 const getImageForSize = (size) => {
@@ -208,7 +214,9 @@ const getImageForSize = (size) => {
             province: formData?.province,
             branch_id: 0,
             price: price,
-            warb
+            warb,
+            machinery,
+            service: selected
           };
     
           console.log('Creating order with data:', orderData);
@@ -363,7 +371,7 @@ const getImageForSize = (size) => {
                         </View>
                         
                         <View style={styles.weightContainer}>
-                            <Text style={styles.label2}>จำนวน*</Text>
+                            <Text style={styles.label2}>จำนวนทั้งหมด*</Text>
                             <TextInput 
                                 style={styles.weightInput} 
                                 placeholder="ชิ้น" 
@@ -407,6 +415,7 @@ const getImageForSize = (size) => {
                             ))}
                         </ScrollView>
 
+                        <View style={styles.showflex}>
                         {selectedType.includes('วาฟเฟิล') && (
                             <View style={styles.warbContainer}>
                                 <Text style={styles.label3}>จำนวนวาฟเฟิล*</Text>
@@ -420,7 +429,37 @@ const getImageForSize = (size) => {
                                 />
                             </View>
                             )}
+                            {selectedType.includes('เครื่องจักร') && (
+                            <View style={styles.warbContainer}>
+                                <Text style={styles.label3}>จำนวนเครื่องจักร*</Text>
+                                <TextInput 
+                                style={styles.warbInput} 
+                                placeholder="จำนวนเครื่องจักร" 
+                                value={machinery}
+                                onChangeText={setMachinery}
+                                keyboardType="numeric" // Ensure only numeric input
+                                blurOnSubmit={true}
+                                />
+                            </View>
+                            )}
+                            </View>
 
+
+                    <View style={styles.boxCheck}>
+
+                 
+                    <TouchableOpacity style={styles.optionContainer} onPress={handleSelect}>
+                        <Ionicons
+                        name={selected ? 'radio-button-on' : 'radio-button-off'}
+                        size={24}
+                        color='#cd5305'
+                        style={styles.radioButton}
+                        />
+                        <Text style={styles.timeText}> ใช้บริการยกของขึ้นชั่น 2</Text>
+                    </TouchableOpacity>
+
+                    </View>
+                    <Text style={styles.remarkText}>***หมายเหตุ บริการยกของฟรีที่ชั่นที่ 1</Text>
 
                     </View>
 
@@ -448,6 +487,56 @@ const getImageForSize = (size) => {
 const styles = StyleSheet.create({
     container: {
         padding: 20,
+    },
+    boxCheck: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 10,
+        borderWidth: 1,
+        borderColor: '#cd5305',
+        borderRadius: 10,
+        margin: 0,
+        position: 'relative',
+        marginTop: 20
+    },
+    remarkText:{
+        fontFamily: 'Prompt_400Regular',
+        fontSize: 14,
+        color: '#666',
+        paddingLeft: 10,
+        marginTop: 3
+    },
+    title: {
+        flex: 1,
+        fontSize: 14,
+        color: 'green',
+        fontWeight: 'bold',
+        textAlign: 'right',
+      },
+      changeText: {
+        fontSize: 14,
+        color: 'green',
+        fontWeight: 'bold',
+        position: 'absolute',
+        left: 10,
+        top: -15,
+      },
+      optionContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+      radioButton: {
+        marginRight: 10,
+      },
+      timeText: {
+        fontSize: 15,
+        color: 'black',
+        fontFamily: 'Prompt_400Regular',
+      },
+    showflex: {
+        display: 'flex',
+        flexDirection: 'row', 
+        gap: 10
     },
     row: {
         flexDirection: 'row',
@@ -492,17 +581,17 @@ const styles = StyleSheet.create({
         color: '#fff', // White text when selected
     },
     label: {
-        fontSize: 18,
+        fontSize: 14,
         fontFamily: 'Prompt_500Medium',
     },
     label2: {
-        fontSize: 18,
+        fontSize: 14,
         fontFamily: 'Prompt_500Medium',
         textAlign: 'center',
         width: '100%'
     },
     label3: {
-        fontSize: 18,
+        fontSize: 14,
         fontFamily: 'Prompt_500Medium',
         width: '100%'
     },
@@ -512,8 +601,8 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     sizeOption: {
-        width: 40,
-        height: 40,
+        width: 35,
+        height: 35,
         backgroundColor: '#ffe8d9',
         borderRadius: 20,
         justifyContent: 'center',

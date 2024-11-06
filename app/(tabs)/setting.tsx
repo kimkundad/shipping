@@ -13,6 +13,7 @@ import React, { useState, useContext } from 'react';
 import { Link, useNavigation, router } from 'expo-router';
 import { UserContext } from '../../hooks/UserContext';
 
+
 export default function Setting() {
 
   
@@ -91,6 +92,26 @@ export default function Setting() {
                     </View>
                     <View>
                       <Text style={styles.textSeting}>Edit Profile</Text>
+                    </View>
+                  </View>
+                  <View>
+                    <Feather name="chevron-right" size={24} color="black" />
+                  </View>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  // handle onPress
+                  router.push('(setting)/receipt');
+                }}>
+                <View style={styles.textListHead2}>
+                  <View style={styles.profile}>
+                    <View>
+                      <Entypo name="documents" size={20} color="black" />
+                    </View>
+                    <View>
+                      <Text style={styles.textSeting}>ข้อมูลใบเสร็จรับเงิน</Text>
                     </View>
                   </View>
                   <View>
@@ -226,7 +247,7 @@ export default function Setting() {
                   </View>
                 </View>
               </TouchableOpacity>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => {
                   // handle onPress
                   router.push('(setting)/maps');
@@ -264,7 +285,7 @@ export default function Setting() {
                     <Feather name="chevron-right" size={24} color="black" />
                   </View>
                 </View>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
 
               <TouchableOpacity

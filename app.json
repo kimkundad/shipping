@@ -25,9 +25,16 @@
       },
       "permissions": [
         "WRITE_EXTERNAL_STORAGE",
-        "READ_EXTERNAL_STORAGE"
+        "READ_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
       ],
       "package": "com.shippingapp",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCsx9tQ2Mj7WWnunxa8P2blQLcGtjroLVE"
+        }
+      },
       "intentFilters": [
         {
           "action": "VIEW",
@@ -54,6 +61,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a2d1961a-10a0-421a-a0c7-1fd5e5d83a26"
+      }
     }
   }
 }

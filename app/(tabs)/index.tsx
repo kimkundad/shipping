@@ -14,38 +14,6 @@ import { useCameraPermissions } from "expo-camera";
 import DeviveryStatus from '../../components/DeviveryStatus'
 import { Ionicons, Feather, MaterialIcons } from '@expo/vector-icons';
 
-type ItemProps = { title: string };
-
-const Item = ({ title }: ItemProps) => (
-  <View style={styles.boxItemList}>
-    <View style={styles.innerItem}>
-      <View>
-        <Image source={require('../../assets/images/service/list_service1.png')}
-          style={{ width: 120, height: 100, borderRadius: 8, gap: 10 }} />
-      </View>
-      <View style={styles.detailList}>
-        <View style={styles.textDetailRight}>
-          <Text style={{ fontWeight: 700 }}>To : </Text>
-          <Text style={styles.textMute}>ปลายทางเคหะร่มเกล้า</Text>
-        </View>
-        <View style={styles.textDetailRight}>
-          <Text style={{ fontWeight: 700 }}>Price : </Text>
-          <Text style={styles.textMute}>150,000 บาทv</Text>
-        </View>
-        <View style={styles.textDetailRight}>
-          <Text style={{ fontWeight: 700 }}>Total : </Text>
-          <Text style={styles.textMute}>50 กล่อง</Text>
-        </View>
-        <View style={styles.textDetailRight}>
-          <Text style={{ fontWeight: 700 }}>Status : </Text>
-          <Text style={styles.textMute}>อยู่ระหว่างการขนส่ง</Text>
-        </View>
-
-      </View>
-    </View>
-  </View>
-);
-
 
 export default function HomeScreen({ navigation }) {
 
@@ -107,7 +75,6 @@ export default function HomeScreen({ navigation }) {
       try {
         // No need to manually fetch the token, as it's added by the interceptor
         const response = await api.get('/user-order-cus');
-        console.log('Orders response:', response.data);
         setUserOrders(response.data.order); // Set the orders from the response
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -128,7 +95,7 @@ export default function HomeScreen({ navigation }) {
     try {
       
       const response = await api.post('/checkQrcode', { qrcode: searchInput });
-      console.log('response', response.data)
+
       if (response.data.success === true) {
         Alert.alert('สำเร็จ', 'กำลังโหลดข้อมูล');
   
@@ -344,7 +311,7 @@ export default function HomeScreen({ navigation }) {
                           style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
                       </View>
                       <View >
-                        <Text style={{ fontWeight: 700, fontSize: 16 }}>#{order.code_order}</Text>
+                        <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 14 }}>#{order.code_order}</Text>
                         <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>{order.dri_time}</Text>
                       </View>
                     </View>

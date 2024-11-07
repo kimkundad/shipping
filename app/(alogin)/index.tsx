@@ -55,7 +55,6 @@ export default function Login() {
 
       // Handle different `verify` statuses
       const { token, verify, user } = response.data;
-      console.log('Response verify:', response.data);
       
       if (verify === 0) {
         // The user has not verified their phone number, prompt them to verify OTP

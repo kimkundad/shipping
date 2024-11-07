@@ -8,9 +8,36 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import provinceData from '../../assets/raw/raw_database.json';
 
+type LocationType = {
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
+} | null;
+
+type CoordinatesType = {
+  latitude: number;
+  longitude: number;
+} | null;
+
+type RootStackParamList = {
+  service: {
+    selectedLat2: number;
+    selectedLng2: number;
+    form: {
+      adddress2: string;
+      name2: string;
+      phone2: string;
+      remark2: string;
+      province2: string;
+    };
+  };
+  // Add other routes here
+};
+
 export default function MapsDestination() {
-  const [location, setLocation] = useState(null);
-  const [pickedLocation, setPickedLocation] = useState(null);
+  const [location, setLocation] = useState<LocationType>(null);
+  const [pickedLocation, setPickedLocation] = useState<CoordinatesType>(null);
   const [province, setProvince] = useState('');
   const navigation = useNavigation(); 
   const route = useRoute(); 
@@ -32,6 +59,8 @@ export default function MapsDestination() {
         Alert.alert('Permission Denied', 'Permission to access location was denied');
         return;
       }
+
+      try {
 
       let loc = await Location.getCurrentPositionAsync({});
       setLocation({
@@ -67,6 +96,10 @@ export default function MapsDestination() {
         }
         setForm((prevForm) => ({ ...prevForm, adddress2: formattedAddress }));
       }
+
+    } catch (error) {
+      console.error("Location Error:", error);
+    }
 
     })();
   }, []);
@@ -269,8 +302,8 @@ export default function MapsDestination() {
 
                   navigation.navigate('service', {
                     ...route.params,
-                    selectedLat2: pickedLocation.latitude,
-                    selectedLng2: pickedLocation.longitude,
+                    selectedLat2: pickedLocation?.latitude,
+                    selectedLng2: pickedLocation?.longitude,
                     form: {
                       ...route.params?.form,
                       adddress2: form.adddress2,

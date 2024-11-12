@@ -23,8 +23,6 @@ const refreshToken = async () => {
       throw new Error('No refresh token found');
     }
 
-    console.log('Attempting token refresh with:', storedRefreshToken);
-
     // Request new token using refresh token
     const response = await axios.post(
       'https://api.loadmasterth.com/api/refresh-token',
@@ -39,7 +37,7 @@ const refreshToken = async () => {
       throw new Error('Failed to receive new token');
     }
 
-    console.log('New token received:', newToken);
+ //   console.log('New token received:', newToken);
 
     // Store the new token in AsyncStorage
     await AsyncStorage.setItem('jwt_token', newToken);

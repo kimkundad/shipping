@@ -1,18 +1,22 @@
 import { Image, View, Text, StyleSheet, Platform, Alert, TextInput, TouchableOpacity, FlatList, ScrollView, RefreshControl  } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import React, { useEffect, useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link, useNavigation, router, Stack } from 'expo-router';
+import { Link, useNavigation, router, Stack, useLocalSearchParams } from 'expo-router';
 import Dropdown from "../../components/DropDown";
 import api from '../../hooks/api'; // Axios instance
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserContext } from '../../hooks/UserContext';
 
 const Receipt = () => {
 
+  const { id } = useLocalSearchParams(); // รับพารามิเตอร์ id
     const navigation = useNavigation(); // For Back button functionality
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState(false);
     const [refreshing, setRefreshing] = useState(false); // Track refresh state
+    const { userProfile, setUserProfile } = useContext(UserContext);
 
   const [form, setForm] = useState({
     Receiptname: '',
@@ -21,6 +25,7 @@ const Receipt = () => {
     Receiptaddress: '',
     Receiptprovice: '',
     Receiptpostcode: '',
+    ReceiptTax: ''
   });
 
 
@@ -56,13 +61,14 @@ const Receipt = () => {
         Receiptphone: data?.Receiptphone || '',
         Receiptemail: data?.Receiptemail || '',
         Receiptaddress: data?.Receiptaddress || '',
+        ReceiptTax: data?.ReceiptTax || '',
       });
     }
   }, [data]);
 
 
   const handleUpdateProfile = async () => {
-    if (!form.Receiptname || !form.Receiptphone || !form.Receiptemail || !form.Receiptaddress) {
+    if (!form.Receiptname || !form.Receiptphone || !form.Receiptemail || !form.Receiptaddress || !form.ReceiptTax) {
       Alert.alert('Error', 'กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
@@ -74,9 +80,27 @@ const Receipt = () => {
       
       if (response.data.msgStatus === 200) {
         const updatedUser = response.data.user;
-        console.log('response', response.data)
+        console.log('response', response.data.user)
+        await AsyncStorage.setItem('user_profile', JSON.stringify(updatedUser));
+        setUserProfile(updatedUser); // Update UserContext
         setData(updatedUser); // Update UserContext
-        Alert.alert('Success', 'Profile updated successfully');
+
+        if(id){
+
+          Alert.alert('Success', 'Profile updated successfully', [
+            {
+              text: 'OK',
+              onPress: () => router.push({
+                pathname: '(setting)/tracking',
+                params: { id: id } // Navigate to tracking page with 'id' parameter
+              }),
+            },
+          ]);
+
+        }else{
+          Alert.alert('Success', 'Profile updated successfully');
+        }
+        
       //  router.push('(tabs)/setting'); // Navigate to settings page
       } else {
         Alert.alert('Error', 'Failed to update profile');
@@ -134,7 +158,7 @@ const Receipt = () => {
               </View>
 
               <View style={styles.input}>
-                <Text style={styles.inputLabel}>ชื่อ-นามสกุล</Text>
+                <Text style={styles.inputLabel}>ชื่อบริษัทหรือในนามบุคคล </Text>
                 <TextInput
                   clearButtonMode="while-editing"
                   onChangeText={Receiptname => setForm({ ...form, Receiptname })}
@@ -159,7 +183,7 @@ const Receipt = () => {
               </View>
 
               <View style={styles.input}>
-                <Text style={styles.inputLabel}>อีเมล</Text>
+                <Text style={styles.inputLabel}>อีเมล (**ที่ใช้รับใบเสร็จ)</Text>
                 <TextInput
                   clearButtonMode="while-editing"
                   onChangeText={Receiptemail => setForm({ ...form, Receiptemail })}
@@ -182,6 +206,21 @@ const Receipt = () => {
                       multiline={true}
                     />
                   </View>
+
+
+                  <View style={styles.input}>
+                <Text style={styles.inputLabel}>เลขประจำตัวผู้เสียภาษี</Text>
+                <TextInput
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  clearButtonMode="while-editing"
+                  keyboardType="number-pad"
+                  onChangeText={ReceiptTax => setForm({ ...form, ReceiptTax })}
+                  placeholder="12543335xxx"
+                  placeholderTextColor="#6b7280"
+                  style={styles.inputControl}
+                  value={form.ReceiptTax} />
+              </View>
 
               <View style={styles.formAction}>
               <TouchableOpacity onPress={handleUpdateProfile} disabled={loading}>

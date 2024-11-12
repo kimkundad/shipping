@@ -21,6 +21,12 @@ const DeviveryStatus = ({ order }) => {
             <Text style={{ color: '#fff', fontSize: 12 }}>Accident</Text>
           </View>
         );
+        case 4:
+        return (
+          <View style={styles.textStatus3}>
+            <Text style={{ color: '#fff', fontSize: 12 }}>ยกเลิก</Text>
+          </View>
+        );
       default:
         return (
           <View style={styles.textStatusDefault}>

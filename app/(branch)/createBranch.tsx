@@ -65,28 +65,30 @@ export default function CreateBranch() {
 
         if (address && address.length > 0) {
           
-          const zipcode = address[0].postalCode;
+        
 
           const addr = address[0];
           const formattedAddress = `${addr.street || ''} ${addr.district || ''} ${addr.subregion || ''} ${addr.region || ''} ${addr.country || ''} ${addr.postalCode || ''}`.trim();
 
-          
           // Find matching province from JSON based on postal code
+          const zipcode = address[0].postalCode;
+          
           const provinceEntry = provinceData.find(
             (entry) => entry.zipcode.toString() === zipcode
           );
-
-          if (provinceEntry) {
-          setProvince(provinceEntry.province);
-          console.log('Matched Province:', provinceEntry.province);
-          }else {
-            console.warn('Province not found for this postal code');
-          }
+      
+          console.log('provinceEntry.province----->', provinceEntry.province)
+      if (provinceEntry) {
+        setProvince(provinceEntry.province);
+        console.log('Matched Province:', provinceEntry.province);
+      } else {
+        console.warn('Province not found for this postal code');
+      }
 
           // Update the form with the fetched province and coordinates
           setForm((prevForm) => ({
             ...prevForm,
-            province: province, // Set the province
+            province: provinceEntry.province, // Set the province
             selectedLat2: latitude, // Set latitude
             selectedLng2: longitude, // Set longitude
             address: formattedAddress,
@@ -127,10 +129,11 @@ export default function CreateBranch() {
       const formattedAddress = `${addr.street || ''} ${addr.district || ''} ${addr.subregion || ''} ${addr.region || ''} ${addr.country || ''} ${addr.postalCode || ''}`.trim();
 
       const zipcode = address[0].postalCode;
-
+      console.log('address[0].postalCode', address[0].postalCode)
       const provinceEntry = provinceData.find(
         (entry) => entry.zipcode.toString() === zipcode
       );
+
 
       if (provinceEntry) {
         setProvince(provinceEntry.province);
@@ -151,8 +154,10 @@ export default function CreateBranch() {
   const handleCreate = async () => {
     setLoading(true); // Start loading
     console.log('form', form);
+
     if (!form.address || !form.name || !form.phone || !form.province || !form.admin_branch || !form.selectedLat2 || !form.selectedLng2) {
       Alert.alert('กรอกข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลทุกช่องให้ครบถ้วน');
+      setLoading(false);
       return;
     }
 
@@ -411,6 +416,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 10,
     alignItems: 'center',
+    marginBottom: 20
   },
   greenButtonText: {
     color: '#fff',

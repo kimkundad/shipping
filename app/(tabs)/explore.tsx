@@ -19,7 +19,6 @@ export default function History() {
   const fetchOrders = async () => {
     try {
       const response = await api.get('/user-order');
-      console.log('Orders response:', response.data);
       setUserOrders(response.data.order); // Set the orders from the response
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -96,8 +95,8 @@ export default function History() {
                       <Text style={{ fontWeight: 700, fontSize: 13 }}>{order.b_name}</Text>
                     </View>
                     <View style={styles.flexItem}>
-                      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
-                      <Text style={{ fontWeight: 700, fontSize: 13 }}>{order.amount} kg</Text>
+                      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ค่าบรริการ</Text>
+                      <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13, color: '#f47524' }}>{order.price.toFixed(2)} บาท</Text>
                     </View>
                   </View>
                 </View>
@@ -105,7 +104,6 @@ export default function History() {
                 ))}
               </View>
             )}
-
           
 
         </View>

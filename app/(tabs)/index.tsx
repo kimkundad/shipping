@@ -13,27 +13,27 @@ import api from '../../hooks/api'; // Axios instance
 import { useCameraPermissions } from "expo-camera";
 import DeviveryStatus from '../../components/DeviveryStatus'
 import { Ionicons, Feather, MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
+const { width: screenWidth } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }) {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { userProfile }  = useContext(UserContext);
-  const { userOrders, setUserOrders } = useContext(UserContext);
   const [permission, requestPermission] = useCameraPermissions();
   const isPermissionGranted = Boolean(permission?.granted);
   const [searchInput, setSearchInput] = useState('');
   const [refreshing, setRefreshing] = useState(false); // Track refresh state
+  const [news, setNews] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [userOrders, setUserOrders] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
     // Here you can re-fetch data or any other logic for refreshing content
-    try {
-      const response = await api.get('/user-order-cus');
-      setUserOrders(response.data.order); // Refresh user orders
-    } catch (error) {
-      console.error('Error refreshing orders:', error);
-    }
+    fetchOrders();
+    fetchNews();
     setRefreshing(false);
   };
 
@@ -68,21 +68,32 @@ export default function HomeScreen({ navigation }) {
     checkAuth();
   }, []);
 
+
+  const fetchOrders = async () => {
+    try {
+      // No need to manually fetch the token, as it's added by the interceptor
+      const response = await api.get('/user-order-cus');
+      setUserOrders(response.data.order); // Set the orders from the response
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  };
+
+  const fetchNews = async () => {
+    try {
+      // No need to manually fetch the token, as it's added by the interceptor
+      const response = await api.get('/getNews');
+      setNews(response.data.news); // Set the orders from the response
+    
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  };
   
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        // No need to manually fetch the token, as it's added by the interceptor
-        const response = await api.get('/user-order-cus');
-        setUserOrders(response.data.order); // Set the orders from the response
-      } catch (error) {
-        console.error('Error fetching orders:', error);
-      }
-    };
-
     fetchOrders(); // Fetch once when the component mounts
-
+    fetchNews();
   }, []);
 
   const handleLogout = async () => {
@@ -114,8 +125,11 @@ export default function HomeScreen({ navigation }) {
 
   if (!isAuthenticated) return null; // Prevent rendering until authenticated
 
+  const padding = 20;
+  const carouselWidth = screenWidth - padding * 2;
+
   return (
-    <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
+    <SafeAreaProvider style={{ flex: 1, backgroundColor: '#f6f6f6' }} >
       <StatusBar style="light" />
       <ScrollView
       
@@ -125,14 +139,22 @@ export default function HomeScreen({ navigation }) {
       >
         <View >
 
-          <View style={styles.containerBlue} />
+          {/* <View style={styles.containerBlue} /> */}
+          <LinearGradient
+        colors={['#1e3c72', '#1e3c72', '#2a5298']}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 0, y: 0 }}
+        style={styles.containerBlue}
+      />
           <View style={styles.container1}>
             {/* profileMain  */}
             <View style={styles.profileMain}>
               <View style={styles.profile}>
                 <Image
                   style={styles.userImage}
-                  source={{ uri: 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg' }} />
+                  source={{
+                    uri: userProfile?.avatar || 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg',
+                }} />
 {userProfile ? (
                 <View>
                   <View style={styles.showflex}>
@@ -143,7 +165,14 @@ export default function HomeScreen({ navigation }) {
                       color: Colors.white, fontSize: 14, fontFamily: 'Prompt_400Regular',
                     }}>{userProfile.code_user}</Text>
                   </View>
-                    <Text style={{ color: Colors.white, fontSize: 18, fontFamily: 'Prompt_400Regular' }}>{userProfile.name},</Text>
+                    <Text style={{ 
+                      color: Colors.white, 
+                      fontSize: 16, 
+                      fontFamily: 'Prompt_400Regular',
+                      marginTop:-2 
+                      }}>
+                      {userProfile.name},
+                      </Text>
                 </View>
                 ) : (
                   <Text style={{ color: Colors.white, fontSize: 20 }}>Loading...</Text>
@@ -186,50 +215,92 @@ export default function HomeScreen({ navigation }) {
               />
           </View>
             {/* search bar */}
+
+            
             
             <View style={styles.boxGiff}>
 
-              <View>
-                <Carousel
-                  loop
-                  width={360}
-                  height={100}
-                  autoPlay={true}
-                  autoPlayInterval={4000}
-                  data={[...new Array(6).keys()]}
-                  scrollAnimationDuration={1000}
-                  renderItem={({ index }) => (
+            <View>
+                    {Array.isArray(news) && news.length > 0 ? (
+                      <>
+                        <Carousel
+                          loop
+                          width={carouselWidth}
+                          height={175}
+                          autoPlay={true}
+                          autoPlayInterval={4000}
+                          data={news}
+                          scrollAnimationDuration={1000}
+                          onSnapToItem={(index) => setActiveIndex(index)}  // Track the active slide
+                          renderItem={({ index }) => (
 
-                    <View style={styles.giftContent}>
-                      <View style={{ width: '70%' }}>
-                        <View style={styles.headGiff}>
-                          <Text style={styles.textGifforange}>45% </Text>
-                          <Text style={styles.textGiffblack}> Discount</Text>
-                        </View>
-                        <Text style={{ fontSize: 12, color: '#999', marginBottom: 8 }}>Get Great Discounts On All your Shipments
-                          in the Summer Seasan.</Text>
-                        <View>
-                          <TouchableOpacity
-                            onPress={() => {
-                              // handle onPress
-                            }}>
-                            <View style={styles.btn}>
-                              <Text style={styles.btnText}>Get Now</Text>
-                            </View>
+                      
+                            <View>
+                            <TouchableOpacity onPress={() => router.push({
+                              pathname: '(setting)/modalNew',
+                              params: { 
+                                id: news[index].id
+                              }, // ส่งพา
+                            })}>
+                              <Image
+                                source={{ uri: news[index].image }}  // นำ URL มาแสดงเป็นภาพ
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  resizeMode: 'cover',
+                                  borderRadius: 5,
+                                }}
+                              />
                           </TouchableOpacity>
-                        </View>
-                      </View>
-                      <View>
-                        <Image source={require('../../assets/images/gift.png')}
-                          style={{ width: 100, height: 95 }} />
-                      </View>
-                    </View>
+                            </View>
 
-                  )}
-                />
+                          )}
+                        />
+                        {/* Custom Pagination Dots */}
+                        <View style={styles.pagination}>
+                          {news.map((_, index) => (
+                            <View
+                              key={index}
+                              style={[
+                                styles.dot,
+                                index === activeIndex ? styles.activeDot : styles.inactiveDot, // Different styles for active and inactive dots
+                              ]}
+                            />
+                          ))}
+                        </View>
+                      </>
+                    ) : (
+                      <View>
+                        <Text style={{ color: Colors.white, fontSize: 20 }}>Loading...</Text>
+                      </View>
+                    )}
               </View>
 
             </View>
+
+     
+            <LinearGradient
+            colors={['#E3FDF5', '#FFE6FA']}
+            start={{ x: 0.8, y: 0.1 }} // เริ่มจากมุมด้านซ้ายบน
+            end={{ x: 0.2, y: 1 }}     // สิ้นสุดที่มุมด้านล่างขวา
+            style={styles.boxItemListPay}
+          >
+            <View style={styles.showflex2}>
+              <View>
+                <Text style={styles.TextPay}>ยอดค่าใช้บริการ</Text>
+                <Text style={styles.TextPaySum}>685.22</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => {
+                  // handle onPress
+                  router.push('(setting)/payment');
+                }}>
+              <View style={styles.btnPay}>
+                <Text style={styles.btnTextPay}>ชำระค่าบริการ</Text>
+              </View>
+              </TouchableOpacity>
+            </View>
+          </LinearGradient>
 
 
           </View>
@@ -282,8 +353,7 @@ export default function HomeScreen({ navigation }) {
           {/* list item */}
           <View style={styles.listItemCon}>
             <View style={styles.textListHead}>
-              <Text style={{ fontSize: 17, fontWeight: 700 }}>Last Activity</Text>
-              <Text style={{ fontSize: 13, color: '#f47524', }}>See All</Text>
+              <Text style={{ fontSize: 17, fontFamily: 'Prompt_500Medium' }}>ใช้บริการล่าสุด</Text>
             </View>
             <View>
 
@@ -312,7 +382,7 @@ export default function HomeScreen({ navigation }) {
                       </View>
                       <View >
                         <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 14 }}>#{order.code_order}</Text>
-                        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>{order.dri_time}</Text>
+                        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>กำหนดส่ง : {order.dri_date}</Text>
                       </View>
                     </View>
                     <DeviveryStatus order={order} />
@@ -320,11 +390,11 @@ export default function HomeScreen({ navigation }) {
                   <View style={styles.textBoxDetail}>
                     <View style={styles.flexItem}>
                       <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
-                      <Text style={{ fontWeight: 700, fontSize: 13 }}>{order.b_name}</Text>
+                      <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13 }}>{order.province2}</Text>
                     </View>
                     <View style={styles.flexItem}>
-                      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>น้ำหนัก</Text>
-                      <Text style={{ fontWeight: 700, fontSize: 13 }}>{order.amount} kg</Text>
+                      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ค่าบรริการ</Text>
+                      <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13, color: '#f47524' }}>{order.price.toFixed(2)} บาท</Text>
                     </View>
                   </View>
                 </View>
@@ -352,9 +422,39 @@ const styles = StyleSheet.create({
     backgroundColor: '#121F43',
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,
-    height: 250,
+    height: 425,
     position: 'absolute',
     width: '100%'
+  },
+  TextPaySum:{
+    color: '#000',
+    fontFamily: 'Prompt_500Medium',
+    fontSize: 22,
+    marginTop: -5
+  },
+  TextPay:{
+    color: '#999',
+    fontFamily: 'Prompt_400Regular',
+    fontSize: 16
+  },
+  pagination: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingTop: 10
+  },
+  dot: {
+    width: 5,
+    height: 5,
+    borderRadius: 5,
+    marginHorizontal: 5,
+  },
+  activeDot: {
+    width: 8,
+    height: 8,
+    backgroundColor: '#f47524',  // Color for the active dot
+  },
+  inactiveDot: {
+    backgroundColor: 'gray',  // Color for the inactive dots
   },
   searchIcon: {
     padding: 10,
@@ -372,6 +472,11 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
   },
+  showflex2: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  } ,
   textBoxDetail: {
     display: 'flex',
     flexDirection: 'row',
@@ -456,7 +561,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 5,
-    marginBottom: 10,
+    marginBottom: 0,
     borderWidth: 0.5,
     borderColor: '#999',
     paddingHorizontal: 10, // เพิ่ม padding เพื่อให้มีระยะห่างภายใน container
@@ -470,20 +575,9 @@ const styles = StyleSheet.create({
   },
   boxGiff: {
     position: 'static',
-    backgroundColor: Colors.white,
+    backgroundColor: 'rgba(000, 000, 000, 0)',
     borderRadius: 10,
-    padding: 10,
     marginTop: 12,
-    // iOS shadow properties
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    // Android shadow (elevation)
-    elevation: 10,
   },
   textGiffblack: {
     color: Colors.gray,
@@ -512,6 +606,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#f47524',
     borderColor: '#f47524',
     width: 80
+  },
+  btnPay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    backgroundColor: '#f47524',
+    borderColor: '#f47524',
+    height: 35,
+    marginTop: 8
+  },
+  btnTextPay: {
+    fontSize: 15,
+    fontFamily: 'Prompt_500Medium',
+    color: '#fff',
   },
   btnText: {
     fontSize: 13,
@@ -543,6 +655,15 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     // Android shadow (elevation)
     elevation: 10,
+  },
+  boxItemListPay : {
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderWidth: 0.4,
+    borderColor: '#999',
+    marginTop: 12,
   },
   boxItemList: {
     backgroundColor: Colors.white,

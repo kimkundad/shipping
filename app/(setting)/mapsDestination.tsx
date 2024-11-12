@@ -90,7 +90,7 @@ export default function MapsDestination() {
         const provinceEntry = provinceData.find(
           (entry) => entry.zipcode.toString() === zipcode
         );
-
+        console.log('provinceEntry.province', provinceEntry.province)
         if (provinceEntry) {
           setProvince(provinceEntry.province);
         }

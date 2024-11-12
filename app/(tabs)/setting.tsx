@@ -1,5 +1,5 @@
 
-import { Image, View, Text, Switch, StyleSheet, Platform, TextInput, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import { Image, View, Text, Switch, Alert, StyleSheet, Platform, TextInput, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -9,18 +9,49 @@ import { AntDesign } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
-import React, { useState, useContext } from 'react';
-import { Link, useNavigation, router } from 'expo-router';
+import React, { useState, useContext, useEffect } from 'react';
+import { Link, useNavigation, router, Stack } from 'expo-router';
 import { UserContext } from '../../hooks/UserContext';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../../hooks/api'; // Axios instance
+import * as ImagePicker from 'expo-image-picker';
 
 export default function Setting() {
 
   
   const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
   const { logout }  = useContext(UserContext);
-  const { userProfile }  = useContext(UserContext);
+  const { userProfile, setUserProfile } = useContext(UserContext);
+  const [files, setFiles] = useState(null); // Holds URI of selected image
+  const [loading, setLoading] = useState(false); // Loading state for API call
+
+  useEffect(() => {
+
+    setIsEnabled(userProfile?.noti === 1);
+    console.log('API Response userProfile?.noti:', userProfile?.noti);
+
+  }, [userProfile]); // Depend on id to refetch when it changes
+
+
+  const toggleSwitch = async () => {
+    const newStatus = !isEnabled;
+    setIsEnabled(newStatus);
+
+    try {
+      const response = await api.post('/notiStatus', {
+        id: userProfile?.id,
+        newStatus: newStatus ? 'เปิด' : 'ปิด' // เปลี่ยนข้อความตามที่คุณต้องการในฐานข้อมูล
+      });
+      console.log('API Response:', response?.data?.data?.user); // Log ข้อมูลจาก API
+      const updatedUser = response?.data?.data?.user;
+      await AsyncStorage.setItem('user_profile', JSON.stringify(updatedUser));
+
+
+    } catch (error: unknown) { 
+      const errorMessage = (error as Error).message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ'; 
+      Alert.alert('ข้อผิดพลาด', errorMessage);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -30,36 +61,146 @@ export default function Setting() {
     }
   };
 
+    // Function to open image picker and set the profile image
+    const openImagePicker = async () => {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const cameraPermissionResult = await ImagePicker.requestCameraPermissionsAsync();
+  
+      if (permissionResult.status !== 'granted' || cameraPermissionResult.status !== 'granted') {
+        Alert.alert('Permission required', 'Camera and gallery access are required to upload a profile picture.');
+        return;
+      }
+  
+      Alert.alert(
+        'Upload Profile Picture', 
+        'Choose an option',
+        [
+          {
+            text: 'Take Photo',
+            onPress: async () => {
+              const result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                quality: 1,
+              });
+              if (!result.cancelled) {
+                console.log('New Image URI:', result.uri); // Check URI
+                setFiles(result.uri || result?.assets?.[0]?.uri);
+                await uploadImage(result?.assets?.[0]?.uri);
+              }
+            },
+          },
+          {
+            text: 'Choose from Gallery',
+            onPress: async () => {
+              const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images, // Allow only images
+                allowsEditing: true,
+                quality: 1,
+              });
+              if (!result.cancelled) {
+                console.log('New Image URI:', result.uri); // Check URI
+                setFiles(result.uri || result?.assets?.[0]?.uri);
+                await uploadImage(result?.assets?.[0]?.uri);
+              }
+            },
+          },
+          { text: 'Cancel', style: 'cancel' },
+        ]
+      );
+    };
+  
+  
+     // Function to upload image to the server
+     const uploadImage = async (uri) => {
+      setLoading(true); // Start loading
+  
+      try {
+          const formData = new FormData();
+          formData.append('images', {
+              uri: uri,
+              name: `avatar_${Date.now()}.jpg`, // Generate a unique filename
+              type: 'image/jpeg',
+          });
+  
+          // Assuming `api` is configured with your base URL and headers
+          const response = await api.post('/UpAvatar', formData, {
+              headers: {
+                  'Content-Type': 'multipart/form-data',
+              },
+          });
+  
+          // Handle API response
+          if (response.data.msgStatus === 200) {
+            console.log('user-->', response.data?.user)
+            const updatedUser = response.data.user;
+            await AsyncStorage.setItem('user_profile', JSON.stringify(updatedUser));
+            setUserProfile(updatedUser); // Update UserContext
+  
+              Alert.alert('Success', 'Profile picture updated successfully');
+          } else {
+              Alert.alert('Error', 'Failed to update profile picture');
+          }
+  
+      } catch (error) {
+          console.error('API Error:', error);
+          Alert.alert('Error', error.message || 'An error occurred while uploading');
+      } finally {
+          setLoading(false); // Stop loading
+      }
+  };
+
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
-      <StatusBar style="dark" />
+      <Stack.Screen options={{
+        headerTransparent: true,
+        headerTitle: 'Profile',
+        headerTitleAlign: 'center',
+        headerTitleStyle: {
+          color: '#000', // กำหนดสีของ headerTitle
+          fontFamily: 'Prompt_500Medium', // กำหนดฟอนต์
+          fontSize: 18,
+        },
+      }} />
       <ScrollView>
         <View >
 
           <View style={styles.container}>
 
-            <View style={styles.listItemCon}>
-              <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
-                <View style={styles.textListHead}>
-                  <Text style={{ fontSize: 18, fontWeight: 700 }}>Setting</Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => {
-                    // handle onPress
-                    router.push('(setting)/notification');
-                  }}>
-                  <View>
-                    <Ionicons name="notifications-outline" size={27} color="black" />
-                  </View>
-                </TouchableOpacity>
-              </View>
-            </View>
+            
 
 
             <View style={{ alignItems: 'center' }}>
-              <Image
-                style={styles.userImageCenter}
-                source={{ uri: 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg' }} />
+              {/* Container for image and edit button */}
+              <View style={{ position: 'relative' }}>
+                {/* Profile Image */}
+
+
+
+                <Image
+                  key={files}
+                  style={styles.userImageCenter}
+                  source={{
+                    uri: files || userProfile?.avatar || 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg',
+                }}
+                />
+
+
+                {/* Edit Button */}
+                <TouchableOpacity
+                  style={{
+                    position: 'absolute',
+                    top: 5,
+                    right: 5,
+                    backgroundColor: '#fff', // Background for better visibility
+                    borderRadius: 50,
+                    padding: 4,
+                  }}
+                  onPress={openImagePicker}
+                >
+                  <MaterialIcons name="edit" size={18} color="black" />
+                </TouchableOpacity>
+              </View>
               <View style={{ alignItems: 'center' }}>
                 <Text style={{
                   color: Colors.black, fontSize: 18, fontFamily: 'Prompt_500Medium',
@@ -319,10 +460,12 @@ export default function Setting() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-    marginTop: 20
+    padding: 10,
+    paddingHorizontal: 12,
+    marginTop: Platform.select({
+      ios: 65,
+      android: 65,
+    }),
   },
   showflex: {
     display: 'flex',

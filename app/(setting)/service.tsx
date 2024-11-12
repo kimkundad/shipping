@@ -57,9 +57,35 @@ export default function Service() {
   const [loading, setLoading] = useState(false);
   const [price, setPrice] = useState(0); // เก็บค่ารวมของราคาที่คำนวณแล้ว
   const [selected, setSelected] = useState(false);
+  const [selected2, setSelected2] = useState(false);
+  const [dataSetting, setDataSetting] = useState(null);
 
-  const handleSelect = () => {
-    setSelected(!selected);
+  const fetchData = async () => {
+
+    try {
+      const response = await api.get(`/getSetting`);
+      const settingData = response.data.set;
+      setDataSetting(settingData);
+    } catch (error) {
+      console.error('Error fetching order:', error);
+    }
+
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+// ฟังก์ชันเลือก/ยกเลิกบริการยกของชั้น 1
+const handleSelect = () => {
+    setSelected(prevSelected => !prevSelected); // สลับสถานะของ selected
+    if (selected2) setSelected2(false); // ถ้าเลือกชั้น 2 อยู่ ให้ยกเลิก
+  };
+  
+  // ฟังก์ชันเลือก/ยกเลิกบริการยกของชั้น 2
+  const handleSelect2 = () => {
+    setSelected2(prevSelected2 => !prevSelected2); // สลับสถานะของ selected2
+    if (selected) setSelected(false); // ถ้าเลือกชั้น 1 อยู่ ให้ยกเลิก
   };
 
   // Function to dynamically return the correct image based on the selected size
@@ -109,47 +135,6 @@ const getImageForSize = (size) => {
     }
   }, [route.params]);
 
-  useEffect(() => {
-    const calculatePrice = async () => {
-      if (formData?.province2 && weight) {
-
-        
-        try {
-          const getProvince = { province2: formData?.province2 };
-          const response = await api.post('/getProvince', getProvince);
-          
-          let pricePerUnit = 0;
-          const parsedWeight = parseFloat(weight);
-
-          // เลือกใช้ค่าที่เหมาะสมตาม weight
-          if (parsedWeight <= 10) {
-            pricePerUnit = response?.data?.province?.tenbox || 0;
-          } else if (parsedWeight <= 20) {
-            pricePerUnit = response?.data?.province?.twentybox || 0;
-          } else if (parsedWeight <= 30) {
-            pricePerUnit = response?.data?.province?.thirtybox || 0;
-          } else if (parsedWeight <= 40) {
-            pricePerUnit = response?.data?.province?.fortybox || 0;
-          } else if (parsedWeight <= 50) {
-            pricePerUnit = response?.data?.province?.fiftybox || 0;
-          } else if (parsedWeight <= 60) {
-            pricePerUnit = response?.data?.province?.sixtybox || 0;
-          } else {
-            pricePerUnit = response?.data?.province?.sixtybox || 0;
-          }
-
-          // คำนวณราคาจาก pricePerUnit และน้ำหนัก (weight)
-          const calculatedPrice = pricePerUnit * parsedWeight;
-          setPrice(calculatedPrice); // อัพเดทผลรวมของราคา
-
-        } catch (error) {
-          Alert.alert('Error', error.message || 'เกิดข้อผิดพลาดในการคำนวณราคา');
-        }
-      }
-    };
-
-    calculatePrice();
-  }, [formData?.province2, weight]);
 
     const sizes = ['S', 'M', 'L', 'XL'];
     const deliveryTypes = [
@@ -216,7 +201,8 @@ const getImageForSize = (size) => {
             price: price,
             warb,
             machinery,
-            service: selected
+            service: selected,
+            service2: selected2
           };
     
           console.log('Creating order with data:', orderData);
@@ -239,6 +225,58 @@ const getImageForSize = (size) => {
           setLoading(false); // หยุดการโหลด
         }
     };
+
+
+     // คำนวณราคาเมื่อเลือกจังหวัดหรือเปลี่ยนจำนวนสินค้า
+  useEffect(() => {
+    const calculateTotalPrice = async () => {
+      if (formData?.province2 && weight) {
+        try {
+          const response = await api.post('/getProvince', { province2: formData.province2 });
+          let pricePerUnit = 0;
+          const parsedWeight = parseFloat(weight);
+
+          // เลือกใช้เงื่อนไขตามจำนวนสินค้า
+          if (parsedWeight <= 10) {
+            pricePerUnit = response?.data?.province?.tenbox || 0;
+          } else if (parsedWeight <= 20) {
+            pricePerUnit = response?.data?.province?.twentybox || 0;
+          } else if (parsedWeight <= 30) {
+            pricePerUnit = response?.data?.province?.thirtybox || 0;
+          } else if (parsedWeight <= 40) {
+            pricePerUnit = response?.data?.province?.fortybox || 0;
+          } else if (parsedWeight <= 50) {
+            pricePerUnit = response?.data?.province?.fiftybox || 0;
+          } else if (parsedWeight <= 60) {
+            pricePerUnit = response?.data?.province?.sixtybox || 0;
+          } else {
+            pricePerUnit = response?.data?.province?.sixtybox || 0;
+          }
+
+          // คำนวณราคาเบื้องต้นตามจังหวัด
+          let totalProvincePrice = pricePerUnit * parsedWeight;
+
+          // คำนวณราคาบริการเพิ่มเติมตามบริการที่เลือก
+          let additionalServicePrice = 0;
+          if (selected) {
+            additionalServicePrice = (dataSetting?.box_service1 || 0) * parsedWeight;
+          } else if (selected2) {
+            additionalServicePrice = parsedWeight <= 20
+              ? (dataSetting?.box_service2 || 0) * parsedWeight
+              : dataSetting?.box_service3 || 0;
+          }
+
+          // อัปเดตราคารวมทั้งหมด
+          setPrice(totalProvincePrice + additionalServicePrice);
+        } catch (error) {
+          Alert.alert('Error', error.message || 'เกิดข้อผิดพลาดในการคำนวณราคา');
+        }
+      }
+    };
+
+    calculateTotalPrice();
+  }, [formData?.province2, weight, selected, selected2, dataSetting]);
+      
 
     return (
         <>
@@ -387,7 +425,7 @@ const getImageForSize = (size) => {
                     {/* Type of Package */}
                     {/* Type of Package */}
                     <View style={{ marginTop: 15 }}>
-                        <Text style={styles.label}>ประเภทพัสดุ</Text>
+                        <Text style={styles.label}>ประเภทพัสดุ </Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
                             {packageTypes.map((pkg, index) => (
                                 <TouchableOpacity
@@ -446,8 +484,6 @@ const getImageForSize = (size) => {
 
 
                     <View style={styles.boxCheck}>
-
-                 
                     <TouchableOpacity style={styles.optionContainer} onPress={handleSelect}>
                         <Ionicons
                         name={selected ? 'radio-button-on' : 'radio-button-off'}
@@ -455,11 +491,31 @@ const getImageForSize = (size) => {
                         color='#cd5305'
                         style={styles.radioButton}
                         />
-                        <Text style={styles.timeText}> ใช้บริการยกของขึ้นชั่น 2</Text>
+                        <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={styles.timeText}> บริการยกของจัดเรียงชั้น1</Text>
+                            <Text style={styles.timeTextPrice}> 5บาท/ชิ้น</Text>
+                        </View>
                     </TouchableOpacity>
-
                     </View>
-                    <Text style={styles.remarkText}>***หมายเหตุ บริการยกของฟรีที่ชั่นที่ 1</Text>
+
+                    <View style={styles.boxCheck}>
+                    <TouchableOpacity style={styles.optionContainer} onPress={handleSelect2}>
+                        <Ionicons
+                        name={selected2 ? 'radio-button-on' : 'radio-button-off'}
+                        size={24}
+                        color='#cd5305'
+                        style={styles.radioButton}
+                        />
+                        <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={styles.timeText}> บริการยกของจัดเรียงชั้น2</Text>
+                            <Text style={styles.timeTextPrice}> 15บาท/ชิ้น</Text>
+                        </View>
+                    </TouchableOpacity>
+                    </View>
+
+
+                    <Text style={styles.remarkText}>*ยกของจัดเรียงชั้น2 1-20ชิ้น ราคาชิ้นละ15บาท</Text>
+                    <Text style={styles.remarkText}>*ราคายกของจัดเรียงขึ้นชั้น2 21ชิ้นขึ้นไป คิดราคาเหมา 300บาทค่ะ🫶🏻🫶🏻</Text>
 
                     </View>
 
@@ -506,6 +562,14 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
         marginTop: 3
     },
+    remarkText2:{
+        fontFamily: 'Prompt_400Regular',
+        fontSize: 14,
+        color: '#666',
+        paddingLeft: 10,
+        marginTop: 3,
+        marginLeft: 22
+    },
     title: {
         flex: 1,
         fontSize: 14,
@@ -526,12 +590,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
       },
       radioButton: {
-        marginRight: 10,
+        marginRight: 2,
       },
       timeText: {
-        fontSize: 15,
+        fontSize: 13,
         color: 'black',
         fontFamily: 'Prompt_400Regular',
+      },
+      timeTextPrice: {
+        fontSize: 14,
+        color: '#f47524',
+        fontFamily: 'Prompt_500Medium',
       },
     showflex: {
         display: 'flex',
@@ -714,7 +783,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Prompt_500Medium'
     },
     btnBack: {
-        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+        backgroundColor: 'rgba(50, 209, 145, 0.2)',
         borderRadius: 10,
         padding: 4,
         alignItems: 'center',

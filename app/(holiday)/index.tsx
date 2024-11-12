@@ -1,15 +1,36 @@
 import { Image, View, Text, StyleSheet, Platform, TextInput, Dimensions, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Link, useNavigation, router } from 'expo-router';
-import { useEffect } from 'react';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
+import React, { useEffect, useContext ,useState, useRef } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StatusBar } from 'expo-status-bar';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import axios from 'axios';
+import api from '../../hooks/api'; // Axios instance
 
 const { width } = Dimensions.get('window');
 
+
 const Holiday = () => {
+
+    const [news, setNews] = useState(false);
+
+    const fetchNews = async () => {
+        try {
+          // No need to manually fetch the token, as it's added by the interceptor
+          const response = await api.get('/getHoliday');
+          setNews(response.data.news); // Set the orders from the response
+        
+        } catch (error) {
+          console.error('Error fetching orders:', error);
+        }
+      };
+      
+    
+      useEffect(() => {
+        fetchNews();
+      }, []);
+
+
     return (
         <SafeAreaProvider style={{ flex: 1, backgroundColor: '#F5F5F5' }} >
             <StatusBar style="dark" />
@@ -34,21 +55,22 @@ const Holiday = () => {
                     </View>
                 </View>
                 <View>
-                    <View style={{ marginTop: 20, alignItems: 'center' }}>
-
-
-                        <Text style={{ fontSize: 17, fontFamily: 'Prompt_400Regular', marginBottom: 5 }}>วันหยุดปีใหม่ 2567</Text>
-                        <Image source={require('../../assets/images/holiday2.jpg')}
-                            style={styles.image}
-                            resizeMode="cover" />
-
-                        <Text style={{ fontSize: 17, fontFamily: 'Prompt_400Regular', marginBottom: 5, marginTop: 20 }}>วันหยุดสงกรานต์ 2567 </Text>
-                        <Image source={require('../../assets/images/holiday.jpg')}
-                            style={styles.image}
-                            resizeMode="cover" />
-
-
-                    </View>
+                <View style={{ marginTop: 20, alignItems: 'center' }}>
+                    {news.length > 0 ? (
+                        news.map((item, index) => (
+                            <View key={index} style={styles.newsItem}>
+                                <Text style={{ fontSize: 17, fontFamily: 'Prompt_400Regular', marginBottom: 5, textAlign: 'center' }}>{item.name}</Text>
+                                <Image 
+                                    source={{ uri: item.image }} 
+                                    style={styles.image} 
+                                    resizeMode="cover" 
+                                />
+                            </View>
+                        ))
+                    ) : (
+                        <Text style={{ fontSize: 17, fontFamily: 'Prompt_400Regular', marginBottom: 5 }}>กำลังโหลดข้อมูล...</Text>
+                    )}
+                </View>
                 </View>
             </ScrollView>
         </SafeAreaProvider>
@@ -62,9 +84,15 @@ const styles = StyleSheet.create({
     container: {
         padding: 20,
     },
+    newsItem: {
+        marginBottom: 20,
+        alignItems: 'center',
+    },
     image: {
-        width: width, // Full width of the screen
-        height: 200,  // Set the height as needed
+        width: width * 0.9,
+        height: 200,
+        borderRadius: 10,
+        marginBottom: 10,
     },
     textListHead: {
         display: 'flex',

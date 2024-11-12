@@ -57,7 +57,7 @@ export default function Register() {
         c_password: confirmPassword,
         role:3
       });
-      // console.log('response', response)
+       console.log('response', response)
       if (response.data.success) {
         
         Alert.alert('Success', 'Registration successful!');

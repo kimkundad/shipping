@@ -1,7 +1,7 @@
-import { StyleSheet, Image, Text, View, Platform, FlatList, LogBox, KeyboardAvoidingView, ScrollView, Alert, Linking, TouchableOpacity, RefreshControl  } from 'react-native';
+import { StyleSheet, Image, Text, View, Platform, FlatList, ActivityIndicator, LogBox, KeyboardAvoidingView, ScrollView, Alert, Linking, TouchableOpacity, RefreshControl  } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import React, { useEffect, useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import Timeline from 'react-native-timeline-flatlist';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
@@ -16,6 +16,7 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as WebBrowser from 'expo-web-browser';
 import { Buffer } from 'buffer';
+import { UserContext } from '../../hooks/UserContext';
 
 
 LogBox.ignoreLogs([
@@ -25,6 +26,8 @@ LogBox.ignoreLogs([
 ]);
 
 export default function Tracking() {
+
+  const { userProfile } = useContext(UserContext);
 
   interface Order {
     dri_time: string;
@@ -106,13 +109,86 @@ export default function Tracking() {
     }
   };
 
-  const handleSendInvoice = () => {
-    Alert.alert('Invoice Sent', 'Sent to: Pairat8409@gmail.com');
+  const handleCancelInvoice = async (id) => {
+
+    setLoading(true); // Start loading
+      try {
+
+        const response = await api.post('/cancelInvoice', { id });
+        console.log('response.data', response.data)
+
+      if(response.data.success === true){
+        Alert.alert('สำเร็จ', 'ระบบได้ทำการยกเลิกบริการนี้แล้ว', [
+          {
+            text: 'OK',
+            onPress: () => router.push({
+              pathname: '(tabs)',
+            }),
+          },
+        ]);
+        
+      }else{
+        Alert.alert('ข้อผิดพลาด', 'เกิดข้อผิดพลาดในการยกเลิกบริการ');
+      }
+
+      } catch (error) {
+        Alert.alert('ข้อผิดพลาด', error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
+      } finally {
+        setLoading(false); // Stop loading
+      }
+
+  }
+
+  const handleSendInvoice = async (id) => {
+
+    if(userProfile?.ReceiptStatus === 1){
+      
+
+      setLoading(true); // Start loading
+      try {
+
+        const response = await api.post('/generatePDFtoMail', { id });
+        console.log('response.data', response.data)
+
+      if(response.data.success === true){
+        Alert.alert('ใบเสร็จรับเงิน', 'ถูกส่งไปยังอีเมลของท่านแล้ว');
+      }else{
+        Alert.alert('ข้อผิดพลาด', 'เกิดข้อผิดพลาดในการส่งอีเมล');
+      }
+
+      } catch (error) {
+        Alert.alert('ข้อผิดพลาด', error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
+      } finally {
+        setLoading(false); // Stop loading
+      }
+
+    }else{
+
+      Alert.alert(
+        'ข้อผิดพลาด', 
+        'กรุณาเพิ่มข้อมูลการรับใบเสร็จก่อน', 
+        [
+          {
+            text: 'กรอกข้อมูลใบเสร็จ',
+            onPress: () => router.push({
+              pathname: '(setting)/receipt',
+              params: { id: id } // Add 'id' parameter here
+            }),
+          },
+        ]
+      );
+
+    }
+
+  //  Alert.alert('ใบเสร็จรับเงิน', 'ถูกส่งไปยังอีเมลของท่านแล้ว');
   };
 
   const handleDownloadPDF = async (id) => {
 
-    setLoading(true); // Start loading
+
+    if(userProfile?.ReceiptStatus === 1){
+
+      setLoading(true); // Start loading
     try {
       // Send POST request to the API
 
@@ -150,6 +226,25 @@ export default function Tracking() {
       setLoading(false); // Stop loading
     }
 
+    }else{
+
+      Alert.alert(
+        'ข้อผิดพลาด', 
+        'กรุณาเพิ่มข้อมูลการรับใบเสร็จก่อน', 
+        [
+          {
+            text: 'กรอกข้อมูลใบเสร็จ',
+            onPress: () => router.push({
+              pathname: '(setting)/receipt',
+              params: { id: id } // Add 'id' parameter here
+            }),
+          },
+        ]
+      );
+
+    }
+    
+
   };
 
 
@@ -164,7 +259,10 @@ export default function Tracking() {
       // Use the Sharing API to open the PDF
       await Sharing.shareAsync(fileUri);
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to open the PDF');
+      Alert.alert(
+        'Error',
+        (error instanceof Error ? error.message : 'Failed to open the PDF')
+      );
     }
   };
 
@@ -335,7 +433,7 @@ const TimelineItem = ({ item , isLastItem }) => {
                   style={styles.userImage}
                   source={{ uri: 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg' }} />
                 <View>
-                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 13, color: '#666' }}>พนักงานขนส่ง, 1</Text>
+                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 13, color: '#666' }}>พนักงานขนส่ง, </Text>
                   <View style={styles.showflex}>
                     <Image source={require('../../assets/images/icon_truck.png')}
                       style={{ width: 25, height: 25, marginRight: 2 }} />
@@ -404,20 +502,40 @@ const TimelineItem = ({ item , isLastItem }) => {
       </View>
 
 
-          
+      {order?.order_status === 0 && (
+
+            <TouchableOpacity
+            style={{ marginTop: 15 }}
+            onPress={() => handleCancelInvoice(order?.id)}
+            >
+            <View style={styles.btnDanger}>
+              <Text style={styles.btnText}>ยกเลิกบริการ</Text>
+            </View>
+            </TouchableOpacity>
+
+      )}
 
 
           {order?.order_status === 2 &&
             (
               <View>
 
-                <TouchableOpacity style={styles.button} onPress={handleSendInvoice}>
-                  <MaterialIcons name="email" size={24} color="#e67e22" />
+                <TouchableOpacity style={styles.button} onPress={() => handleSendInvoice(order?.id)}>
+                  {loading ? (
+                    <ActivityIndicator size="small" color="#e67e22" />
+                  ) : (
+                    <MaterialIcons name="email" size={24} color="#e67e22" />
+                  )}
                   <View style={styles.textContainer}>
-                    <Text style={styles.title}>ส่งใบเสร็จรับเงิน</Text>
-                    <Text style={styles.subtitle}>ส่งไปที่ Pairat8409@gmail.com</Text>
+                    <Text style={styles.title}>{loading ? 'กำลัง' : ''}ส่งใบเสร็จรับเงิน</Text>
+                    {userProfile?.Receiptemail ? (
+                      <Text style={styles.subtitle}>ส่งไปที่ {userProfile?.Receiptemail}</Text>
+                    ) : (
+                      <Text style={styles.subtitle}>กรุณาตั้งค่าอีเมล ที่ต้องการรับ</Text>
+                    )}
                   </View>
                 </TouchableOpacity>
+                
 
                 {/* Download PDF Button */}
                 <TouchableOpacity style={styles.button} onPress={() => handleDownloadPDF(order?.id)}>
@@ -443,6 +561,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 15,
+  },
+  btnDanger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    backgroundColor: '#f44336',
+    borderColor: '#f44336',
+    marginBottom: 30
+  },
+  btnText: {
+    fontSize: 18,
+    lineHeight: 26,
+    color: '#fff',
+    fontFamily: 'Prompt_500Medium',
   },
   timelineItem: {
     flexDirection: 'row',

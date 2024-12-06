@@ -1,7 +1,7 @@
 import { Image, View, Text, StyleSheet, Platform, Linking, TextInput, Alert, Dimensions, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Link, useNavigation, router } from 'expo-router';
-import { useEffect } from 'react';
+import React, { useState, useEffect  } from 'react';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StatusBar } from 'expo-status-bar';
@@ -10,62 +10,84 @@ import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
-
+import api from '../../hooks/api'; // Axios instance
 
 const { width } = Dimensions.get('window');
 
-const handlePress = async () => {
 
-    const url = `tel:0992762487`;
-    try {
-      await Linking.openURL(url);
-    } catch (error) {
-      Alert.alert('Error', 'Unable to make a phone call');
-      console.error('Error:', error);
-    }
- 
-};
-
-const handleLinePress = async () => {
-    const lineUrl = 'https://line.me/R/ti/p/@563mmsdp'; // Link to Line Add Friend page
-
-    try {
-        const supported = await Linking.canOpenURL(lineUrl);
-        if (supported) {
-            await Linking.openURL(lineUrl);
-        } else {
-            Alert.alert(
-                'Cannot Open Line',
-                'It seems Line app is not installed or supported on your device.'
-            );
-        }
-    } catch (error) {
-        console.error('An error occurred', error);
-        Alert.alert('Error', 'An unexpected error occurred while trying to open Line.');
-    }
-};
-
-const handleEmailPress = async () => {
-  const email = 'Loadmasterlogisticsth@gmail.com';
-  const url = `mailto:${email}`;
-
-  try {
-      const supported = await Linking.canOpenURL(url);
-      if (supported) {
-          await Linking.openURL(url);
-      } else {
-          Alert.alert(
-              'Email Not Supported',
-              'No email app is available to open this link. Please configure an email client and try again.'
-          );
-      }
-  } catch (error) {
-      console.error('An error occurred', error);
-      Alert.alert('Error', 'An unexpected error occurred while trying to open the email app.');
-  }
-};
 
 const Helpcen = () => {
+
+    const [dataSetting, setDataSetting] = useState(null);
+
+    const fetchData = async () => {
+
+        try {
+          const response = await api.get(`/getSetting`);
+          const settingData = response.data.set;
+          setDataSetting(settingData);
+        } catch (error) {
+          console.error('Error fetching order:', error);
+        }
+    
+      };
+    
+      useEffect(() => {
+        fetchData();
+      }, []);
+
+
+      const handlePress = async () => {
+
+        const url = `tel:${dataSetting?.phone}`;
+        try {
+          await Linking.openURL(url);
+        } catch (error) {
+          Alert.alert('Error', 'Unable to make a phone call');
+          console.error('Error:', error);
+        }
+     
+    };
+    
+    const handleLinePress = async () => {
+        const lineUrl = dataSetting?.line_oa_url; // Link to Line Add Friend page
+    
+        try {
+            const supported = await Linking.canOpenURL(lineUrl);
+            if (supported) {
+                await Linking.openURL(lineUrl);
+            } else {
+                Alert.alert(
+                    'Cannot Open Line',
+                    'It seems Line app is not installed or supported on your device.'
+                );
+            }
+        } catch (error) {
+            console.error('An error occurred', error);
+            Alert.alert('Error', 'An unexpected error occurred while trying to open Line.');
+        }
+    };
+    
+    const handleEmailPress = async () => {
+      const email = dataSetting?.email;
+      const url = `mailto:${email}`;
+    
+      try {
+          const supported = await Linking.canOpenURL(url);
+          if (supported) {
+              await Linking.openURL(url);
+          } else {
+              Alert.alert(
+                  'Email Not Supported',
+                  'No email app is available to open this link. Please configure an email client and try again.'
+              );
+          }
+      } catch (error) {
+          console.error('An error occurred', error);
+          Alert.alert('Error', 'An unexpected error occurred while trying to open the email app.');
+      }
+    };
+
     return (
         <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
             <StatusBar style="dark" />
@@ -97,15 +119,19 @@ const Helpcen = () => {
                         
 
                         <View style={styles.textListHead2}>
-                                <View style={styles.profile}>
-                                    <View>
-                                        <Ionicons name="chatbox-ellipses-outline" size={24} color="black" />
+                                <TouchableOpacity  onPress={() => {
+                  // handle onPress
+                  router.push('(contact)/chat');
+                }}>
+                                    <View style={styles.profile}>
+                                        <View>
+                                            <Ionicons name="chatbox-ellipses-outline" size={24} color="black" />
+                                        </View>
+                                        <View>
+                                            <Text style={ styles.textSeting}> แชทพูดคุยกับเรา </Text>
+                                        </View>
                                     </View>
-                                    <View>
-                                        <Text style={ styles.textSeting}> แชทพูดคุยกับเรา</Text>
-                                    </View>
-                                </View>
-                                
+                                </TouchableOpacity>
                             </View>
 
                             <View style={styles.textListHead2}>
@@ -115,7 +141,7 @@ const Helpcen = () => {
                                         <Feather name="phone" size={24} color="black" />
                                     </View>
                                     <View>
-                                        <Text style={ styles.textSeting}> 099-276-2487</Text>
+                                        <Text style={ styles.textSeting}> {dataSetting?.phone}</Text>
                                     </View>
                                 </View>
                                 </TouchableOpacity>
@@ -128,7 +154,7 @@ const Helpcen = () => {
                                             <Entypo name="email" size={24} color="black" />
                                         </View>
                                         <View>
-                                            <Text style={ styles.textSeting}> Loadmasterlogisticsth@gmail.com</Text>
+                                            <Text style={ styles.textSeting}> {dataSetting?.email}</Text>
                                         </View>
                                     </View>
                                 </TouchableOpacity>
@@ -141,7 +167,7 @@ const Helpcen = () => {
                                         <Ionicons name="chatbubble-ellipses-outline" size={24} color="black" />
                                     </View>
                                     <View>
-                                        <Text style={ styles.textSeting}> Line ID : @563mmsdp</Text>
+                                        <Text style={ styles.textSeting}> Line ID : {dataSetting?.line_oa}</Text>
                                     </View>
                                 </View>
                                 </TouchableOpacity>

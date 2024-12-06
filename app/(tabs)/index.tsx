@@ -1,26 +1,41 @@
-import { Image, View, Text, StyleSheet, Dimensions, RefreshControl, Platform, TextInput, Alert, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import { Image, View, Text, LogBox, StyleSheet, Dimensions, RefreshControl, Platform, TextInput, Alert, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Link, useNavigation, router, Stack, useRouter  } from 'expo-router';
-import React, { useEffect, useContext ,useState, useRef } from 'react';
+import { Link, useNavigation, router, Stack, useRouter } from 'expo-router';
+import React, { useEffect, useContext, useState, useRef } from 'react';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { StatusBar } from 'expo-status-bar';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Carousel from 'react-native-reanimated-carousel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../hooks/UserContext';
-import axios from 'axios';
 import api from '../../hooks/api'; // Axios instance
 import { useCameraPermissions } from "expo-camera";
 import DeviveryStatus from '../../components/DeviveryStatus'
 import { Ionicons, Feather, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import {
+  configureReanimatedLogger,
+  ReanimatedLogLevel,
+} from 'react-native-reanimated';
+
+
+// This is the default configuration
+configureReanimatedLogger({
+  level: ReanimatedLogLevel.warn,
+  strict: false, // Reanimated runs in strict mode by default
+});
 
 const { width: screenWidth } = Dimensions.get('window');
+
+
+LogBox.ignoreLogs([
+  '[Reanimated]',  // ซ่อนข้อความแจ้งเตือนจาก Reanimated
+]);
 
 export default function HomeScreen({ navigation }) {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const { userProfile }  = useContext(UserContext);
+  const { userProfile } = useContext(UserContext);
   const [permission, requestPermission] = useCameraPermissions();
   const isPermissionGranted = Boolean(permission?.granted);
   const [searchInput, setSearchInput] = useState('');
@@ -28,6 +43,7 @@ export default function HomeScreen({ navigation }) {
   const [news, setNews] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [userOrders, setUserOrders] = useState(false);
+  const [getPrice, setGetPrice] = useState(0);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -38,16 +54,17 @@ export default function HomeScreen({ navigation }) {
   };
 
 
+
   const handleScanPress = async () => {
     if (permission?.granted) {
       // ถ้าได้รับสิทธิ์แล้ว ไปที่หน้า scanner
-      router.push('/scanner');
+      router.push('/(scanner)');
     } else {
       // ถ้ายังไม่ได้รับสิทธิ์, ขอสิทธิ์
       const result = await requestPermission();
       if (result.granted) {
         // ถ้าอนุญาตสิทธิ์, ไปที่หน้า scanner
-        router.push('/scanner');
+        router.push('/(scanner)');
       } else {
         // ถ้าไม่อนุญาต, แสดงแจ้งเตือน
         Alert.alert('Permission Denied', 'Camera permission is required to use the scanner.');
@@ -74,6 +91,7 @@ export default function HomeScreen({ navigation }) {
       // No need to manually fetch the token, as it's added by the interceptor
       const response = await api.get('/user-order-cus');
       setUserOrders(response.data.order); // Set the orders from the response
+      setGetPrice(response.data.price)
     } catch (error) {
       console.error('Error fetching orders:', error);
     }
@@ -84,12 +102,12 @@ export default function HomeScreen({ navigation }) {
       // No need to manually fetch the token, as it's added by the interceptor
       const response = await api.get('/getNews');
       setNews(response.data.news); // Set the orders from the response
-    
+
     } catch (error) {
       console.error('Error fetching orders:', error);
     }
   };
-  
+
 
   useEffect(() => {
     fetchOrders(); // Fetch once when the component mounts
@@ -104,12 +122,12 @@ export default function HomeScreen({ navigation }) {
 
   const handleSearch = async () => {
     try {
-      
+
       const response = await api.post('/checkQrcode', { qrcode: searchInput });
 
       if (response.data.success === true) {
         Alert.alert('สำเร็จ', 'กำลังโหลดข้อมูล');
-  
+
         router.push({
           pathname: '(setting)/tracking',
           params: { id: response.data.order.id },
@@ -132,20 +150,20 @@ export default function HomeScreen({ navigation }) {
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#f6f6f6' }} >
       <StatusBar style="light" />
       <ScrollView
-      
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         <View >
 
           {/* <View style={styles.containerBlue} /> */}
           <LinearGradient
-        colors={['#1e3c72', '#1e3c72', '#2a5298']}
-        start={{ x: 0, y: 1 }}
-        end={{ x: 0, y: 0 }}
-        style={styles.containerBlue}
-      />
+            colors={['#1e3c72', '#1e3c72', '#2a5298']}
+            start={{ x: 0, y: 1 }}
+            end={{ x: 0, y: 0 }}
+            style={styles.containerBlue}
+          />
           <View style={styles.container1}>
             {/* profileMain  */}
             <View style={styles.profileMain}>
@@ -154,26 +172,26 @@ export default function HomeScreen({ navigation }) {
                   style={styles.userImage}
                   source={{
                     uri: userProfile?.avatar || 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg',
-                }} />
-{userProfile ? (
-                <View>
-                  <View style={styles.showflex}>
+                  }} />
+                {userProfile ? (
+                  <View>
+                    <View style={styles.showflex}>
+                      <Text style={{
+                        color: Colors.white, fontSize: 14, fontFamily: 'Prompt_500Medium', fontWeight: 700, marginRight: 5
+                      }}>รหัส</Text>
+                      <Text style={{
+                        color: Colors.white, fontSize: 14, fontFamily: 'Prompt_400Regular',
+                      }}>{userProfile.code_user}</Text>
+                    </View>
                     <Text style={{
-                      color: Colors.white, fontSize: 14, fontFamily: 'Prompt_500Medium', fontWeight: 700, marginRight: 5
-                    }}>รหัส</Text>
-                    <Text style={{
-                      color: Colors.white, fontSize: 14, fontFamily: 'Prompt_400Regular',
-                    }}>{userProfile.code_user}</Text>
-                  </View>
-                    <Text style={{ 
-                      color: Colors.white, 
-                      fontSize: 16, 
+                      color: Colors.white,
+                      fontSize: 16,
                       fontFamily: 'Prompt_400Regular',
-                      marginTop:-2 
-                      }}>
+                      marginTop: -2
+                    }}>
                       {userProfile.name},
-                      </Text>
-                </View>
+                    </Text>
+                  </View>
                 ) : (
                   <Text style={{ color: Colors.white, fontSize: 20 }}>Loading...</Text>
                 )}
@@ -187,7 +205,7 @@ export default function HomeScreen({ navigation }) {
                 <View>
                   <Ionicons name="notifications-outline" size={27} color="white" />
                 </View>
-                </TouchableOpacity>
+              </TouchableOpacity>
 
             </View>
             {/* profileMain  */}
@@ -213,94 +231,97 @@ export default function HomeScreen({ navigation }) {
                 color="gray"
                 onPress={handleSearch}
               />
-          </View>
+            </View>
             {/* search bar */}
 
-            
-            
+
+
             <View style={styles.boxGiff}>
-
-            <View>
-                    {Array.isArray(news) && news.length > 0 ? (
-                      <>
-                        <Carousel
-                          loop
-                          width={carouselWidth}
-                          height={175}
-                          autoPlay={true}
-                          autoPlayInterval={4000}
-                          data={news}
-                          scrollAnimationDuration={1000}
-                          onSnapToItem={(index) => setActiveIndex(index)}  // Track the active slide
-                          renderItem={({ index }) => (
-
-                      
-                            <View>
-                            <TouchableOpacity onPress={() => router.push({
-                              pathname: '(setting)/modalNew',
-                              params: { 
-                                id: news[index].id
-                              }, // ส่งพา
-                            })}>
-                              <Image
-                                source={{ uri: news[index].image }}  // นำ URL มาแสดงเป็นภาพ
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  resizeMode: 'cover',
-                                  borderRadius: 5,
-                                }}
-                              />
-                          </TouchableOpacity>
-                            </View>
-
-                          )}
-                        />
-                        {/* Custom Pagination Dots */}
-                        <View style={styles.pagination}>
-                          {news.map((_, index) => (
-                            <View
-                              key={index}
-                              style={[
-                                styles.dot,
-                                index === activeIndex ? styles.activeDot : styles.inactiveDot, // Different styles for active and inactive dots
-                              ]}
-                            />
-                          ))}
-                        </View>
-                      </>
-                    ) : (
+              {Array.isArray(news) && news.length > 0 ? (
+                <>
+                  <Carousel
+                    loop
+                    width={carouselWidth}
+                    height={175}
+                    autoPlay={true}
+                    autoPlayInterval={4000}
+                    data={news}
+                    scrollAnimationDuration={1000}
+                    onSnapToItem={(index) => setActiveIndex(index)}
+                    renderItem={({ index }) => (
                       <View>
-                        <Text style={{ color: Colors.white, fontSize: 20 }}>Loading...</Text>
+                        <TouchableOpacity onPress={() => router.push({
+                          pathname: '(setting)/modalNew',
+                          params: { id: news[index].id },
+                        })}>
+                          <Image
+                            source={{ uri: news[index].image }}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              resizeMode: 'cover',
+                              borderRadius: 5,
+                            }}
+                          />
+                        </TouchableOpacity>
                       </View>
                     )}
-              </View>
-
+                  />
+                  <View style={styles.pagination}>
+                    {news.map((_, index) => (
+                      <View
+                        key={index}
+                        style={[
+                          styles.dot,
+                          index === activeIndex ? styles.activeDot : styles.inactiveDot,
+                        ]}
+                      />
+                    ))}
+                  </View>
+                </>
+              ) : (
+                <View>
+                  <Text style={{ color: Colors.white, fontSize: 20, height: 240 }}>Loading...</Text>
+                </View>
+              )}
             </View>
 
-     
+
             <LinearGradient
-            colors={['#E3FDF5', '#FFE6FA']}
-            start={{ x: 0.8, y: 0.1 }} // เริ่มจากมุมด้านซ้ายบน
-            end={{ x: 0.2, y: 1 }}     // สิ้นสุดที่มุมด้านล่างขวา
-            style={styles.boxItemListPay}
-          >
-            <View style={styles.showflex2}>
-              <View>
-                <Text style={styles.TextPay}>ยอดค่าใช้บริการ</Text>
-                <Text style={styles.TextPaySum}>685.22</Text>
+              colors={['#E3FDF5', '#FFE6FA']}
+              start={{ x: 0.8, y: 0.1 }}
+              end={{ x: 0.2, y: 1 }}
+              style={styles.boxItemListPay}
+            >
+              <View style={styles.showflex2}>
+                <View>
+                  <Text style={styles.TextPay}>ยอดค่าใช้บริการ</Text>
+                  <Text style={styles.TextPaySum}>{getPrice?.toFixed(2)}</Text>
+                </View>
+                {getPrice === 0 ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      router.push('(setting)/paymentHis');
+                    }}
+                  >
+                    <View style={styles.btnPay}>
+                      <Text style={styles.btnTextPay}>ประวัติการชำระ</Text>
+                    </View>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      router.push('(setting)/payment');
+                    }}
+                  >
+                    <View style={styles.btnPay}>
+                      <Text style={styles.btnTextPay}>ชำระค่าบริการ</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
               </View>
-              <TouchableOpacity
-                onPress={() => {
-                  // handle onPress
-                  router.push('(setting)/payment');
-                }}>
-              <View style={styles.btnPay}>
-                <Text style={styles.btnTextPay}>ชำระค่าบริการ</Text>
-              </View>
-              </TouchableOpacity>
-            </View>
-          </LinearGradient>
+            </LinearGradient>
+
 
 
           </View>
@@ -336,7 +357,7 @@ export default function HomeScreen({ navigation }) {
                 <Text style={{ fontSize: 12, marginTop: 5, fontFamily: 'Prompt_400Regular' }}>แจ้งวันหยุด</Text>
               </View>
             </Link>
-            
+
             <Link replace href="/(contact)">
               <View style={{ alignItems: 'center' }}>
                 <View style={styles.boxItem}>
@@ -357,53 +378,69 @@ export default function HomeScreen({ navigation }) {
             </View>
             <View>
 
-            {userOrders && userOrders.length > 0 && (
-              <View>
-                {userOrders.map(order => (
-                  <TouchableOpacity
-                  key={order.id}
-                  onPress={() => {
-                    // handle onPress
-                    router.push({
-                      pathname: '(setting)/tracking',
-                      params: { 
-                        id: order.id ,
-                        getLatitude: order.latitude2 ,
-                        getLongitude: order.longitude2 
-                      }, // ส่งพารามิเตอร์ id ของ order
-                    });
-                  }}>
-                <View  style={styles.boxItemList}>
-                  <View style={styles.containerOrderMain}>
-                    <View style={styles.containerOrder}>
-                      <View >
-                        <Image source={require('../../assets/images/icon_truck.png')}
-                          style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
-                      </View>
-                      <View >
-                        <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 14 }}>#{order.code_order}</Text>
-                        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>กำหนดส่ง : {order.dri_date}</Text>
-                      </View>
-                    </View>
-                    <DeviveryStatus order={order} />
+              {userOrders && userOrders.length > 0 && (
+                <View>
+                  {userOrders.map(order => (
+                    <TouchableOpacity
+                      key={order.id}
+                      onPress={() => {
+                        // handle onPress
+                        router.push({
+                          pathname: '(setting)/tracking',
+                          params: {
+                            id: order.id,
+                            getLatitude: order.latitude2,
+                            getLongitude: order.longitude2
+                          }, // ส่งพารามิเตอร์ id ของ order
+                        });
+                      }}>
+                      <View style={styles.boxItemList}>
+                        <View style={styles.containerOrderMain}>
+                          <View style={styles.containerOrder}>
+                            <View >
+                              <Image source={require('../../assets/images/icon_truck.png')}
+                                style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
+                            </View>
+                            <View >
+                              <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 14 }}>#{order.code_order}</Text>
+                              <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>กำหนดส่ง : {order.dri_date}</Text>
+                            </View>
+                          </View>
+                          <DeviveryStatus order={order} />
+                        </View>
+                        <View style={styles.textBoxDetail}>
+                          <View style={styles.flexItem}>
+                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
+                            <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13 }}>{order.province2}</Text>
+                          </View>
+                          <View style={styles.flexItem}>
+                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ค่าบรริการ</Text>
+                            <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13, color: '#f47524' }}>{order?.price?.toFixed(2)} บาท</Text>
+                          </View>
+                        </View>
+                        {order?.order_status === 2 &&
+(
+  <View>
+    {order?.user_re_status === 0 ?
+(
+                  <View style={styles.textBoxDetailbot}>
+                    <Text style={styles.textget}>รอการกดยืนยันรับสินค้า</Text>
                   </View>
-                  <View style={styles.textBoxDetail}>
-                    <View style={styles.flexItem}>
-                      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
-                      <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13 }}>{order.province2}</Text>
-                    </View>
-                    <View style={styles.flexItem}>
-                      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ค่าบรริการ</Text>
-                      <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13, color: '#f47524' }}>{order.price.toFixed(2)} บาท</Text>
-                    </View>
+):(
+  <View style={styles.textBoxDetailbot}>
+                    <Text style={styles.textgetsuccess}>กดยืนยันรับสินค้าเสร็จแล้ว</Text>
                   </View>
-                </View>
-                </TouchableOpacity>
-                ))}
-              </View>
-            )}
+)}
 
-           
+                  </View>
+)}
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+
+
             </View>
 
           </View>
@@ -418,6 +455,16 @@ export default function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  textget: {
+    fontFamily: 'Prompt_500Medium', 
+    fontSize: 13, 
+    color: '#f47524'
+  },
+  textgetsuccess: {
+    fontFamily: 'Prompt_500Medium', 
+    fontSize: 13, 
+    color: '#28a745'
+  },
   containerBlue: {
     backgroundColor: '#121F43',
     borderBottomLeftRadius: 25,
@@ -426,16 +473,25 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%'
   },
-  TextPaySum:{
+  TextPaySum: {
     color: '#000',
     fontFamily: 'Prompt_500Medium',
     fontSize: 22,
     marginTop: -5
   },
-  TextPay:{
+  TextPay: {
     color: '#999',
     fontFamily: 'Prompt_400Regular',
     fontSize: 16
+  },
+  textBoxDetailbot: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 5,
+    borderTopWidth: 0.5, // Specifies the width of the bottom border
+    borderTopColor: '#d7d7d7',
+    marginTop: 5
   },
   pagination: {
     flexDirection: 'row',
@@ -476,7 +532,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between'
-  } ,
+  },
   textBoxDetail: {
     display: 'flex',
     flexDirection: 'row',
@@ -488,7 +544,10 @@ const styles = StyleSheet.create({
   },
   container1: {
     padding: 20,
-    marginTop: 45
+    marginTop: Platform.select({
+      ios: 30,
+      android: 20,
+  }),
   },
   textStatus: {
     backgroundColor: '#f47524',
@@ -656,7 +715,7 @@ const styles = StyleSheet.create({
     // Android shadow (elevation)
     elevation: 10,
   },
-  boxItemListPay : {
+  boxItemListPay: {
     backgroundColor: Colors.white,
     borderRadius: 10,
     paddingHorizontal: 15,

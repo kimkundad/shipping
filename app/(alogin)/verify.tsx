@@ -6,6 +6,7 @@ import { useRouter, useLocalSearchParams, Link } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { registerForPushNotificationsAsync } from "@/utils/registerForPushNotificationsAsync";
 
 export default function Verify() {
     const navigation = useNavigation();
@@ -80,7 +81,7 @@ export default function Verify() {
         await AsyncStorage.removeItem('refresh_token');
         await AsyncStorage.removeItem('user_profile');
 
-        console.log('otp', phone);
+        console.log('otp', otp.join(''));
   
         // Make the API call to verify the OTP
         const response = await axios.post('https://api.loadmasterth.com/api/verify', {
@@ -90,6 +91,7 @@ export default function Verify() {
   
         console.log('response', response.data);
   
+        
         if (response.data.token) {
           // Extract tokens and user profile from the response
           const token = response.data.token;
@@ -104,6 +106,7 @@ export default function Verify() {
             await AsyncStorage.setItem('jwt_token', token);
             await AsyncStorage.setItem('refresh_token', refreshToken);
             await AsyncStorage.setItem('user_profile', JSON.stringify(userProfile));
+            await registerForPushNotificationsAsync(userProfile.id);
   
             Alert.alert('Success', 'Verification successful!');
             router.push('(tabs)'); // Navigate to the main app screen

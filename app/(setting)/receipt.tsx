@@ -8,6 +8,7 @@ import Dropdown from "../../components/DropDown";
 import api from '../../hooks/api'; // Axios instance
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../hooks/UserContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Receipt = () => {
 
@@ -116,28 +117,6 @@ const Receipt = () => {
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#F5F5F5' }} >
-        <Stack.Screen
-                    options={{
-                        headerTransparent: true,
-                        headerTitle: 'ข้อมูลใบเสร็จรับเงิน',
-                        headerTitleAlign: 'center', // Center the header title
-                        headerTitleStyle: {
-                            color: 'black',
-                            fontFamily: 'Prompt_500Medium',
-                            fontSize: 17,
-                        },
-                        headerStyle: {
-                            backgroundColor: '#fff', // Set the background color here
-                        },
-                        headerLeft: () => (
-                            <TouchableOpacity style={styles.backIcon} onPress={() => navigation.goBack()}>
-                                <View style={{ backgroundColor: '#fff', padding: 6, borderRadius: 50 }}>
-                                    <Ionicons name="chevron-back" size={20} color="black" />
-                                </View>
-                            </TouchableOpacity>
-                        ),
-                    }}
-                />
       <StatusBar style="dark" />
       <ScrollView
       
@@ -146,7 +125,38 @@ const Receipt = () => {
       }
       >
         
-        
+        <LinearGradient
+                    colors={['#1e3c72', '#1e3c72', '#2a5298']}
+                    start={{ x: 0, y: 1 }}
+                    end={{ x: 0, y: 0 }}
+                    style={styles.headerGradient}
+                >
+                    <View style={styles.listItemCon}>
+                        <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 }}>
+                            <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(tabs)/setting')}>
+                                <View
+                                    style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                        padding: 5,
+                                        borderRadius: 25
+                                    }}
+                                >
+                                    <Ionicons name="chevron-back" size={20} color="black" />
+                                </View>
+                            </TouchableOpacity>
+
+                            <View style={styles.textListHead}>
+                                <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
+                                  ข้อมูลใบเสร็จรับเงิน
+                                </Text>
+                            </View>
+
+                            {/* ใช้ View เปล่าทางขวาเพื่อให้ไอคอน Back และ Text อยู่ตรงกลาง */}
+                            <View style={{ width: 32 }} />
+                        </View>
+
+                    </View>
+                </LinearGradient>
 
         <View style={styles.container}>
           <View style={styles.card}>
@@ -246,7 +256,45 @@ export default Receipt
 
 
 const styles = StyleSheet.create({
-
+headerGradient: {
+        height: 85,
+        width: '100%',
+    },
+    btnBack: {
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 25,
+        padding: 4,
+        alignItems: 'center',
+    },
+    textListHead: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+        fontFamily: 'Prompt_400Regular',
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    listItemCon: {
+      marginTop: Platform.select({
+          ios: 35,
+          android: 35,
+      }),
+      paddingHorizontal: 0,
+      // iOS shadow properties
+      shadowColor: '#000',
+      shadowOffset: {
+          width: 0,
+          height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 1,
+      // Android shadow (elevation)
+      elevation: 10,
+  },
     backIcon: {
         backgroundColor: 'rgba(50, 209, 145, 0.2)',
         padding: 3,
@@ -255,19 +303,9 @@ const styles = StyleSheet.create({
     container: {
         padding: 20,
         backgroundColor: '#fff',
-        marginTop: Platform.select({
-            ios: 80,
-            android: 75,
-        }),
         flex: 1,
     },
-  textListHead: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 10,
-    fontFamily: 'Prompt_400Regular',
-  },
+
   btn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -339,21 +377,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E5E5',
     borderStyle: 'solid',
   },
-  listItemCon: {
-    paddingTop: 40,
-    paddingHorizontal: 0,
-    backgroundColor: '#fff',
-    // iOS shadow properties
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 1,
-    // Android shadow (elevation)
-    elevation: 10,
-  },
+ 
   card: {
     paddingTop: 15,
     position: 'static',

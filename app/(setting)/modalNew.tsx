@@ -6,6 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useNavigation, router, Stack, useLocalSearchParams } from 'expo-router';
 import api from '../../hooks/api'; // Axios instance
 import RenderHTML from 'react-native-render-html';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
@@ -33,28 +34,40 @@ const ModalNew = () => {
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#F5F5F5' }} >
-      <Stack.Screen
-                    options={{
-                        headerTransparent: true,
-                        headerTitle: 'ข่าวสารโปรโมชั่น',
-                        headerTitleAlign: 'center', // Center the header title
-                        headerTitleStyle: {
-                            color: 'black',
-                            fontFamily: 'Prompt_500Medium',
-                            fontSize: 17,
-                        },
-                        headerStyle: {
-                            backgroundColor: '#fff', // Set the background color here
-                        },
-                        headerLeft: () => (
-                            <TouchableOpacity style={styles.backIcon} onPress={() => navigation.goBack()}>
-                                <View style={{ backgroundColor: '#fff', padding: 6, borderRadius: 50 }}>
+ 
+ 
+                <LinearGradient
+                    colors={['#1e3c72', '#1e3c72', '#2a5298']}
+                    start={{ x: 0, y: 1 }}
+                    end={{ x: 0, y: 0 }}
+                    style={styles.headerGradient}
+                >
+                    <View style={styles.listItemCon}>
+                        <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 }}>
+                            <TouchableOpacity style={styles.btnBack} onPress={() => navigation.goBack()}>
+                                <View
+                                    style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                        padding: 5,
+                                        borderRadius: 25
+                                    }}
+                                >
                                     <Ionicons name="chevron-back" size={20} color="black" />
                                 </View>
                             </TouchableOpacity>
-                        ),
-                    }}
-                />
+
+                            <View style={styles.textListHead}>
+                                <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
+                                ข่าวสารโปรโมชั่น
+                                </Text>
+                            </View>
+
+                            {/* ใช้ View เปล่าทางขวาเพื่อให้ไอคอน Back และ Text อยู่ตรงกลาง */}
+                            <View style={{ width: 32 }} />
+                        </View>
+
+                    </View>
+                </LinearGradient>
       <ScrollView>
         
         
@@ -86,7 +99,45 @@ export default ModalNew
 
 
 const styles = StyleSheet.create({
-
+  headerGradient: {
+    height: 85,
+    width: '100%',
+},
+btnBack: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 25,
+    padding: 4,
+    alignItems: 'center',
+},
+textListHead: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    fontFamily: 'Prompt_400Regular',
+},
+row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+},
+listItemCon: {
+    marginTop: Platform.select({
+        ios: 35,
+        android: 35,
+    }),
+    paddingHorizontal: 0,
+    // iOS shadow properties
+    shadowColor: '#000',
+    shadowOffset: {
+        width: 0,
+        height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 1,
+    // Android shadow (elevation)
+    elevation: 10,
+},
     backIcon: {
         backgroundColor: 'rgba(50, 209, 145, 0.2)',
         padding: 3,
@@ -95,10 +146,10 @@ const styles = StyleSheet.create({
     container: {
         padding: 20,
         backgroundColor: '#fff',
-        marginTop: Platform.select({
-            ios: 80,
-            android: 75,
-        }),
+        // marginTop: Platform.select({
+        //     ios: 80,
+        //     android: 75,
+        // }),
         flex: 1,
     },
     title: {

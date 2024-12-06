@@ -17,9 +17,11 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSDocumentDirectoryUsageDescription": "This app needs access to your documents to store PDFs."
-      }
+      },
+      "bundleIdentifier": "com.shippingapp"
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"

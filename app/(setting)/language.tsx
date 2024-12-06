@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useNavigation, router } from 'expo-router';
-import Dropdown from "../../components/DropDown";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const CustomRadioButton = ({ label, value, status, onPress }) => {
     return (
@@ -23,25 +23,45 @@ const Language = () => {
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
       <StatusBar style="dark" />
-      <ScrollView>
-        <View style={styles.listItemCon}>
-          <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Link href="/(tabs)/setting" style={{ padding: 10 }}>
-              <Ionicons name="chevron-back" size={30} color="black" />
-            </Link>
-            <View style={styles.textListHead} >
-              <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium' }}>Language</Text>
-            </View>
-            <View >
-              <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
-            </View>
-          </View>
-        </View>
+      <LinearGradient
+                    colors={['#1e3c72', '#1e3c72', '#2a5298']}
+                    start={{ x: 0, y: 1 }}
+                    end={{ x: 0, y: 0 }}
+                    style={styles.headerGradient}
+                >
+                    <View style={styles.listItemCon}>
+                        <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 }}>
+                            <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(tabs)/setting')}>
+                                <View
+                                    style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                        padding: 5,
+                                        borderRadius: 25
+                                    }}
+                                >
+                                    <Ionicons name="chevron-back" size={20} color="black" />
+                                </View>
+                            </TouchableOpacity>
 
-        <View style={{ paddingBottom : 10, paddingTop: 10}}>
+                            <View style={styles.textListHead}>
+                                <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
+                                    ตั้งค่าภาษา
+                                </Text>
+                            </View>
+
+                            {/* ใช้ View เปล่าทางขวาเพื่อให้ไอคอน Back และ Text อยู่ตรงกลาง */}
+                            <View style={{ width: 32 }} />
+                        </View>
+
+                    </View>
+                </LinearGradient>
+      <ScrollView>
+        
+
+        <View style={{ paddingBottom : 10, paddingTop: 20}}>
             
           <View style={styles.card}>
-          <View style={styles.line_bot}></View>
+     
 
             <View style={styles.LItem}>
                 <View style={styles.showflex}>
@@ -103,7 +123,45 @@ export default Language
 
 
 const styles = StyleSheet.create({
-
+  headerGradient: {
+    height: 85,
+    width: '100%',
+},
+btnBack: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 25,
+    padding: 4,
+    alignItems: 'center',
+},
+textListHead: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    fontFamily: 'Prompt_400Regular',
+},
+row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+},
+listItemCon: {
+    marginTop: Platform.select({
+        ios: 35,
+        android: 35,
+    }),
+    paddingHorizontal: 0,
+    // iOS shadow properties
+    shadowColor: '#000',
+    shadowOffset: {
+        width: 0,
+        height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 1,
+    // Android shadow (elevation)
+    elevation: 10,
+},
   container: {
     padding: 20,
   },
@@ -123,11 +181,7 @@ const styles = StyleSheet.create({
     marginBottom: 10
 
   },
-  listItemCon: {
-    paddingTop: 40,
-    paddingHorizontal: 0,
-    backgroundColor: '#fff',
-  },
+ 
   card: {
     paddingTop: 0,
     position: 'static',
@@ -136,13 +190,7 @@ const styles = StyleSheet.create({
     padding: 10,
 
   },
-  textListHead: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 10,
-    fontFamily: 'Prompt_400Regular',
-  },
+ 
   radioButtonContainer: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -116,6 +116,8 @@ export default function Setting() {
       setLoading(true); // Start loading
   
       try {
+
+        
           const formData = new FormData();
           formData.append('images', {
               uri: uri,
@@ -232,7 +234,7 @@ export default function Setting() {
                       <AntDesign name="user" size={20} color="black" />
                     </View>
                     <View>
-                      <Text style={styles.textSeting}>Edit Profile</Text>
+                      <Text style={styles.textSeting}>ข้อมูลส่วนตัว</Text>
                     </View>
                   </View>
                   <View>
@@ -261,7 +263,7 @@ export default function Setting() {
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => {
                   // handle onPress
                   router.push('(setting)/modal');
@@ -279,7 +281,7 @@ export default function Setting() {
                     <Feather name="chevron-right" size={24} color="black" />
                   </View>
                 </View>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <TouchableOpacity
                 onPress={() => {
@@ -381,6 +383,26 @@ export default function Setting() {
                     </View>
                     <View>
                       <Text style={styles.textSeting}>About Us</Text>
+                    </View>
+                  </View>
+                  <View>
+                    <Feather name="chevron-right" size={24} color="black" />
+                  </View>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  // handle onPress
+                  router.push('(setting)/test');
+                }}>
+                <View style={styles.textListHead2}>
+                  <View style={styles.profile}>
+                    <View>
+                      <Feather name="info" size={20} color="black" />
+                    </View>
+                    <View>
+                      <Text style={styles.textSeting}>test Us</Text>
                     </View>
                   </View>
                   <View>

@@ -1,4 +1,4 @@
-import { Image, View, Text, StyleSheet, RefreshControl ,TextInput, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import { Image, View, Text, Platform, StyleSheet, RefreshControl ,TextInput, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Link, useNavigation, router  } from 'expo-router';
 import React, { useEffect, useContext ,useState } from 'react';
@@ -99,6 +99,22 @@ export default function History() {
                       <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13, color: '#f47524' }}>{order.price.toFixed(2)} บาท</Text>
                     </View>
                   </View>
+                  {order?.order_status === 2 &&
+(
+  <View>
+    {order?.user_re_status === 0 ?
+(
+                  <View style={styles.textBoxDetailbot}>
+                    <Text style={styles.textget}>รอการกดยืนยันรับสินค้า</Text>
+                  </View>
+):(
+  <View style={styles.textBoxDetailbot}>
+                    <Text style={styles.textgetsuccess}>กดยืนยันรับสินค้าเสร็จแล้ว</Text>
+                  </View>
+)}
+
+                  </View>
+)}
                 </View>
                 </TouchableOpacity>
                 ))}
@@ -118,6 +134,16 @@ export default function History() {
 }
 
 const styles = StyleSheet.create({
+  textget: {
+    fontFamily: 'Prompt_500Medium', 
+    fontSize: 13, 
+    color: '#f47524'
+  },
+  textgetsuccess: {
+    fontFamily: 'Prompt_500Medium', 
+    fontSize: 13, 
+    color: '#28a745'
+  },
   headHelp: {
     marginVertical: 20,
     paddingHorizontal: 20,
@@ -183,6 +209,15 @@ bigHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingTop: 5
+  },
+  textBoxDetailbot: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 5,
+    borderTopWidth: 0.5, // Specifies the width of the bottom border
+    borderTopColor: '#d7d7d7',
+    marginTop: 5
   },
   flexItem: {
     flex: 0.5,
@@ -315,7 +350,10 @@ bigHead: {
     justifyContent: 'space-between',
   },
   listItemCon: {
-    marginTop: 15
+    marginTop: Platform.select({
+      ios: 10,
+      android: 10,
+  }),
   },
   innerItem: {
     display: 'flex',

@@ -1,20 +1,26 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Alert, ScrollView, Platform, RefreshControl, } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { router, useNavigation, Stack } from 'expo-router';
+import { router, useNavigation, useLocalSearchParams } from 'expo-router';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../../hooks/api'; // Axios instance
 import { UserContext } from '../../hooks/UserContext';
-import * as ImagePicker from 'expo-image-picker';
+import { StatusBar } from 'expo-status-bar';
+import PayStatus from '../../components/PayStatus'
 
 const { width } = Dimensions.get('window');
+const paddingHorizontal = 20;
 
-const Payment = () => {
+const hisDetail = () => {
     const navigation = useNavigation();
+
+    const { id } = useLocalSearchParams(); // รับพารามิเตอร์ id
+
     const [loading, setLoading] = useState(false);
     const [userOrders, setUserOrders] = useState(false);
+    const [payData, setPayData] = useState(false);
     const [getBank, setBank] = useState(false);
     const [getPrice, setGetPrice] = useState(0);
     const { userProfile } = useContext(UserContext);
@@ -25,9 +31,10 @@ const Payment = () => {
     const fetchOrders = async () => {
         try {
             // No need to manually fetch the token, as it's added by the interceptor
-            const response = await api.get('/user-order-success');
+            const response = await api.get(`/user-pay-historyById/${id}`);
             setUserOrders(response.data.order); // Set the orders from the response
-            setGetPrice(response.data.price)
+            setPayData(response.data.payment)
+            setGetPrice(response?.data?.payment?.total_pay)
             setBank(response.data.set)
             
         } catch (error) {
@@ -43,111 +50,15 @@ const Payment = () => {
         fetchOrders();
     };
 
-    // Function to open image picker and set the profile image
-    const openImagePicker = async () => {
-        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        const cameraPermissionResult = await ImagePicker.requestCameraPermissionsAsync();
-    
-        if (permissionResult.status !== 'granted' || cameraPermissionResult.status !== 'granted') {
-          Alert.alert('Permission required', 'Camera and gallery access are required to upload a profile picture.');
-          return;
-        }
-    
-        Alert.alert(
-          'Upload Profile Picture',
-          'Choose an option',
-          [
-            {
-              text: 'Take Photo',
-              onPress: async () => {
-                const result = await ImagePicker.launchCameraAsync({
-                  mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                  allowsEditing: true,
-                  quality: 1,
-                });
-                if (!result.canceled) {
-                  const uri = result.uri || result?.assets?.[0]?.uri;
-                  console.log('New Image URI:', uri);
-                  setSelectedImageUri(uri); // Update state with selected image URI
-                }
-              },
-            },
-            {
-              text: 'Choose from Gallery',
-              onPress: async () => {
-                const result = await ImagePicker.launchImageLibraryAsync({
-                  mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                  allowsEditing: true,
-                  quality: 1,
-                });
-                if (!result.canceled) {
-                  const uri = result.uri || result?.assets?.[0]?.uri;
-                  console.log('New Image URI:', uri);
-                  setSelectedImageUri(uri); // Update state with selected image URI
-                }
-              },
-            },
-            { text: 'Cancel', style: 'cancel' },
-          ]
-        );
-      };
-
-      const handlePayment  = async () => {
-
-        if (!selectedImageUri || !userOrders || userOrders.length === 0) {
-            Alert.alert('Error', 'Please select an image and ensure an order ID is available.');
-            return;
-          }
-
-        setLoading(true);
-
-        try {
-            const formData = new FormData();
-            formData.append('images', {
-                uri: selectedImageUri,
-                name: 'payment.jpg', // You can set a dynamic name here if needed
-                type: 'image/jpeg',
-              });
-
-              const allOrderIds = userOrders.map(order => order.id);
-                formData.append(
-                    'order_ids', JSON.stringify(allOrderIds)
-                );
-                formData.append(
-                    'total_pay', getPrice
-                );
-
-                
-
-              
-  
-          // Assuming `api` is configured with your base URL and headers
-          const response = await api.post('/postPayment', formData, {
-              headers: {
-                  'Content-Type': 'multipart/form-data',
-              },
-          });
-          console.log('response', response.data)
-          if (response.data.msgStatus === 200) {
-            router.push('(setting)/success'); // Navigate to settings page
-          } else {
-            Alert.alert('Error', 'Failed to update payment');
-          }
-
-        } catch (error) {
-            console.error('API Error:', error);
-            Alert.alert('Error', error.message || 'An error occurred while uploading');
-        } finally {
-            setLoading(false); // Stop loading
-        }
-
-      }
-
-
     return (
         <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
-
-<LinearGradient
+            <StatusBar style="dark" />
+            <ScrollView
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
+            >
+                 <LinearGradient
                     colors={['#1e3c72', '#1e3c72', '#2a5298']}
                     start={{ x: 0, y: 1 }}
                     end={{ x: 0, y: 0 }}
@@ -155,7 +66,7 @@ const Payment = () => {
                 >
                     <View style={styles.listItemCon}>
                         <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 }}>
-                            <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(tabs)')}>
+                            <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(setting)/paymentHis')}>
                                 <View
                                     style={{
                                         backgroundColor: 'rgba(255, 255, 255, 0.8)',
@@ -169,7 +80,7 @@ const Payment = () => {
 
                             <View style={styles.textListHead}>
                                 <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
-                                    ชำระค่าบริการ
+                                    ประวัติการชำระ
                                 </Text>
                             </View>
 
@@ -179,40 +90,19 @@ const Payment = () => {
 
                     </View>
                 </LinearGradient>
-            {/* <Stack.Screen
-                options={{
-                    headerShown: true,
-                    headerTransparent: true,
-                    headerTitle: 'ชำระค่าบริการ',
-                    headerTitleAlign: 'center',
-                    headerTitleStyle: {
-                        color: 'white',
-                        fontFamily: 'Prompt_500Medium',
-                        fontSize: 17,
-                    },
-                    headerLeft: () => (
-                        <TouchableOpacity
-                            style={styles.backIcon}
-                            onPress={() => router.push('(tabs)')}>
-                            <View style={{ backgroundColor: Colors.white, padding: 6, borderRadius: 50 }}>
-                                <Ionicons name="chevron-back" size={20} color="black" />
-                            </View>
-                        </TouchableOpacity>
-                    ),
-                }}
-            /> */}
-            <ScrollView
-
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
-            >
-                
                 <View style={styles.container}>
                     {/* Content here */}
                     <View>
-                        <Text style={styles.infoText}>รหัสลูกค้า {userProfile?.code_user}</Text>
-                        <Text style={styles.infoText1}>ชื่อลูกค้า {userProfile?.name}</Text>
+                        <View style={{ borderWidth: 0.4,
+                                        borderColor: '#999',
+                                        padding: 6,
+                                        marginVertical: 10,
+                                        borderRadius: 10,
+                                        alignItems: 'center' }}>
+                        <PayStatus order={payData} />
+                        </View>
+                        <Text style={styles.infoText}>วันที่แจ้งชำระ #{payData?.date_payment}</Text>
+                        <Text style={styles.infoText1}>เลขที่แจ้งชำระ #{payData?.code_payment}</Text>
                     </View>
 
                     <View
@@ -226,7 +116,7 @@ const Payment = () => {
                             </View>
 
                             <View>
-                                <Text style={styles.TextPaySum}>{getPrice.toFixed(2)}</Text>
+                                <Text style={styles.TextPaySum}>{getPrice?.toFixed(2)}</Text>
                             </View>
                         </View>
                     </View>
@@ -247,7 +137,7 @@ const Payment = () => {
                                             </View>
                                         </View>
 
-                                        <Text style={styles.amountDetail}>{order?.totalPrice.toFixed(2)}</Text>
+                                        <Text style={styles.amountDetail}>{order?.totalPrice?.toFixed(2)}</Text>
                                     </View>
                                 </View>
                             ))}
@@ -255,9 +145,7 @@ const Payment = () => {
                     )}
 
 
-
-
-                    <View style={styles.contentBox}>
+<View style={styles.contentBox}>
                         <View style={styles.header}>
                             <Image
                                 source={{
@@ -280,31 +168,15 @@ const Payment = () => {
                         </Text>
                     </View>
 
-                    <TouchableOpacity
-                    onPress={openImagePicker}
-                    >
-                    <View style={styles.boxslip} >
+
+                    <View style={{ alignItems: 'center', marginTop: 15, paddingHorizontal }}>
                         <Image
-                            source={selectedImageUri ? { uri: selectedImageUri } : require('../../assets/images/file.png')}
-                            style={styles.iconfile}
+                            source={{ uri: payData?.image_payment }}
+                            style={{ width: width - paddingHorizontal * 2 , height: 380 }}
+                            resizeMode="contain" // ให้ขนาดอัตโนมัติแบบคงอัตราส่วน
                         />
-                        <Text style={styles.instruction}>คลิกเพื่อเลือกอัพโหลดสลิปการโอนเงิน</Text>
-                        <View style={styles.buttonUp}>
-                            <Text style={styles.buttonText}>Browse</Text>
-                        </View>
                     </View>
-                    </TouchableOpacity>
 
-
-                    <Text style={styles.remark}>**อัพโหลดสลิปการโอนเงินของท่าน</Text>
-
-                    <View style={styles.formAction}>
-                        <TouchableOpacity onPress={handlePayment} disabled={loading}>
-                            <View style={styles.btn}>
-                                <Text style={styles.btnText}>{loading ? 'กำลังแจ้งชำระค่าบริการ...' : 'แจ้งชำระค่าบริการ'}</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
 
 
                 </View>
@@ -313,18 +185,14 @@ const Payment = () => {
     );
 }
 
-export default Payment;
+export default hisDetail;
 
 const styles = StyleSheet.create({
-    headerGradient: {
-        height: 85,
-        width: '100%',
-    },
-    btnBack: {
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        borderRadius: 25,
-        padding: 4,
-        alignItems: 'center',
+    backIcon: {
+        backgroundColor: 'rgba(50, 209, 145, 0.2)',
+        padding: 3,
+        borderRadius: 50,
+        zIndex: 100,
     },
     textListHead: {
         flex: 1,
@@ -333,10 +201,11 @@ const styles = StyleSheet.create({
         padding: 10,
         fontFamily: 'Prompt_400Regular',
     },
-    row: {
-        flexDirection: 'row',
+    btnBack: {
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 25,
+        padding: 4,
         alignItems: 'center',
-        marginBottom: 8,
     },
     listItemCon: {
         marginTop: Platform.select({
@@ -354,12 +223,6 @@ const styles = StyleSheet.create({
         shadowRadius: 1,
         // Android shadow (elevation)
         elevation: 10,
-    },
-    backIcon: {
-        backgroundColor: 'rgba(50, 209, 145, 0.2)',
-        padding: 3,
-        borderRadius: 50,
-        zIndex: 100,
     },
     container: {
         padding: 20,

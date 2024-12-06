@@ -6,6 +6,7 @@ import { Stack, router } from 'expo-router';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import api from '../../hooks/api'; // Axios instance
+import { LinearGradient } from 'expo-linear-gradient';
 
 // Define the route parameters
 type RootStackParamList = {
@@ -25,6 +26,7 @@ type RootStackParamList = {
         phone2: string;
         remark2: string;
         province2: string
+        branch_id: number;
       };
     };
   };
@@ -33,7 +35,8 @@ const { width } = Dimensions.get('window');
 const img_height = 110; // ปรับความสูงของภาพตามความต้องการ
 const imgsize_height = 160;
 
-export default function Service() {
+
+    const Service = () => {
 
     const route = useRoute<RouteProp<RootStackParamList, 'Service'>>();
     const navigation = useNavigation(); // สำหรับปุ่ม Back
@@ -59,6 +62,7 @@ export default function Service() {
   const [selected, setSelected] = useState(false);
   const [selected2, setSelected2] = useState(false);
   const [dataSetting, setDataSetting] = useState(null);
+  const [branchId, setBranchId] = useState(0);
 
   const fetchData = async () => {
 
@@ -124,6 +128,7 @@ const getImageForSize = (size) => {
         latitude: route.params.selectedLat2,
         longitude: route.params.selectedLng2,
       });
+      setBranchId(route.params.form.branch_id)
       setFormData((prevData) => ({
         ...prevData,
         adddress2: route.params.form.adddress2,
@@ -131,6 +136,7 @@ const getImageForSize = (size) => {
         phone2: route.params.form.phone2,
         remark2: route.params.form.remark2,
         province2: route.params.form.province2,
+        branch_id: route.params.form.branch_id,
       }));
     }
   }, [route.params]);
@@ -164,7 +170,7 @@ const getImageForSize = (size) => {
 
     const handleCreate = async () => {
 
-        console.log('formData:', formData);
+        console.log('branchId:', branchId);
         // ตรวจสอบว่ากรอกข้อมูลครบถ้วนหรือไม่
         if (!formData?.adddress || !formData?.name || !formData?.phone || !formData?.adddress2 || !formData?.name2 || !formData?.phone2 || !selectedSize || !weight) {
             Alert.alert('Error', 'กรุณากรอกข้อมูลให้ครบทุกช่อง');
@@ -197,12 +203,12 @@ const getImageForSize = (size) => {
             weight, // น้ำหนักสินค้า
             province2: formData?.province2,
             province: formData?.province,
-            branch_id: 0,
             price: price,
             warb,
             machinery,
             service: selected,
-            service2: selected2
+            service2: selected2,
+            branchId: branchId
           };
     
           console.log('Creating order with data:', orderData);
@@ -289,7 +295,7 @@ const getImageForSize = (size) => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
             <View style={{ flex: 1, backgroundColor: '#fff' }}>
-                <Stack.Screen options={{
+                {/* <Stack.Screen options={{
                     headerTransparent: true,
                     headerTitle: ' รายละเอียดการจัดส่ง',
                     headerTitleStyle: {
@@ -323,11 +329,47 @@ const getImageForSize = (size) => {
                             </View>
                         </TouchableOpacity>
                     )
-                }} />
-                <View>
-                    <Image source={bg} style={styles.bgImg} />
-                    <View style={styles.overlay} />
+                }} /> */}
+
+<View>
+    <Image source={bg} style={styles.bgImg} />
+    <View style={styles.overlay} />
+
+    <View style={styles.listItemCon}>
+        <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 }}>
+            <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(tabs)')}>
+                <View
+                    style={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        padding: 5,
+                        borderRadius: 25
+                    }}
+                >
+                    <Ionicons name="chevron-back" size={20} color="black" />
                 </View>
+            </TouchableOpacity>
+
+            <View style={styles.textListHead}>
+                <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
+                     รายละเอียดการจัดส่ง
+                </Text>
+            </View>
+
+            {/* ใช้ View เปล่าทางขวาเพื่อให้ไอคอน Back และ Text อยู่ตรงกลาง */}
+            <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(setting)/selectBarnch')}>
+                            <View
+                                style={{
+                                    backgroundColor: Colors.white,
+                                    padding: 6,
+                                    borderRadius: 25
+                                }}
+                            >
+                                <MaterialIcons name="bookmark-border" size={20} color="black" />
+                            </View>
+                        </TouchableOpacity>
+        </View>
+    </View>
+</View>
                 <View style={styles.container}>
                     <View style={styles.boxGiff}>
 
@@ -528,7 +570,7 @@ const getImageForSize = (size) => {
                     </View>
                     <View style={styles.footer}>
                         <TouchableOpacity style={styles.checkButton} onPress={handleCreate} disabled={loading}>
-                            <Text style={styles.checkButtonText}>ตรวจสอบรายการ</Text>
+                            <Text style={styles.checkButtonText}>กดใช้บริการ</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -540,9 +582,40 @@ const getImageForSize = (size) => {
     );
 }
 
+export default Service;
+
 const styles = StyleSheet.create({
     container: {
         padding: 20,
+    },
+    btnBack: {
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 25,
+        padding: 4,
+        alignItems: 'center',
+    },
+    textListHead: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+        fontFamily: 'Prompt_400Regular',
+    },
+    rowh: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    listItemCon: {
+        position: 'absolute', // ให้แน่ใจว่าอยู่เหนือ overlay
+        top: 0, // เลื่อนตำแหน่งให้พอดีตามต้องการ
+        width: '100%',
+        paddingHorizontal: 10,
+        paddingTop: 30,
+    },
+    bgImg: {
+        width: '100%',
+        height: img_height, // ปรับตามความสูงที่ต้องการ
     },
     boxCheck: {
         flexDirection: 'row',
@@ -762,10 +835,7 @@ const styles = StyleSheet.create({
         marginTop: 0,
         marginLeft: 30,
     },
-    bgImg: {
-        width: width,
-        height: img_height,
-    },
+  
     priceBox: {
         display: 'flex',
         flexDirection: 'row',
@@ -782,12 +852,7 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontFamily: 'Prompt_500Medium'
     },
-    btnBack: {
-        backgroundColor: 'rgba(50, 209, 145, 0.2)',
-        borderRadius: 10,
-        padding: 4,
-        alignItems: 'center',
-    },
+   
     backButtonContainer: {
         position: 'absolute',
         top: 50,

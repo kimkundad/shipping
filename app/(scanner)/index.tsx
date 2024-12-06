@@ -15,7 +15,6 @@ import {
 import { Overlay } from "./Overlay";
 import { useEffect, useRef, useState } from "react";
 import * as ImagePicker from 'expo-image-picker';
-import { BarCodeScanner } from 'expo-barcode-scanner';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import api from '../../hooks/api'; // เพิ่ม api instance สำหรับเรียก API
 
@@ -84,7 +83,7 @@ export default function Home() {
   // ฟังก์ชันสแกน QR Code จากรูปภาพ
   const processImage = async (imageUri) => {
     try {
-      const scannedResults = await BarCodeScanner.scanFromURLAsync(imageUri);
+      const scannedResults = await Camera.scanFromURLAsync(imageUri, 'qr');
       if (scannedResults.length > 0) {
         const dataNeeded = scannedResults[0].data;
         setQRData(dataNeeded); 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert, ActivityIndicator, TextInput, Keyboard, TouchableWithoutFeedback, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert, FlatList, ActivityIndicator, TextInput, Keyboard, TouchableWithoutFeedback, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { Link, router } from 'expo-router';
@@ -8,6 +8,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import api from '../../hooks/api'; // Axios instance
 import provinceData from '../../assets/raw/raw_database.json';
+import axios from 'axios';
 
 export default function CreateBranch() {
 
@@ -19,7 +20,7 @@ export default function CreateBranch() {
   const route = useRoute();
 
   const pinImage = require('../../assets/images/pin_app.png');
-
+  const GOOGLE_API_KEY = 'AIzaSyCsx9tQ2Mj7WWnunxa8P2blQLcGtjroLVE'; // ใส่ API Key ของคุณ
   const [form, setForm] = useState({
     province: '',
     name: '',
@@ -179,6 +180,34 @@ export default function CreateBranch() {
     }
   };
 
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+
+  const searchPlaces = async (text) => {
+    setQuery(text); // ตั้งค่าข้อความที่ผู้ใช้พิมพ์ใน TextInput
+    if (text.length > 2) {
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
+        {
+          params: {
+            input: text,
+            key: GOOGLE_API_KEY,
+            language: 'th', // กำหนดภาษาเป็นภาษาไทย
+            components: 'country:th',
+          },
+        }
+      );
+      setResults(response.data.predictions); // เก็บผลลัพธ์การค้นหา
+    } else {
+      setResults([]); // หากข้อความสั้นเกินไป ให้ล้างผลลัพธ์
+    }
+  };
+
+  const selectPlace = (description) => {
+    setQuery(description); // ตั้งค่าข้อความใน TextInput เป็นสถานที่ที่เลือก
+    setResults([]); // ซ่อนรายการผลลัพธ์หลังจากเลือก
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -243,13 +272,32 @@ export default function CreateBranch() {
                     <TextInput
                       clearButtonMode="while-editing"
                       onChangeText={address => setForm({ ...form, address })}
-                      placeholder="ระบุที่อยู่"
+                      placeholder="ระบุที่อยู่ 1"
                       placeholderTextColor="#6b7280"
                       style={[styles.inputControl, { height: 80 }]}
                       value={form.address}
                       multiline={true}
                     />
                   </View>
+
+                  <View style={styles.input}>
+                  <TextInput
+        placeholder="ค้นหาสถานที่"
+        value={query}
+        onChangeText={searchPlaces}
+        style={[styles.inputControl, { height: 80 }]}
+        clearButtonMode="while-editing"
+      />
+      <FlatList
+        data={results}
+        keyExtractor={(item) => item.place_id}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => selectPlace(item.description)}>
+            <Text style={styles.resultItem}>{item.description}</Text>
+          </TouchableOpacity>
+        )}
+      />
+       </View>
 
                   <View style={styles.input}>
                     <TextInput
@@ -346,6 +394,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  resultItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
   scrollViewContent: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -398,10 +451,10 @@ const styles = StyleSheet.create({
   },
   map: {
     width: '100%',
-    height: '100%',
+    height: 350,
   },
   botfrom: {
-    position: 'absolute',
+ 
     width: '100%',
         bottom: 0,
         borderTopLeftRadius: 25,

@@ -4,7 +4,7 @@ import { Link, useNavigation, router } from 'expo-router';
 import React, { useEffect, useContext ,useState, useRef } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StatusBar } from 'expo-status-bar';
-import axios from 'axios';
+import { LinearGradient } from 'expo-linear-gradient';
 import api from '../../hooks/api'; // Axios instance
 
 const { width } = Dimensions.get('window');
@@ -34,26 +34,40 @@ const Holiday = () => {
     return (
         <SafeAreaProvider style={{ flex: 1, backgroundColor: '#F5F5F5' }} >
             <StatusBar style="dark" />
-            <ScrollView>
-                <View style={styles.listItemCon}>
-                    <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Link href="(tabs)" style={{ padding: 10 }}>
-                            <Ionicons name="chevron-back" size={30} color="black" />
-                        </Link>
-                        <View style={styles.textListHead} >
-                            <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium' }}>แจ้งวันหยุด</Text>
+            <LinearGradient
+                    colors={['#1e3c72', '#1e3c72', '#2a5298']}
+                    start={{ x: 0, y: 1 }}
+                    end={{ x: 0, y: 0 }}
+                    style={styles.headerGradient}
+                >
+                    <View style={styles.listItemCon}>
+                        <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 }}>
+                            <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(tabs)')}>
+                                <View
+                                    style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                        padding: 5,
+                                        borderRadius: 25
+                                    }}
+                                >
+                                    <Ionicons name="chevron-back" size={20} color="black" />
+                                </View>
+                            </TouchableOpacity>
+
+                            <View style={styles.textListHead}>
+                                <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
+                                แจ้งวันหยุด
+                                </Text>
+                            </View>
+
+                            {/* ใช้ View เปล่าทางขวาเพื่อให้ไอคอน Back และ Text อยู่ตรงกลาง */}
+                            <View style={{ width: 32 }} />
                         </View>
-                        <TouchableOpacity
-                  onPress={() => {
-                    // handle onPress
-                    router.push('(setting)/notification');
-                  }}>
-                  <View>
-                    <Ionicons style={{ padding: 10 }} name="notifications-outline" size={27} color="black" />
-                  </View>
-                </TouchableOpacity>
+
                     </View>
-                </View>
+                </LinearGradient>
+            <ScrollView>
+                
                 <View>
                 <View style={{ marginTop: 20, alignItems: 'center' }}>
                     {news.length > 0 ? (
@@ -80,7 +94,45 @@ const Holiday = () => {
 export default Holiday
 
 const styles = StyleSheet.create({
-
+    headerGradient: {
+        height: 85,
+        width: '100%',
+    },
+    btnBack: {
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 25,
+        padding: 4,
+        alignItems: 'center',
+    },
+    textListHead: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+        fontFamily: 'Prompt_400Regular',
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    listItemCon: {
+        marginTop: Platform.select({
+            ios: 35,
+            android: 35,
+        }),
+        paddingHorizontal: 0,
+        // iOS shadow properties
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 1,
+        // Android shadow (elevation)
+        elevation: 10,
+    },
     container: {
         padding: 20,
     },
@@ -94,13 +146,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginBottom: 10,
     },
-    textListHead: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        padding: 10,
-        fontFamily: 'Prompt_400Regular',
-    },
+   
     iconAdd: {
         color: '#f47524',
     },
@@ -118,21 +164,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         marginTop: -5
     },
-    listItemCon: {
-        paddingTop: 40,
-        paddingHorizontal: 0,
-        backgroundColor: '#fff',
-        // iOS shadow properties
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 1,
-        // Android shadow (elevation)
-        elevation: 10,
-    },
+   
     card: {
         marginTop: -5,
         position: 'static',

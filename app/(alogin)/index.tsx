@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { registerForPushNotificationsAsync } from "@/utils/registerForPushNotificationsAsync";
 
 export default function Login() {
   const navigation = useNavigation();
@@ -68,7 +69,8 @@ export default function Login() {
         await AsyncStorage.setItem('jwt_token', token);
         await AsyncStorage.setItem('refresh_token', token); // Assuming refresh_token is the same as the token here
         await AsyncStorage.setItem('user_profile', JSON.stringify(user));
-        
+        console.log('user', user.id)
+        await registerForPushNotificationsAsync(user.id);
         Alert.alert('Success', 'Login successful!');
         router.push('(tabs)'); // Navigate to the main app screen after successful login
       } else if (verify === 2) {

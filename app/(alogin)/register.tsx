@@ -13,6 +13,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios'; // Ensure axios is imported
 
+
 export default function Register() {
   const navigation = useNavigation();
 
@@ -47,7 +48,7 @@ export default function Register() {
     }
 
     setLoading(true); // Show loading state
-
+    console.log('phone', phone, 'name', name, 'password', password, 'confirmPassword', confirmPassword);
     try {
       // API call to register the user
       const response = await axios.post('https://api.loadmasterth.com/api/register', {
@@ -68,7 +69,7 @@ export default function Register() {
 
     } catch (error) {
       console.log('Error during registration:', error);
-      Alert.alert('Error', 'Something went wrong, please try again.');
+      Alert.alert('Error', 'Something went wrong, please try again.', error);
     } finally {
       setLoading(false); // Hide loading state
     }

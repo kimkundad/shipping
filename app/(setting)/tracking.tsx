@@ -1,33 +1,27 @@
-import { StyleSheet, Image, Text, View, Platform, FlatList, ActivityIndicator, LogBox, KeyboardAvoidingView, ScrollView, Alert, Linking, TouchableOpacity, RefreshControl  } from 'react-native';
+import { StyleSheet, Image, Text, View, Platform, FlatList, ActivityIndicator, KeyboardAvoidingView, ScrollView, Alert, Linking, TouchableOpacity, RefreshControl } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import React, { useState, useContext, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import Timeline from 'react-native-timeline-flatlist';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import MapViewDirections from 'react-native-maps-directions';
-import { Link, useNavigation, useLocalSearchParams, router, Stack } from 'expo-router';
+import { useLocalSearchParams, router, Stack } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
-import { AntDesign, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import api from '../../hooks/api'; // Axios instance
 import DeviveryStatus from '../../components/DeviveryStatus'
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import * as WebBrowser from 'expo-web-browser';
 import { Buffer } from 'buffer';
 import { UserContext } from '../../hooks/UserContext';
-
-
-LogBox.ignoreLogs([
-  'VirtualizedLists should never be nested', // Example of specific warning to ignore
-  'MapViewDirections Error: Error on GMAPS route request', // Your warning here
-  'Failed prop type: Invalid prop `destination`',
-]);
+import { useNavigation } from '@react-navigation/native';
 
 export default function Tracking() {
 
   const { userProfile } = useContext(UserContext);
+
+  const navigation = useNavigation();
 
   interface Order {
     dri_time: string;
@@ -55,8 +49,10 @@ export default function Tracking() {
   const [destination, setDestination] = useState({ latitude: 13.5116094, longitude: 100.68715 }); // เก็บตำแหน่งปลายทาง
   const [carTack, setCarTack] = useState({ latitude: 0, longitude: 0 }); // เก็บตำแหน่งปลายทาง
   const GOOGLE_MAPS_APIKEY = 'AIzaSyDtcFHSNerbvIWPVv5OStj-czBq_6RMbRg';
+  const [isMapVisible, setIsMapVisible] = useState(false);
 
   const fetchOrder = async () => {
+    
     setLoading(true);
     try {
       const response = await api.get(`/getOrderByID/${id}`);
@@ -81,6 +77,12 @@ export default function Tracking() {
       setLoading(false);
     }
   };
+
+  // ใช้ useEffect เพื่อดูการเปลี่ยนแปลงของ isMapVisible
+  useEffect(() => {
+    const timer = setTimeout(() => setIsMapVisible(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -110,14 +112,12 @@ export default function Tracking() {
   };
 
   const handleCancelInvoice = async (id) => {
-
     setLoading(true); // Start loading
-      try {
+    try {
 
-        const response = await api.post('/cancelInvoice', { id });
-        console.log('response.data', response.data)
+      const response = await api.post('/cancelInvoice', { id });
 
-      if(response.data.success === true){
+      if (response.data.success === true) {
         Alert.alert('สำเร็จ', 'ระบบได้ทำการยกเลิกบริการนี้แล้ว', [
           {
             text: 'OK',
@@ -126,99 +126,10 @@ export default function Tracking() {
             }),
           },
         ]);
-        
-      }else{
+
+      } else {
         Alert.alert('ข้อผิดพลาด', 'เกิดข้อผิดพลาดในการยกเลิกบริการ');
       }
-
-      } catch (error) {
-        Alert.alert('ข้อผิดพลาด', error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
-      } finally {
-        setLoading(false); // Stop loading
-      }
-
-  }
-
-  const handleSendInvoice = async (id) => {
-
-    if(userProfile?.ReceiptStatus === 1){
-      
-
-      setLoading(true); // Start loading
-      try {
-
-        const response = await api.post('/generatePDFtoMail', { id });
-        console.log('response.data', response.data)
-
-      if(response.data.success === true){
-        Alert.alert('ใบเสร็จรับเงิน', 'ถูกส่งไปยังอีเมลของท่านแล้ว');
-      }else{
-        Alert.alert('ข้อผิดพลาด', 'เกิดข้อผิดพลาดในการส่งอีเมล');
-      }
-
-      } catch (error) {
-        Alert.alert('ข้อผิดพลาด', error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
-      } finally {
-        setLoading(false); // Stop loading
-      }
-
-    }else{
-
-      Alert.alert(
-        'ข้อผิดพลาด', 
-        'กรุณาเพิ่มข้อมูลการรับใบเสร็จก่อน', 
-        [
-          {
-            text: 'กรอกข้อมูลใบเสร็จ',
-            onPress: () => router.push({
-              pathname: '(setting)/receipt',
-              params: { id: id } // Add 'id' parameter here
-            }),
-          },
-        ]
-      );
-
-    }
-
-  //  Alert.alert('ใบเสร็จรับเงิน', 'ถูกส่งไปยังอีเมลของท่านแล้ว');
-  };
-
-  const handleDownloadPDF = async (id) => {
-
-
-    if(userProfile?.ReceiptStatus === 1){
-
-      setLoading(true); // Start loading
-    try {
-      // Send POST request to the API
-
-      const response = await api.post('/generate-pdf', { id }, { responseType: 'arraybuffer' });
-      console.log('-->', response.data)
-
-      // Check if the response is valid
-      if (!response || !response.data) {
-        throw new Error('Failed to generate PDF');
-      }
-
-      // Convert the response data to a base64 string
-      const base64Data = Buffer.from(response.data, 'binary').toString('base64');
-
-      // Define the file path to save the PDF
-      const fileUri = `${FileSystem.documentDirectory}${id}.pdf`;
-
-      // Save the PDF to the filesystem
-      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
-      // Alert the user and offer to open the PDF
-      Alert.alert('PDF Downloaded', 'Do you want to open it?', [
-        {
-          text: 'Open',
-          onPress: () => handleOpenPDF(fileUri),
-        },
-        { text: 'Cancel', style: 'cancel' },
-      ]);
 
     } catch (error) {
       Alert.alert('ข้อผิดพลาด', error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
@@ -226,11 +137,36 @@ export default function Tracking() {
       setLoading(false); // Stop loading
     }
 
-    }else{
+  }
+
+  const handleSendInvoice = async (id) => {
+
+    if (userProfile?.ReceiptStatus === 1) {
+
+
+      setLoading(true); // Start loading
+      try {
+
+        const response = await api.post('/generatePDFtoMail', { id });
+        console.log('response.data', response.data)
+
+        if (response.data.success === true) {
+          Alert.alert('ใบเสร็จรับเงิน', 'ถูกส่งไปยังอีเมลของท่านแล้ว');
+        } else {
+          Alert.alert('ข้อผิดพลาด', 'เกิดข้อผิดพลาดในการส่งอีเมล');
+        }
+
+      } catch (error) {
+        Alert.alert('ข้อผิดพลาด', error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
+      } finally {
+        setLoading(false); // Stop loading
+      }
+
+    } else {
 
       Alert.alert(
-        'ข้อผิดพลาด', 
-        'กรุณาเพิ่มข้อมูลการรับใบเสร็จก่อน', 
+        'ข้อผิดพลาด',
+        'กรุณาเพิ่มข้อมูลการรับใบเสร็จก่อน',
         [
           {
             text: 'กรอกข้อมูลใบเสร็จ',
@@ -243,10 +179,73 @@ export default function Tracking() {
       );
 
     }
-    
 
+    //  Alert.alert('ใบเสร็จรับเงิน', 'ถูกส่งไปยังอีเมลของท่านแล้ว');
   };
 
+  const handleDownloadPDF = async (id) => {
+
+
+    if (userProfile?.ReceiptStatus === 1) {
+
+      setLoading(true); // Start loading
+      try {
+        // Send POST request to the API
+
+        const response = await api.post('/generate-pdf', { id }, { responseType: 'arraybuffer' });
+        console.log('-->', response.data)
+
+        // Check if the response is valid
+        if (!response || !response.data) {
+          throw new Error('Failed to generate PDF');
+        }
+
+        // Convert the response data to a base64 string
+        const base64Data = Buffer.from(response.data, 'binary').toString('base64');
+
+        // Define the file path to save the PDF
+        const fileUri = `${FileSystem.documentDirectory}${id}.pdf`;
+
+        // Save the PDF to the filesystem
+        await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+
+        // Alert the user and offer to open the PDF
+        Alert.alert('PDF Downloaded', 'Do you want to open it?', [
+          {
+            text: 'Open',
+            onPress: () => handleOpenPDF(fileUri),
+          },
+          { text: 'Cancel', style: 'cancel' },
+        ]);
+
+      } catch (error) {
+        Alert.alert('ข้อผิดพลาด', error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
+      } finally {
+        setLoading(false); // Stop loading
+      }
+
+    } else {
+
+      Alert.alert(
+        'ข้อผิดพลาด',
+        'กรุณาเพิ่มข้อมูลการรับใบเสร็จก่อน',
+        [
+          {
+            text: 'กรอกข้อมูลใบเสร็จ',
+            onPress: () => router.push({
+              pathname: '(setting)/receipt',
+              params: { id: id } // Add 'id' parameter here
+            }),
+          },
+        ]
+      );
+
+    }
+
+
+  };
 
   const handleOpenPDF = async (fileUri) => {
     try {
@@ -266,77 +265,63 @@ export default function Tracking() {
     }
   };
 
+  const TimelineItem = ({ item, isLastItem }) => {
+    const icon = item.icon || 'circle';
 
-const TimelineItem = ({ item , isLastItem }) => {
-  const icon = item.icon || 'circle';
-
-  return (
-    <View style={styles.timelineItem}>
-      {/* Icon */}
-      <View style={[styles.iconContainer, item.active ? styles.activeIcon : styles.inactiveIcon]}>
-        <MaterialIcons name={icon} size={24} color={item.active ? '#f47524' : '#cfcfcf'} />
-      </View>
-      {/* Line */}
-      {!isLastItem && (
-        <View style={styles.lineContainer}>
-          <View style={styles.line} />
+    return (
+      <View style={styles.timelineItem}>
+        {/* Icon */}
+        <View style={[styles.iconContainer, item.active ? styles.activeIcon : styles.inactiveIcon]}>
+          <MaterialIcons name={icon} size={24} color={item.active ? '#f47524' : '#cfcfcf'} />
         </View>
-      )}
-      {/* Date and Details */}
-      <View style={styles.textContainer}>
-        <Text style={[styles.dateText, item.active ? styles.activeText : styles.inactiveText]}>
-          {item.date} {isLastItem}
-        </Text>
-        {item.status && (
-          <Text style={[styles.statusText, item.active ? styles.activeText : styles.inactiveText]}>
-            {item.status}
-          </Text>
+        {/* Line */}
+        {!isLastItem && (
+          <View style={styles.lineContainer}>
+            <View style={styles.line} />
+          </View>
         )}
-        <Text style={[styles.descriptionText, item.active ? styles.activeText : styles.inactiveText]}>
-          {item.description}
-        </Text>
+        {/* Date and Details */}
+        <View style={styles.textContainer}>
+          <Text style={[styles.dateText, item.active ? styles.activeText : styles.inactiveText]}>
+            {item.date} {isLastItem}
+          </Text>
+          {item.status && (
+            <Text style={[styles.statusText, item.active ? styles.activeText : styles.inactiveText]}>
+              {item.status}
+            </Text>
+          )}
+          <Text style={[styles.descriptionText, item.active ? styles.activeText : styles.inactiveText]}>
+            {item.description}
+          </Text>
+        </View>
       </View>
-    </View>
-  );
-};
-
+    );
+  };
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#f5f5f5' }} >
       <StatusBar style="dark" />
-      <Stack.Screen options={{
-                    headerTransparent: true,
-                    headerTitle: ' ',
-                    headerTitleStyle: {
-                        color: 'white', // กำหนดสีของ headerTitle
-                        fontFamily: 'Prompt_500Medium', // กำหนดฟอนต์
-                        fontSize: 18
-                    },
-                    headerLeft: () => (
-                        <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(tabs)')}>
-                            <View
-                                style={{
-                                    backgroundColor: Colors.white,
-                                    padding: 6,
-                                    borderRadius: 10
-                                }}
-                            >
-                                <Ionicons name="chevron-back" size={20} color="black" />
-                            </View>
-                        </TouchableOpacity>
-                    ),
-                }} />
-      <ScrollView
-       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      >
-       
 
+      <View style={styles.backButtonContainer}>
+              
+              <TouchableOpacity style={styles.btnBack} onPress={() => navigation.goBack()}>
+                                <View
+                                    style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 1)',
+                                        padding: 5,
+                                        borderRadius: 25
+                                    }}
+                                >
+                                    <Ionicons name="chevron-back" size={20} color="black" />
+                                </View>
+                            </TouchableOpacity>
+            </View>
 
-        {destination && (
+       {/* Place other components here that appear above the FlatList items */}
+       {destination && (
           <View>
 
+{isMapVisible && destination && (
             <MapView
               initialRegion={{
                 latitude: 13.7758339,
@@ -347,7 +332,6 @@ const TimelineItem = ({ item , isLastItem }) => {
               style={styles.map} >
               {carTack && (
                 <>
-                  
                   <MapViewDirections
                     origin={origin}
                     destination={destination}
@@ -363,195 +347,222 @@ const TimelineItem = ({ item , isLastItem }) => {
                   />
                   {order?.status_dri === 1 ? (
                     <>
-                    <MapViewDirections
-                    origin={carTack}
-                    destination={destination}
-                    apikey={GOOGLE_MAPS_APIKEY}
-                    strokeWidth={3}
-                    strokeColor="hotpink"
-                    mode='DRIVING'
-                    language='th'
-                  />
-                    <Marker
-                      coordinate={carTack}
-                      title="Destination Point"
-                    >
-                      <Image source={require('../../assets/images/truck.png')} style={{ height: 35, width: 35 }} />
-                    </Marker>
+                      <MapViewDirections
+                        origin={carTack}
+                        destination={destination}
+                        apikey={GOOGLE_MAPS_APIKEY}
+                        strokeWidth={3}
+                        strokeColor="hotpink"
+                        mode='DRIVING'
+                        language='th'
+                      />
+                      <Marker
+                        coordinate={carTack}
+                        title="Destination Point"
+                      >
+                        <Image source={require('../../assets/images/truck.png')} style={{ height: 35, width: 35 }} />
+                      </Marker>
                     </>
                   ) : (
-
                     <Marker
                       coordinate={origin}
                       title="Destination Point"
                     >
                       <Image source={require('../../assets/images/truck.png')} style={{ height: 35, width: 35 }} />
                     </Marker>
-
-                  )
-
-                  }
-
+                  )}
                 </>
               )}
 
 
             </MapView>
-
+)}
 
           </View>
         )}
 
-        <View style={styles.container}>
 
-          <View style={styles.boxItemList}>
-
-            <View style={styles.containerOrderMain}>
-              <View style={styles.containerOrder}>
-                <View >
-                  <Image source={require('../../assets/images/box1.png')}
-                    style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
-                </View>
-                <View >
-                  <Text style={{ fontWeight: 700, fontSize: 16 }}>#{order?.code_order} </Text>
-                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>{order?.dri_time}</Text>
-                </View>
-              </View>
-
-              <View>
-                {/* ส่ง order ทั้งก้อนเข้าไปใน DeviveryStatus */}
-                <DeviveryStatus order={order} />
-              </View>
-
-            </View>
-
-
-            {/* profileMain  */}
-            <View style={styles.profileMain}>
-              <View style={styles.profile}>
-                <Image
-                  style={styles.userImage}
-                  source={{ uri: 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg' }} />
-                <View>
-                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 13, color: '#666' }}>พนักงานขนส่ง, </Text>
-                  <View style={styles.showflex}>
-                    <Image source={require('../../assets/images/icon_truck.png')}
-                      style={{ width: 25, height: 25, marginRight: 2 }} />
-                    <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 15 }}>{order?.dri_name}</Text>
-                  </View>
-
-                </View>
-              </View>
-              <View style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
-                <Feather style={{ borderWidth: 1, borderRadius: 99, padding: 10, borderColor: '#f47524' }} onPress={handlePress} name="phone" size={20} color="#f47524" />
-              </View>
-            </View>
-            {/* profileMain  */}
-            <View style={styles.textBoxDetail}>
-              <View style={styles.flexItem}>
-                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
-                <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.b_name}</Text>
-              </View>
-              <View style={styles.flexItem2}>
-                <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>จำนวน</Text>
-                <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.weight}</Text>
-              </View>
-            </View>
-
-            {order?.branch_id === 0 ? (
-
-              <View style={styles.textBoxDetail}>
-                <View style={styles.flexItem}>
-                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ผู้รับสินค้า</Text>
-                  <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.b_recive_name}</Text>
-                </View>
-                <View style={styles.flexItem2}>
-                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>Type</Text>
-                  <Text style={{ fontWeight: 700, fontSize: 13 }}> {order?.type}, size : {order?.size}</Text>
-                </View>
-              </View>
-
-            ) : (
-
-              <View style={styles.textBoxDetail}>
-                <View style={styles.flexItem}>
-                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ผู้รับสินค้า</Text>
-                  <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.b_recive_name}</Text>
-                </View>
-                <View style={styles.flexItem2}>
-                  <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>Type</Text>
-                  <Text style={{ fontWeight: 700, fontSize: 13 }}> {order?.dri_type}, {order?.dri_no_car}</Text>
-                </View>
-              </View>
-
-            )}
-
-
-          </View>
-
-
-
-          <View style={styles.boxItemList2}>
-          <FlatList
+<View style={styles.boxItemList}>
+      <FlatList
         data={timeLine}
         renderItem={({ item, index }) => (
           <TimelineItem item={item} isLastItem={index === timeLine?.length - 1} />
         )}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={10}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        ListHeaderComponent={
+          <>
+           
+            <View style={styles.container}>
+
+
+
+  <View style={styles.containerOrderMain}>
+    <View style={styles.containerOrder}>
+      <View >
+        <Image source={require('../../assets/images/box1.png')}
+          style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
+      </View>
+      <View >
+        <Text style={{ fontWeight: 700, fontSize: 16 }}>#{order?.code_order} </Text>
+        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>{order?.dri_time}</Text>
+      </View>
+    </View>
+
+    <View>
+      {/* ส่ง order ทั้งก้อนเข้าไปใน DeviveryStatus */}
+      <DeviveryStatus order={order} />
+    </View>
+
+  </View>
+
+
+  {/* profileMain  */}
+  <View style={styles.profileMain}>
+    <View style={styles.profile}>
+      <Image
+        style={styles.userImage}
+        source={{ uri: 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg' }} />
+      <View>
+        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 13, color: '#666' }}>พนักงานขนส่ง, </Text>
+        <View style={styles.showflex}>
+          <Image source={require('../../assets/images/icon_truck.png')}
+            style={{ width: 25, height: 25, marginRight: 2 }} />
+          <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 15 }}>{order?.dri_name}</Text>
+        </View>
+
+      </View>
+    </View>
+    <View style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+      <Feather style={{ borderWidth: 1, borderRadius: 99, padding: 10, borderColor: '#f47524' }} onPress={handlePress} name="phone" size={20} color="#f47524" />
+    </View>
+  </View>
+  {/* profileMain  */}
+  <View style={styles.textBoxDetail}>
+    <View style={styles.flexItem}>
+      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
+      <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.b_name}</Text>
+    </View>
+    <View style={styles.flexItem2}>
+      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>จำนวน</Text>
+      <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.weight}</Text>
+    </View>
+  </View>
+
+  {order?.branch_id === 0 ? (
+
+    <View style={styles.textBoxDetail}>
+      <View style={styles.flexItem}>
+        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ผู้รับสินค้า</Text>
+        <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.b_recive_name}</Text>
+      </View>
+      <View style={styles.flexItem2}>
+        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>Type</Text>
+        <Text style={{ fontWeight: 700, fontSize: 13 }}> {order?.type}, size : {order?.size}</Text>
+      </View>
+    </View>
+
+  ) : (
+
+    <View style={styles.textBoxDetail}>
+      <View style={styles.flexItem}>
+        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ผู้รับสินค้า</Text>
+        <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.b_recive_name}</Text>
+      </View>
+      <View style={styles.flexItem2}>
+        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>Type</Text>
+        <Text style={{ fontWeight: 700, fontSize: 13 }}> {order?.dri_type}, {order?.dri_no_car}</Text>
+      </View>
+    </View>
+
+  )}
+
+
+</View>
+
+
+
+
+
+
+
+
+
+
+          </>
+        }
       />
       </View>
 
-
+      <View style={{ paddingHorizontal:10 ,paddingVertical: 10 }}>
       {order?.order_status === 0 && (
 
-            <TouchableOpacity
-            style={{ marginTop: 15 }}
-            onPress={() => handleCancelInvoice(order?.id)}
-            >
-            <View style={styles.btnDanger}>
-              <Text style={styles.btnText}>ยกเลิกบริการ</Text>
-            </View>
-            </TouchableOpacity>
+<TouchableOpacity
+  style={{ marginTop: 15 }}
+  onPress={() => handleCancelInvoice(order?.id)}
+>
+  <View style={styles.btnDanger}>
+    <Text style={styles.btnText}>ยกเลิกบริการ</Text>
+  </View>
+</TouchableOpacity>
 
+)}
+
+
+{order?.order_status === 2 &&
+(
+  <View>
+{order?.user_re_status === 0 &&
+(
+                <TouchableOpacity
+                  style={styles.greenButton}
+                  onPress={() => {
+                    router.push({
+                      pathname: '(setting)/ratting',
+                      params: {
+                        id: order.id
+                      }
+                    })
+                  }}
+                >
+                  <Text style={styles.greenButtonText}>ฉันได้ตรวจสอบและยอมรับสินค้า</Text>
+                </TouchableOpacity>
+)}
+
+    <TouchableOpacity style={styles.button} onPress={() => handleSendInvoice(order?.id)}>
+      {loading ? (
+        <ActivityIndicator size="small" color="#e67e22" />
+      ) : (
+        <MaterialIcons name="email" size={24} color="#e67e22" />
       )}
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>{loading ? 'กำลัง' : ''}ส่งใบเสร็จรับเงิน</Text>
+        {userProfile?.Receiptemail ? (
+          <Text style={styles.subtitle}>ส่งไปที่ {userProfile?.Receiptemail}</Text>
+        ) : (
+          <Text style={styles.subtitle}>กรุณาตั้งค่าอีเมล ที่ต้องการรับ</Text>
+        )}
+      </View>
+    </TouchableOpacity>
 
 
-          {order?.order_status === 2 &&
-            (
-              <View>
+    {/* Download PDF Button */}
+    <TouchableOpacity style={styles.button} onPress={() => handleDownloadPDF(order?.id)}>
+      <Feather name="download" size={24} color="#e67e22" />
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>ดาวน์โหลด PDF</Text>
+      </View>
+    </TouchableOpacity>
 
-                <TouchableOpacity style={styles.button} onPress={() => handleSendInvoice(order?.id)}>
-                  {loading ? (
-                    <ActivityIndicator size="small" color="#e67e22" />
-                  ) : (
-                    <MaterialIcons name="email" size={24} color="#e67e22" />
-                  )}
-                  <View style={styles.textContainer}>
-                    <Text style={styles.title}>{loading ? 'กำลัง' : ''}ส่งใบเสร็จรับเงิน</Text>
-                    {userProfile?.Receiptemail ? (
-                      <Text style={styles.subtitle}>ส่งไปที่ {userProfile?.Receiptemail}</Text>
-                    ) : (
-                      <Text style={styles.subtitle}>กรุณาตั้งค่าอีเมล ที่ต้องการรับ</Text>
-                    )}
-                  </View>
-                </TouchableOpacity>
-                
-
-                {/* Download PDF Button */}
-                <TouchableOpacity style={styles.button} onPress={() => handleDownloadPDF(order?.id)}>
-                  <Feather name="download" size={24} color="#e67e22" />
-                  <View style={styles.textContainer}>
-                    <Text style={styles.title}>ดาวน์โหลด PDF</Text>
-                  </View>
-                </TouchableOpacity>
-
-              </View>
-            )
-          }
-
-
-        </View>
-      </ScrollView>
+  </View>
+)
+}
+      </View>
 
     </SafeAreaProvider>
   );
@@ -561,6 +572,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 15,
+  },
+  greenButton: {
+    
+    backgroundColor: '#f44336',
+    borderColor: '#f44336',
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 15
+  },
+  greenButtonText: {
+    color: '#fff',
+    fontSize: 17,
+    fontFamily: 'Prompt_500Medium',
+  },
+  backButtonContainer: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   btnDanger: {
     flexDirection: 'row',
@@ -585,6 +618,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 20,
     position: 'relative',
+    paddingHorizontal: 8
   },
   iconContainer: {
     width: 40,
@@ -604,7 +638,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 4,
     alignItems: 'center',
-},
+  },
   lineContainer: {
     position: 'absolute',
     left: 19,
@@ -676,7 +710,9 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 10
+    padding: 10,
+    borderBottomWidth: 0.5, // Specifies the width of the bottom border
+    borderBottomColor: '#d7d7d7',
   },
   flexItem: {
 
@@ -787,15 +823,16 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     // Android shadow (elevation)
     elevation: 0.8,
+    marginHorizontal: 12
   },
   boxItemList2: {
     flex: 1,
     backgroundColor: Colors.white,
     borderRadius: 10,
-    padding: 5,
+    marginHorizontal: 15,
     paddingHorizontal: 10,
     paddingVertical: 10,
-    marginTop: 12,
+    marginTop: 0,
     // iOS shadow properties
     shadowColor: '#000',
     shadowOffset: {

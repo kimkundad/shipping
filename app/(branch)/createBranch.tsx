@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef  } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Alert, FlatList, ActivityIndicator, TextInput, Keyboard, TouchableWithoutFeedback, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
@@ -10,14 +10,46 @@ import api from '../../hooks/api'; // Axios instance
 import provinceData from '../../assets/raw/raw_database.json';
 import axios from 'axios';
 
+
+type LocationType = {
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
+} | null;
+
+type CoordinatesType = {
+  latitude: number;
+  longitude: number;
+} | null;
+
+type RootStackParamList = {
+  service: {
+    selectedLat2: number;
+    selectedLng2: number;
+    form: {
+      adddress2: string;
+      name2: string;
+      phone2: string;
+      remark2: string;
+      province2: string;
+    };
+  };
+  // Add other routes here
+};
+
 export default function CreateBranch() {
 
   const [loading, setLoading] = useState(false);
-  const [location, setLocation] = useState(null);
-  const [pickedLocation, setPickedLocation] = useState(null);
+  const [location, setLocation] = useState<LocationType>(null);
+  const [pickedLocation, setPickedLocation] = useState<CoordinatesType>(null);
   const [province, setProvince] = useState('');
   const navigation = useNavigation();
   const route = useRoute();
+  const [isMapVisible, setIsMapVisible] = useState(false);
+  const mapRef = useRef(null); // ใช้สำหรับ MapView
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
 
   const pinImage = require('../../assets/images/pin_app.png');
   const GOOGLE_API_KEY = 'AIzaSyCsx9tQ2Mj7WWnunxa8P2blQLcGtjroLVE'; // ใส่ API Key ของคุณ
@@ -46,6 +78,8 @@ export default function CreateBranch() {
         let loc = await Location.getCurrentPositionAsync({});
         const { latitude, longitude } = loc.coords;
 
+        console.log('latitude', latitude, 'longitude', longitude)
+
         setLocation({
           latitude,
           longitude,
@@ -57,12 +91,15 @@ export default function CreateBranch() {
           latitude,
           longitude,
         });
+        
 
         // Fetch the province name using reverse geocoding
         const address = await Location.reverseGeocodeAsync({
           latitude,
           longitude,
         });
+
+        
 
         if (address && address.length > 0) {
           
@@ -101,6 +138,14 @@ export default function CreateBranch() {
       }
     })();
   }, []);
+
+
+
+    // ใช้ useEffect เพื่อดูการเปลี่ยนแปลงของ isMapVisible
+    useEffect(() => {
+      const timer = setTimeout(() => setIsMapVisible(true), 2000);
+      return () => clearTimeout(timer);
+    }, []);
 
   const selectLocationHandler = async (event) => {
     const selectedLat = event.nativeEvent.coordinate.latitude;
@@ -180,12 +225,11 @@ export default function CreateBranch() {
     }
   };
 
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
+
 
   const searchPlaces = async (text) => {
     setQuery(text); // ตั้งค่าข้อความที่ผู้ใช้พิมพ์ใน TextInput
-    if (text.length > 2) {
+    if (text.length > 1) {
       const response = await axios.get(
         `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
         {
@@ -203,9 +247,48 @@ export default function CreateBranch() {
     }
   };
 
-  const selectPlace = (description) => {
-    setQuery(description); // ตั้งค่าข้อความใน TextInput เป็นสถานที่ที่เลือก
-    setResults([]); // ซ่อนรายการผลลัพธ์หลังจากเลือก
+  const selectPlace = async (placeId, description) => {
+    try {
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/place/details/json`,
+        {
+          params: {
+            place_id: placeId,
+            key: GOOGLE_API_KEY,
+          },
+        }
+      );
+
+      if (response.data && response.data.result) {
+        const { lat, lng } = response.data.result.geometry.location;
+
+        setPickedLocation({ latitude: lat, longitude: lng });
+
+        // เลื่อน MapView ไปยังตำแหน่งที่เลือก
+        if (mapRef.current) {
+          mapRef.current.animateToRegion(
+            {
+              latitude: lat,
+              longitude: lng,
+              latitudeDelta: 0.005,
+              longitudeDelta: 0.005,
+            },
+            1000 // เวลาในหน่วยมิลลิวินาที
+          );
+        }
+
+      //  setQuery(description);
+        setForm((prevForm) => ({
+          ...prevForm,
+          province: province,
+          address: description,
+        }));
+        setResults([]);
+      }
+    } catch (error) {
+      console.error('Error fetching place details:', error);
+      Alert.alert('Error', 'ไม่สามารถดึงข้อมูลสถานที่ได้');
+    }
   };
 
   return (
@@ -219,15 +302,24 @@ export default function CreateBranch() {
         <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
           <View style={styles.container}>
             <View style={styles.backButtonContainer}>
-              <View style={styles.btnBack}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                  <Ionicons name="chevron-back" size={30} color="black" />
-                </TouchableOpacity>
-              </View>
+          
+              <TouchableOpacity style={styles.btnBack} onPress={() => navigation.goBack()}>
+                                <View
+                                    style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 1)',
+                                        padding: 5,
+                                        borderRadius: 25
+                                    }}
+                                >
+                                    <Ionicons name="chevron-back" size={20} color="black" />
+                                </View>
+                            </TouchableOpacity>
+         
             </View>
 
-            {location ? (
+            {isMapVisible && location ? (
               <MapView
+                ref={mapRef} // อ้างอิงถึง MapView
                 style={styles.map}
                 initialRegion={location}
                 liteMode={false}
@@ -268,11 +360,33 @@ export default function CreateBranch() {
             {pickedLocation && (
               <View style={styles.botfrom}>
                 <View style={styles.form}>
+
+                <View style={styles.input}>
+                  <TextInput
+        placeholder="ค้นหาสถานที่"
+        value={query}
+        onChangeText={searchPlaces}
+        style={[styles.inputControl]}
+        clearButtonMode="while-editing"
+        multiline={true}
+      />
+      <FlatList
+        data={results}
+        keyExtractor={(item) => item.place_id}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => selectPlace(item.place_id, item.description)}>
+            <Text style={styles.resultItem}>{item.description}</Text>
+          </TouchableOpacity>
+        )}
+      />
+       </View>
+
+
                   <View style={styles.input}>
                     <TextInput
                       clearButtonMode="while-editing"
                       onChangeText={address => setForm({ ...form, address })}
-                      placeholder="ระบุที่อยู่ 1"
+                      placeholder="ระบุที่อยู่"
                       placeholderTextColor="#6b7280"
                       style={[styles.inputControl, { height: 80 }]}
                       value={form.address}
@@ -280,24 +394,7 @@ export default function CreateBranch() {
                     />
                   </View>
 
-                  <View style={styles.input}>
-                  <TextInput
-        placeholder="ค้นหาสถานที่"
-        value={query}
-        onChangeText={searchPlaces}
-        style={[styles.inputControl, { height: 80 }]}
-        clearButtonMode="while-editing"
-      />
-      <FlatList
-        data={results}
-        keyExtractor={(item) => item.place_id}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => selectPlace(item.description)}>
-            <Text style={styles.resultItem}>{item.description}</Text>
-          </TouchableOpacity>
-        )}
-      />
-       </View>
+                
 
                   <View style={styles.input}>
                     <TextInput
@@ -394,6 +491,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  btnBack: {
+    backgroundColor: 'rgba(0, 19, 255, 0.2)',
+    width: 45,
+    borderRadius: 99,
+    padding: 6,
+    alignItems: 'center'
+  },
   resultItem: {
     padding: 10,
     borderBottomWidth: 1,
@@ -429,13 +533,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E5E5',
     borderStyle: 'solid',
-  },
-  btnBack: {
-    backgroundColor: '#fff',
-    width: 45,
-    borderRadius: 99,
-    padding: 6,
-    alignItems: 'center'
   },
   backButtonContainer: {
     position: 'absolute',

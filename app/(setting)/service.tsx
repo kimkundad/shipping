@@ -150,9 +150,9 @@ const getImageForSize = (size) => {
     ];
 
     const packageTypes = [
-        { type: 'สินค้าทั่วไป', icon: 'document' },
-        { type: 'เครื่องจักร', icon: 'fast-food' },
-        { type: 'วาฟเฟิล', icon: 'shirt' },
+        { type: 'สินค้าทั่วไป', icon: 'logo-dropbox' },
+        { type: 'เครื่องจักร', icon: 'settings' },
+        { type: 'วาฟเฟิล', icon: 'ice-cream-outline' },
     ];
 
     // Toggle package type selection
@@ -170,15 +170,21 @@ const getImageForSize = (size) => {
 
     const handleCreate = async () => {
 
+        formData?.province2
+        if (!formData?.province2) {
+            Alert.alert('ขออภัย', 'กรุณาเลือกที่อยู่ในการจัดส่ง');
+            return;
+        }
+
         console.log('branchId:', branchId);
         // ตรวจสอบว่ากรอกข้อมูลครบถ้วนหรือไม่
         if (!formData?.adddress || !formData?.name || !formData?.phone || !formData?.adddress2 || !formData?.name2 || !formData?.phone2 || !selectedSize || !weight) {
-            Alert.alert('Error', 'กรุณากรอกข้อมูลให้ครบทุกช่อง');
+            Alert.alert('ขออภัย', 'กรุณากรอกข้อมูลให้ครบทุกช่อง');
             return;
         }
 
         if (selectedType.length === 0) {
-            Alert.alert('Error', 'กรุณาเลือกประเภทพัสดุ');
+            Alert.alert('ขออภัย', 'กรุณาเลือกประเภทพัสดุ');
             return;
         }
 
@@ -495,7 +501,13 @@ const getImageForSize = (size) => {
                             ))}
                         </ScrollView>
 
-                        <View style={styles.showflex}>
+
+                        {selectedType.length > 0 && 
+                        (
+
+                            <View style={styles.boxNote}>
+                            <View style={styles.showflex}>
+
                         {selectedType.includes('วาฟเฟิล') && (
                             <View style={styles.warbContainer}>
                                 <Text style={styles.label3}>จำนวนวาฟเฟิล*</Text>
@@ -522,7 +534,20 @@ const getImageForSize = (size) => {
                                 />
                             </View>
                             )}
+
+
+                                
+                                </View>
+                                <View >
+                                    <Text style={styles.textNote}>**หมายเหตุ สินค้าประเถทต่างๆจะรวมอยู่ใน จำนวนทั้งหมดแล้ว เพียงแต่ระบุให้ทราบว่ามีอยู่จำนวนเท่าไหร่ </Text>
+                                </View>
                             </View>
+
+
+
+                        )
+                        }    
+                        
 
 
                     <View style={styles.boxCheck}>
@@ -564,6 +589,25 @@ const getImageForSize = (size) => {
                 </View>
                 {/* Button Section */}
                 <View style={styles.footcard}>
+                    
+                    {selectedType.includes('วาฟเฟิล') && (
+                        <View style={styles.priceBoxsub}>
+                            <Text style={styles.priceHeadsub}>จำนวนวาฟเฟิล</Text>
+                            <Text style={styles.priceSumsub}>{warb}</Text>
+                        </View>
+                    )}
+                    {selectedType.includes('เครื่องจักร') && (
+                        <View style={styles.priceBoxsub}>
+                            <Text style={styles.priceHeadsub}>จำนวนเครื่องจักร</Text>
+                            <Text style={styles.priceSumsub}>{machinery}</Text>
+                        </View>
+                    )}
+                    {weight && (
+                        <View style={styles.priceBoxsub}>
+                            <Text style={styles.priceHeadsub}>จำนวนสินค้าทั้งหมด</Text>
+                            <Text style={styles.priceSumsub}>{weight}</Text>
+                        </View>
+                    )}
                     <View style={styles.priceBox}>
                         <Text style={styles.priceHead}>รวมทั้งหมด</Text>
                         <Text style={styles.priceSum}>฿ {price.toFixed(2)}</Text>
@@ -588,6 +632,22 @@ const styles = StyleSheet.create({
     container: {
         padding: 20,
     },
+    priceBoxsub: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 10
+    },
+    priceHeadsub: {
+        fontSize: 14,
+        fontFamily: 'Prompt_400Regular',
+        marginBottom: 10,
+        color: '#666'
+    },
+    priceSumsub: {
+        fontSize: 16,
+        fontFamily: 'Prompt_500Medium'
+    },
     btnBack: {
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
         borderRadius: 25,
@@ -600,6 +660,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         padding: 10,
         fontFamily: 'Prompt_400Regular',
+    },
+    textNote: {
+        fontFamily: 'Prompt_400Regular',
+        color: '#cd5305',
+        fontSize: 13,
+        marginTop: 10
     },
     rowh: {
         flexDirection: 'row',
@@ -675,10 +741,20 @@ const styles = StyleSheet.create({
         color: '#f47524',
         fontFamily: 'Prompt_500Medium',
       },
+      boxNote: {
+        borderWidth: 0.5,
+        borderColor: '#cd5305',
+        borderRadius: 8,
+        borderStyle: 'dotted',
+        marginTop: 10,
+        padding: 10,
+        paddingTop: 5
+      },
     showflex: {
         display: 'flex',
         flexDirection: 'row', 
-        gap: 10
+        gap: 10,
+        
     },
     row: {
         flexDirection: 'row',

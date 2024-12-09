@@ -264,7 +264,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingVertical: 10,
-        gap: 1
+        gap: 10,
+        height: 50
     },
     headerPage: {
         padding: 20,

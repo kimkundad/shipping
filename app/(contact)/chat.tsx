@@ -410,23 +410,8 @@ const Chats = () => {
                         )}
                     />
 
-                    {/* <View>
-                <Button title="Upload Image" onPress={handlePickImage} />
-                <Button title="Take Photo" onPress={handleTakePhoto} />
-            </View> */}
-
-
-                    {/* <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Message"
-                    placeholderTextColor="#888"
-                />
-                <TouchableOpacity style={styles.sendButton}>
-                    <Ionicons name="send" size={24} color="#fff" />
-                </TouchableOpacity>
-            </View> */}
-                    {/* Modal สำหรับดูรูปภาพขนาดเต็ม */}
+                
+                
                     
                 </SafeAreaProvider>
             </TouchableWithoutFeedback>

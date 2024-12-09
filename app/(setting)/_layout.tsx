@@ -15,7 +15,7 @@ export default function Layout() {
       <Stack.Screen name="notification" options={{ headerShown: false }} />
       <Stack.Screen name="tracking" options={{ headerShown: false }} />
       <Stack.Screen name="maps" options={{ headerShown: false }} />
-      <Stack.Screen name="mapsDestination"  />
+      <Stack.Screen name="mapsDestination"  options={{ headerShown: false }}/>
       <Stack.Screen name="mapsReceiver" options={{ headerShown: false }} />
       <Stack.Screen name="service"  options={{ headerShown: false }} />
       <Stack.Screen name="payment" options={{ headerShown: false }}/>

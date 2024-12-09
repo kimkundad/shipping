@@ -45,32 +45,53 @@ export default function Tracking() {
   const [timeLine, setTimeLine] = useState([]);
 
   const [order, setData] = useState<Order | null>(null);
-  const [origin, setOrigin] = useState({ latitude: 13.5116094, longitude: 100.68715 }); // เก็บตำแหน่งต้นทาง
-  const [destination, setDestination] = useState({ latitude: 13.5116094, longitude: 100.68715 }); // เก็บตำแหน่งปลายทาง
-  const [carTack, setCarTack] = useState({ latitude: 0, longitude: 0 }); // เก็บตำแหน่งปลายทาง
+  const [origin, setOrigin] = useState(null); // เก็บตำแหน่งต้นทาง
+  const [destination, setDestination] = useState(null); // เก็บตำแหน่งปลายทาง
+  const [carTack, setCarTack] = useState(null); // เก็บตำแหน่งปลายทาง
   const GOOGLE_MAPS_APIKEY = 'AIzaSyDtcFHSNerbvIWPVv5OStj-czBq_6RMbRg';
   const [isMapVisible, setIsMapVisible] = useState(false);
+  const [isDataReady, setIsDataReady] = useState(false);
+  
 
   const fetchOrder = async () => {
-    
     setLoading(true);
     try {
       const response = await api.get(`/getOrderByID/${id}`);
-      const orderData = response.data.order;
-      setData(orderData);
-      setTimeLine(response?.data?.timeline);
-      setOrigin({
-        latitude: parseFloat(orderData.latitude),
-        longitude: parseFloat(orderData.longitude),
-      });
-      setDestination({
-        latitude: parseFloat(orderData.latitude2),
-        longitude: parseFloat(orderData.longitude2),
-      });
-      setCarTack({
-        latitude: parseFloat(orderData.d_lat),
-        longitude: parseFloat(orderData.d_long),
-      });
+      const orderData = response?.data?.order;
+  
+      if (orderData && orderData.latitude && orderData.longitude) {
+        // ตั้งค่าข้อมูลที่ดึงมาจาก API
+        setData(orderData);
+        setTimeLine(response?.data?.timeline || []);
+  
+        // ตั้งค่าตำแหน่งต้นทาง
+        setOrigin({
+          latitude: parseFloat(orderData.latitude),
+          longitude: parseFloat(orderData.longitude),
+        });
+  
+        // ตั้งค่าตำแหน่งปลายทาง
+        if (orderData.latitude2 && orderData.longitude2) {
+          setDestination({
+            latitude: parseFloat(orderData.latitude2),
+            longitude: parseFloat(orderData.longitude2),
+          });
+        } else {
+          console.warn('Missing destination coordinates');
+        }
+  
+        // ตั้งค่าตำแหน่งรถ
+        if (orderData.d_lat && orderData.d_long) {
+          setCarTack({
+            latitude: parseFloat(orderData.d_lat),
+            longitude: parseFloat(orderData.d_long),
+          });
+        } else {
+          console.warn('Missing car coordinates');
+        }
+      } else {
+        console.warn('Invalid order data or missing coordinates');
+      }
     } catch (error) {
       console.error('Error fetching order:', error);
     } finally {
@@ -80,9 +101,15 @@ export default function Tracking() {
 
   // ใช้ useEffect เพื่อดูการเปลี่ยนแปลงของ isMapVisible
   useEffect(() => {
-    const timer = setTimeout(() => setIsMapVisible(true), 500);
+    const timer = setTimeout(() => setIsMapVisible(true), 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    console.log('Origin:', origin);
+    console.log('Destination:', destination);
+    console.log('Car Track:', carTack);
+  }, [origin, destination, carTack]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -321,7 +348,7 @@ export default function Tracking() {
        {destination && (
           <View>
 
-{isMapVisible && destination && (
+{carTack && origin && destination && (
             <MapView
               initialRegion={{
                 latitude: 13.7758339,
@@ -330,7 +357,7 @@ export default function Tracking() {
                 longitudeDelta: 0.4221,
               }}
               style={styles.map} >
-              {carTack && (
+              {carTack && origin && destination && (
                 <>
                   <MapViewDirections
                     origin={origin}
@@ -341,10 +368,9 @@ export default function Tracking() {
                     mode='DRIVING'
                     language='th'
                   />
-                  <Marker
-                    coordinate={destination}
-                    title="Starting Point"
-                  />
+                  {destination && (
+                    <Marker coordinate={destination} title="Destination" />
+                  )}
                   {order?.status_dri === 1 ? (
                     <>
                       <MapViewDirections

@@ -1,19 +1,36 @@
 import { Image, View, Text, StyleSheet, Platform, TextInput, Dimensions, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Link, useNavigation, router, useRouter  } from 'expo-router';
-import { useEffect } from 'react';
+import React, { useState, useEffect  } from 'react';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StatusBar } from 'expo-status-bar';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
-
+import api from '../../hooks/api'; // Axios instance
 
 const { width } = Dimensions.get('window');
 
 const Notification = () => {
 
     const router = useRouter();
+    const [dataNoti, setDataNoti] = useState(null);
+
+    const fetchData = async () => {
+
+        try {
+          const response = await api.get(`/getNotiNew`);
+          const settingData = response.data.noti;
+          setDataNoti(settingData);
+        } catch (error) {
+          console.error('Error fetching order:', error);
+        }
+    
+      };
+    
+      useEffect(() => {
+        fetchData();
+      }, []);
 
     return (
         <SafeAreaProvider style={{ flex: 1, backgroundColor: '#F5F5F5' }} >
@@ -57,80 +74,29 @@ const Notification = () => {
 
                     <View style={styles.card}>
 
+                    {dataNoti && (
+                        <View>
+                    {dataNoti.map(order => (
                         <View style={styles.boxNoti}>
                             <View style={styles.showflex2}>
                                 <View>
-                                    <Text style={styles.header}>การชำระเงิน</Text>
+                                    <Text style={styles.header}>{order?.header}</Text>
                                 </View>
                                 <View>
-                                    <Text style={styles.date}>04 ก.ค. 2567 14:49</Text>
+                                    <Text style={styles.date}>{order?.dateThai}</Text>
                                 </View>
                             </View>
                             
                             <View style={styles.showflex2}>
-                                <Text style={styles.detailx}>ท่านได้ทำการชำระเงินเสร็จสิ้นแล้ว ท่านสามารถใช้บริการเครื่อง 16 ได้
-                                เลยครับ</Text>
+                                <Text style={styles.detailx}>{order?.message}</Text>
                                 <View>
                                     <Feather name="chevron-right" size={24} color="gray" />
                                 </View>
                             </View>
                         </View>
-                        <View style={styles.boxNoti}>
-                            <View style={styles.showflex2}>
-                                <View>
-                                    <Text style={styles.header}>WashXpress</Text>
-                                </View>
-                                <View>
-                                    <Text style={styles.date}>04 ก.ค. 2567 14:49</Text>
-                                </View>
-                            </View>
-                            
-                            <View style={styles.showflex2}>
-                                <Text style={styles.detailx}>วันหยุดนี้ มาซักผ้าที่ WashXpress มีทั้งเครื่องซัก เครื่องอบ คอยให้
-                                บริการ</Text>
-                                <View>
-                                    <Feather name="chevron-right" size={24} color="gray" />
-                                </View>
-                            </View>
-                        </View>
-                        <View style={styles.boxNoti}>
-                            <View style={styles.showflex2}>
-                                <View>
-                                    <Text style={styles.header}>การชำระเงิน</Text>
-                                </View>
-                                <View>
-                                    <Text style={styles.date}>04 ก.ค. 2567 14:49</Text>
-                                </View>
-                            </View>
-                            
-                            <View style={styles.showflex2}>
-                                <Text style={styles.detailx}>ท่านได้ทำการชำระเงินเสร็จสิ้นแล้ว ท่านสามารถใช้บริการเครื่อง 16 ได้
-                                เลยครับ</Text>
-                                <View>
-                                    <Feather name="chevron-right" size={24} color="gray" />
-                                </View>
-                            </View>
-                        </View>
-                        <View style={styles.boxNoti}>
-                            <View style={styles.showflex2}>
-                                <View>
-                                    <Text style={styles.header}>สิทธิพิเศษเฉพาคุณ! รับฟรี </Text>
-                                </View>
-                                <View>
-                                    <Text style={styles.date}>04 ก.ค. 2567 14:49</Text>
-                                </View>
-                            </View>
-                            
-                            <View style={styles.showflex2}>
-                                <Text style={styles.detailx}>สิทธิพิเศษเฉพาคุณ! รับฟรี คูปอง มูลค่า09 มิ.ย. 2567 08:33
-20 บาท สามารถเข้ามากดรับได้ในแอปฯ</Text>
-                                <View>
-                                    <Feather name="chevron-right" size={24} color="gray" />
-                                </View>
-                            </View>
-                        </View>
-                        
-
+                    ))}
+</View>
+                )}
 
                         <View style={styles.line_bot}></View>
                     </View>

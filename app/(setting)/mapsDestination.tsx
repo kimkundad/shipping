@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Button, TouchableOpacity, Alert, ActivityIndicator, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, Modal, ScrollView, Alert, ActivityIndicator, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import * as Location from 'expo-location';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { useNavigation, useRoute } from '@react-navigation/native'; 
 import { KeyboardAvoidingView, Platform } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons, EvilIcons  } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import provinceData from '../../assets/raw/raw_database.json';
+import axios from 'axios';
 
 type LocationType = {
   latitude: number;
@@ -41,6 +42,12 @@ export default function MapsDestination() {
   const [province, setProvince] = useState('');
   const navigation = useNavigation(); 
   const route = useRoute(); 
+  const mapRef = useRef(null); // ใช้สำหรับ MapView
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const GOOGLE_API_KEY = 'AIzaSyCsx9tQ2Mj7WWnunxa8P2blQLcGtjroLVE'; // ใส่ API Key ของคุณ
 
   const pinImage = require('../../assets/images/pin_app.png');
 
@@ -137,51 +144,110 @@ export default function MapsDestination() {
 
   };
 
+
+  const searchPlaces = async (text) => {
+    setQuery(text); // ตั้งค่าข้อความที่ผู้ใช้พิมพ์ใน TextInput
+    if (text.length > 1) {
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
+        {
+          params: {
+            input: text,
+            key: GOOGLE_API_KEY,
+            language: 'th', // กำหนดภาษาเป็นภาษาไทย
+            components: 'country:th',
+          },
+        }
+      );
+      setResults(response.data.predictions); // เก็บผลลัพธ์การค้นหา
+    } else {
+      setResults([]); // หากข้อความสั้นเกินไป ให้ล้างผลลัพธ์
+    }
+  };
+
+  const selectPlace = async (placeId, description) => {
+    try {
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/place/details/json`,
+        {
+          params: {
+            place_id: placeId,
+            key: GOOGLE_API_KEY,
+          },
+        }
+      );
+
+      setIsModalVisible(false); // ปิด Modal หลังจากเลือกสถานที่
+
+      if (response.data && response.data.result) {
+        const { lat, lng } = response.data.result.geometry.location;
+
+        setPickedLocation({ latitude: lat, longitude: lng });
+
+        // เลื่อน MapView ไปยังตำแหน่งที่เลือก
+        if (mapRef.current) {
+          mapRef.current.animateToRegion(
+            {
+              latitude: lat,
+              longitude: lng,
+              latitudeDelta: 0.005,
+              longitudeDelta: 0.005,
+            },
+            1000 // เวลาในหน่วยมิลลิวินาที
+          );
+        }
+
+
+        const address = await Location.reverseGeocodeAsync({
+          latitude: lat,
+          longitude: lng,
+        });
+    
+        if (address && address.length > 0) {
+          const zipcode = address[0].postalCode;
+            const provinceEntry = provinceData.find(
+              (entry) => entry.zipcode.toString() === zipcode
+            );
+    
+            if (provinceEntry) {
+              setProvince(provinceEntry.province);
+            }
+          }
+
+      //  setQuery(description);
+        setForm((prevForm) => ({
+          ...prevForm,
+          province: province,
+          adddress2: description,
+        }));
+        setResults([]);
+      }
+    } catch (error) {
+      console.error('Error fetching place details:', error);
+      Alert.alert('Error', 'ไม่สามารถดึงข้อมูลสถานที่ได้');
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
     >
-      <Stack.Screen options={{
-                    headerTransparent: true,
-                    headerTitle: ' ',
-                    headerTitleStyle: {
-                        color: 'white', // กำหนดสีของ headerTitle
-                        fontFamily: 'Prompt_500Medium', // กำหนดฟอนต์
-                        fontSize: 18
-                    },
-                    headerLeft: () => (
-                        <TouchableOpacity style={styles.btnBack} onPress={() =>  navigation.goBack()}>
-                            <View
-                                style={{
-                                    backgroundColor: '#fff',
-                                    padding: 6,
-                                    borderRadius: 10
-                                }}
-                            >
-                                <Ionicons name="chevron-back" size={20} color="black" />
-                            </View>
-                        </TouchableOpacity>
-                    ),
-                    headerRight: () => (
-                        <TouchableOpacity style={styles.btnBackText} onPress={() => router.push('(setting)/selectBarnch')}>
-                            <View
-                                style={{
-                                  backgroundColor: '#fff',
-                                    padding: 4,
-                                    borderRadius: 10,
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    gap:0
-                                }}
-                            >
-                                <MaterialIcons name="bookmark-border" size={20} color="black" />
-                                <Text style={styles.inbtnBackText}> เลือกจากสาขาที่สร้างไว้</Text>
-                            </View>
-                        </TouchableOpacity>
-                    )
-                }} />
+ 
+     <View style={styles.backButtonContainer}>
+              
+              <TouchableOpacity style={styles.btnBack} onPress={() => navigation.goBack()}>
+                                <View
+                                    style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 1)',
+                                        padding: 5,
+                                        borderRadius: 25
+                                    }}
+                                >
+                                    <Ionicons name="chevron-back" size={20} color="black" />
+                                </View>
+                            </TouchableOpacity>
+            </View>
       {/* Wrap the entire UI in TouchableWithoutFeedback */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 
@@ -192,6 +258,7 @@ export default function MapsDestination() {
 
           {location ? (
             <MapView
+              ref={mapRef} // อ้างอิงถึง MapView
               style={styles.map}
               initialRegion={location}
               liteMode={false}
@@ -232,6 +299,60 @@ export default function MapsDestination() {
           {pickedLocation && (
             <View style={styles.botfrom}>
               <View style={styles.form}>
+
+              <TouchableOpacity
+        style={styles.searchButton}
+        onPress={() => setIsModalVisible(true)}
+      >
+        <Text style={styles.searchButtonText}>ค้นหาสถานที่</Text>
+      </TouchableOpacity>
+
+             
+      {/* Modal สำหรับแสดงผลการค้นหา */}
+      {/* Modal สำหรับการค้นหา */}
+      <Modal
+        visible={isModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              {/* Input สำหรับการค้นหา */}
+              <TextInput
+                placeholder="ค้นหาสถานที่"
+                value={query}
+                onChangeText={searchPlaces}
+                style={styles.inputControl}
+                clearButtonMode="while-editing"
+              />
+              {/* แสดงรายการผลลัพธ์ */}
+              <FlatList
+                data={results}
+                keyExtractor={(item) => item.place_id}
+                keyboardShouldPersistTaps="handled"
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.resultItem}
+                    onPress={() => selectPlace(item.place_id, item.description)}
+                  >
+                    <Text>{item.description}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+              {/* ปุ่มปิด Modal */}
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setIsModalVisible(false)}
+              >
+                <Text style={styles.closeButtonText}>ปิด</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
                 <View style={styles.input}>
                   <TextInput
                     clearButtonMode="while-editing"
@@ -331,6 +452,56 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  searchButton: {
+    backgroundColor: "#f47524",
+    padding: 15,
+    borderRadius: 5,
+    marginBottom: 10,
+    alignItems: 'center'
+  },
+  searchButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: 'center'
+  },
+  resultItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    margin: 20,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  closeButton: {
+    marginTop: 10,
+    backgroundColor: "#28a745",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
   btnBranch: {
     backgroundColor: '#fff',

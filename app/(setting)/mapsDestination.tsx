@@ -8,6 +8,7 @@ import { Ionicons, MaterialIcons, EvilIcons  } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import provinceData from '../../assets/raw/raw_database.json';
 import axios from 'axios';
+import Constants from 'expo-constants';
 
 type LocationType = {
   latitude: number;
@@ -47,7 +48,11 @@ export default function MapsDestination() {
   const [results, setResults] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const GOOGLE_API_KEY = 'AIzaSyCsx9tQ2Mj7WWnunxa8P2blQLcGtjroLVE'; // ใส่ API Key ของคุณ
+  const GOOGLE_API_KEY =
+  Platform.OS === 'ios'
+    ? Constants.expoConfig?.ios?.config?.googleMapsApiKey
+    : Constants.expoConfig?.android?.config?.googleMaps?.apiKey;
+
 
   const pinImage = require('../../assets/images/pin_app.png');
 
@@ -61,6 +66,8 @@ export default function MapsDestination() {
 
   useEffect(() => {
     (async () => {
+
+      console.log('GOOGLE_API_KEY', GOOGLE_API_KEY)
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission Denied', 'Permission to access location was denied');
@@ -159,6 +166,7 @@ export default function MapsDestination() {
           },
         }
       );
+      console.log('searchPlaces', response)
       setResults(response.data.predictions); // เก็บผลลัพธ์การค้นหา
     } else {
       setResults([]); // หากข้อความสั้นเกินไป ให้ล้างผลลัพธ์
@@ -592,6 +600,7 @@ const styles = StyleSheet.create({
   greenButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Prompt_500Medium',
+
   },
 });

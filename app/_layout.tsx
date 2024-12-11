@@ -6,10 +6,10 @@ import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { UserProvider } from '../hooks/UserContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
-
 import { NotificationProvider } from "@/context/NotificationContext";
 import * as Notifications from "expo-notifications";
 import * as TaskManager from "expo-task-manager";
+import '@/i18n';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -23,13 +23,28 @@ const BACKGROUND_NOTIFICATION_TASK = "BACKGROUND-NOTIFICATION-TASK";
 
 TaskManager.defineTask(
   BACKGROUND_NOTIFICATION_TASK,
-  ({ data, error, executionInfo }) => {
-    console.log("✅ Received a notification in the background!", {
-      data,
-      error,
-      executionInfo,
-    });
-    // Do something with the notification data
+  async ({ data, error, executionInfo }) => {
+    try {
+      console.log("✅ Received a notification in the background!", {
+        data,
+        error,
+        executionInfo,
+      });
+
+      // หากมีการประมวลผลหรือทำงานเพิ่มเติม
+      if (data) {
+        // ตัวอย่าง: บันทึกข้อมูลลงฐานข้อมูล หรือดำเนินการอื่น ๆ
+        console.log('data', data)
+      }
+
+      // คืนค่า Promise ที่เสร็จสมบูรณ์
+      return Promise.resolve();
+    } catch (err) {
+      console.error("Error handling background notification:", err);
+
+      // คืนค่า Promise ที่มีข้อผิดพลาด
+      return Promise.reject(err);
+    }
   }
 );
 

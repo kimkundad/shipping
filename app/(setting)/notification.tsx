@@ -2,12 +2,11 @@ import { Image, View, Text, StyleSheet, Platform, TextInput, Dimensions, Touchab
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Link, useNavigation, router, useRouter  } from 'expo-router';
 import React, { useState, useEffect  } from 'react';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StatusBar } from 'expo-status-bar';
-import { FontAwesome5 } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import api from '../../hooks/api'; // Axios instance
+
 
 const { width } = Dimensions.get('window');
 

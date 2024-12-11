@@ -9,7 +9,7 @@ import { KeyboardAvoidingView, Platform } from 'react-native';
 import api from '../../hooks/api'; // Axios instance
 import provinceData from '../../assets/raw/raw_database.json';
 import axios from 'axios';
-
+import Constants from 'expo-constants';
 
 type LocationType = {
   latitude: number;
@@ -52,7 +52,14 @@ export default function CreateBranch() {
   const [results, setResults] = useState([]);
 
   const pinImage = require('../../assets/images/pin_app.png');
-  const GOOGLE_API_KEY = 'AIzaSyCsx9tQ2Mj7WWnunxa8P2blQLcGtjroLVE'; // ใส่ API Key ของคุณ
+  
+  
+  const GOOGLE_API_KEY =
+  Platform.OS === 'ios'
+    ? Constants.expoConfig?.ios?.config?.googleMapsApiKey
+    : Constants.expoConfig?.android?.config?.googleMaps?.apiKey;
+
+
   const [form, setForm] = useState({
     province: '',
     name: '',

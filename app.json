@@ -16,9 +16,14 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show relevant information.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We need access to your location to provide accurate services.",
         "NSDocumentDirectoryUsageDescription": "This app needs access to your documents to store PDFs."
       },
-      "bundleIdentifier": "com.shippingapp"
+      "bundleIdentifier": "com.shippingapp",
+      "config": {
+        "googleMapsApiKey": "AIzaSyCsgTpv6fjOh2YRd1X0N92QdIV76A0gPX0"
+      }
     },
     "android": {
       "googleServicesFile": "./google-services.json",
@@ -35,7 +40,7 @@
       "package": "com.shippingapp",
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyCsx9tQ2Mj7WWnunxa8P2blQLcGtjroLVE"
+          "apiKey": "AIzaSyDCv_atMLlGFWZYYWS-2uElJeq1_hdFgRo"
         }
       },
       "intentFilters": [
@@ -61,7 +66,7 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-barcode-scanner"
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true

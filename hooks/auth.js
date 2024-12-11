@@ -19,6 +19,7 @@ export const logout = async () => {
   try {
     await AsyncStorage.removeItem('jwt_token');
     await AsyncStorage.removeItem('refresh_token');
+    
     // Navigate to login page
   } catch (error) {
     console.error('Failed to log out:', error);

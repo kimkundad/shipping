@@ -8,7 +8,7 @@ import axios from 'axios';
 import api from '../../hooks/api'; // Axios instance
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import { useTranslation } from "react-i18next";
 
 const POLL_INTERVAL = 555000; // Poll every 5 seconds
 const { width } = Dimensions.get('window');
@@ -17,6 +17,7 @@ const SelectBarnch = () => {
 
     const navigation = useNavigation(); 
     const [userBranch, setUserBranch] = useState(null);
+    const { i18n, t } = useTranslation();
 
 
     useEffect(() => {
@@ -61,7 +62,7 @@ const SelectBarnch = () => {
 
                             <View style={styles.textListHead}>
                                 <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
-                                เลือกสาขาที่ต้องการจัดส่ง
+                                 {t("branch.titleSelect")}
                                 </Text>
                             </View>
 
@@ -109,13 +110,13 @@ const SelectBarnch = () => {
                                                 </View>
                                                 <View>
                                                     <Text style={styles.serviceText}>{branch.name_branch}</Text>
-                                                    <Text style={styles.locationText}>{branch.province}</Text>
+                                                    <Text style={styles.locationText}>{t("branch.province")} : {branch.province}</Text>
                                                 </View>
                                             </View>
 
 
                                                 <View style={styles.rightSection}>
-                                                    <Text style={styles.dateText}> ผู้ดูแล</Text>
+                                                    <Text style={styles.dateText}> {t("branch.caretaker")}</Text>
                                                     <Text style={styles.nameText}>{branch.admin_branch}</Text>
                                                 </View>
                                                 

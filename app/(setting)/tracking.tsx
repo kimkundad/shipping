@@ -16,12 +16,15 @@ import * as Sharing from 'expo-sharing';
 import { Buffer } from 'buffer';
 import { UserContext } from '../../hooks/UserContext';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from "react-i18next";
+import Constants from 'expo-constants';
 
 export default function Tracking() {
 
   const { userProfile } = useContext(UserContext);
-
+  const { i18n, t } = useTranslation();
   const navigation = useNavigation();
+  const currentLanguage = i18n.language;
 
   interface Order {
     dri_time: string;
@@ -39,56 +42,80 @@ export default function Tracking() {
     longitude2: number;    // เพิ่ม longitude2
   }
 
-  const { id } = useLocalSearchParams(); // รับพารามิเตอร์ id
+  const { id, dataOrder } = useLocalSearchParams(); // รับพารามิเตอร์ id
+  
+  let parsedDataOrder = null;
+
+  if (typeof dataOrder === 'string') {
+    try {
+      parsedDataOrder = JSON.parse(dataOrder);
+    } catch (error) {
+      console.error('Error parsing dataOrder:', error);
+    }
+  }
+
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [timeLine, setTimeLine] = useState([]);
 
   const [order, setData] = useState<Order | null>(null);
-  const [origin, setOrigin] = useState(null); // เก็บตำแหน่งต้นทาง
-  const [destination, setDestination] = useState(null); // เก็บตำแหน่งปลายทาง
-  const [carTack, setCarTack] = useState(null); // เก็บตำแหน่งปลายทาง
-  const GOOGLE_MAPS_APIKEY = 'AIzaSyDtcFHSNerbvIWPVv5OStj-czBq_6RMbRg';
-  const [isMapVisible, setIsMapVisible] = useState(false);
-  const [isDataReady, setIsDataReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof dataOrder === 'string') {
+      try {
+        const parsedData: Order = JSON.parse(dataOrder); // แปลง `dataOrder` กลับเป็นวัตถุ
+        
+        setData(parsedData); // ตั้งค่า `order`
+        setTimeLine(parsedData?.data?.timeline || []);
+        
+      } catch (error) {
+        console.error('Error parsing dataOrder:', error);
+      }
+    } else {
+      console.error('dataOrder is not a valid string:', dataOrder);
+    }
+  }, [dataOrder]); // ทำงานเมื่อ `dataOrder` เปลี่ยน
+
   
 
+  //const [origin, setOrigin] = useState(null); // เก็บตำแหน่งต้นทาง
+  //const [destination, setDestination] = useState(null); // เก็บตำแหน่งปลายทาง
+  //const [carTack, setCarTack] = useState(null); // เก็บตำแหน่งปลายทาง
+
+  const [destination, setDestination] = useState({
+    latitude: parseFloat(parsedDataOrder?.latitude2) || 13.756331,
+    longitude: parseFloat(parsedDataOrder?.longitude2) || 100.501762,
+  });
+
+
+  const [origin, setOrigin] = useState({
+    latitude: parseFloat(parsedDataOrder?.latitude) || 13.756331,
+    longitude: parseFloat(parsedDataOrder?.longitude) || 100.601762,
+  });
+
+
+  const [carTack, setCarTack] = useState({
+    latitude: parseFloat(parsedDataOrder?.d_lat) || 13.756331,
+    longitude: parseFloat(parsedDataOrder?.d_long) || 100.701762,
+  });
+
+
+  const GOOGLE_MAPS_APIKEY =
+  Platform.OS === 'ios'
+    ? Constants.expoConfig?.ios?.config?.googleMapsApiKey
+    : Constants.expoConfig?.android?.config?.googleMaps?.apiKey;
+  
   const fetchOrder = async () => {
     setLoading(true);
     try {
       const response = await api.get(`/getOrderByID/${id}`);
-      const orderData = response?.data?.order;
+      const timeline = response?.data?.timeline;
   
-      if (orderData && orderData.latitude && orderData.longitude) {
+      if (timeline) {
         // ตั้งค่าข้อมูลที่ดึงมาจาก API
-        setData(orderData);
-        setTimeLine(response?.data?.timeline || []);
+        setTimeLine(timeline || []);
+        console.log('timeline', timeline)
   
-        // ตั้งค่าตำแหน่งต้นทาง
-        setOrigin({
-          latitude: parseFloat(orderData.latitude),
-          longitude: parseFloat(orderData.longitude),
-        });
-  
-        // ตั้งค่าตำแหน่งปลายทาง
-        if (orderData.latitude2 && orderData.longitude2) {
-          setDestination({
-            latitude: parseFloat(orderData.latitude2),
-            longitude: parseFloat(orderData.longitude2),
-          });
-        } else {
-          console.warn('Missing destination coordinates');
-        }
-  
-        // ตั้งค่าตำแหน่งรถ
-        if (orderData.d_lat && orderData.d_long) {
-          setCarTack({
-            latitude: parseFloat(orderData.d_lat),
-            longitude: parseFloat(orderData.d_long),
-          });
-        } else {
-          console.warn('Missing car coordinates');
-        }
       } else {
         console.warn('Invalid order data or missing coordinates');
       }
@@ -99,11 +126,6 @@ export default function Tracking() {
     }
   };
 
-  // ใช้ useEffect เพื่อดูการเปลี่ยนแปลงของ isMapVisible
-  useEffect(() => {
-    const timer = setTimeout(() => setIsMapVisible(true), 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     console.log('Origin:', origin);
@@ -122,7 +144,6 @@ export default function Tracking() {
       fetchOrder();
     }
   }, [id]);
-
 
   const handlePress = async () => {
     if (order?.dri_phone) {
@@ -295,6 +316,23 @@ export default function Tracking() {
   const TimelineItem = ({ item, isLastItem }) => {
     const icon = item.icon || 'circle';
 
+    let description, status;
+
+    // ตรวจสอบภาษาปัจจุบัน
+    if (currentLanguage === 'th-TH') {
+      description = item.description;
+      status = item.status;
+    } else if (currentLanguage === 'zh-CN') {
+      description = item.descriptionCn;
+      status = item.statusCn;
+    } else if (currentLanguage === 'en-US') {
+      description = item.descriptionEn;
+      status = item.statusEn;
+    } else {
+      description = item.descriptionEn; // ค่าเริ่มต้นเป็นภาษาอังกฤษ
+      status = item.statusEn;
+    }
+
     return (
       <View style={styles.timelineItem}>
         {/* Icon */}
@@ -314,11 +352,11 @@ export default function Tracking() {
           </Text>
           {item.status && (
             <Text style={[styles.statusText, item.active ? styles.activeText : styles.inactiveText]}>
-              {item.status}
+              {status}
             </Text>
           )}
           <Text style={[styles.descriptionText, item.active ? styles.activeText : styles.inactiveText]}>
-            {item.description}
+            {description}
           </Text>
         </View>
       </View>
@@ -348,7 +386,7 @@ export default function Tracking() {
        {destination && (
           <View>
 
-{carTack && origin && destination && (
+{origin && destination && (
             <MapView
               initialRegion={{
                 latitude: 13.7758339,
@@ -357,7 +395,7 @@ export default function Tracking() {
                 longitudeDelta: 0.4221,
               }}
               style={styles.map} >
-              {carTack && origin && destination && (
+              {origin && destination && (
                 <>
                   <MapViewDirections
                     origin={origin}
@@ -455,7 +493,7 @@ export default function Tracking() {
         style={styles.userImage}
         source={{ uri: 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg' }} />
       <View>
-        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 13, color: '#666' }}>พนักงานขนส่ง, </Text>
+        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 13, color: '#666' }}>{t("tracking.transportation")}, </Text>
         <View style={styles.showflex}>
           <Image source={require('../../assets/images/icon_truck.png')}
             style={{ width: 25, height: 25, marginRight: 2 }} />
@@ -471,11 +509,11 @@ export default function Tracking() {
   {/* profileMain  */}
   <View style={styles.textBoxDetail}>
     <View style={styles.flexItem}>
-      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
+      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>{t("home.destination")}</Text>
       <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.b_name}</Text>
     </View>
     <View style={styles.flexItem2}>
-      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>จำนวน</Text>
+      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>{t("home.total")}</Text>
       <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.weight}</Text>
     </View>
   </View>
@@ -484,11 +522,11 @@ export default function Tracking() {
 
     <View style={styles.textBoxDetail}>
       <View style={styles.flexItem}>
-        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ผู้รับสินค้า</Text>
+        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>{t("home.recipient")}</Text>
         <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.b_recive_name}</Text>
       </View>
       <View style={styles.flexItem2}>
-        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>Type</Text>
+        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>{t("home.type")}</Text>
         <Text style={{ fontWeight: 700, fontSize: 13 }}> {order?.type}, size : {order?.size}</Text>
       </View>
     </View>
@@ -497,11 +535,11 @@ export default function Tracking() {
 
     <View style={styles.textBoxDetail}>
       <View style={styles.flexItem}>
-        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ผู้รับสินค้า</Text>
+        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>{t("home.recipient")}</Text>
         <Text style={{ fontWeight: 700, fontSize: 13 }}>{order?.b_recive_name}</Text>
       </View>
       <View style={styles.flexItem2}>
-        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>Type</Text>
+        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>{t("home.type")}</Text>
         <Text style={{ fontWeight: 700, fontSize: 13 }}> {order?.dri_type}, {order?.dri_no_car}</Text>
       </View>
     </View>
@@ -533,7 +571,7 @@ export default function Tracking() {
   onPress={() => handleCancelInvoice(order?.id)}
 >
   <View style={styles.btnDanger}>
-    <Text style={styles.btnText}>ยกเลิกบริการ</Text>
+    <Text style={styles.btnText}>{t("home.Cancel_service")}</Text>
   </View>
 </TouchableOpacity>
 
@@ -556,7 +594,7 @@ export default function Tracking() {
                     })
                   }}
                 >
-                  <Text style={styles.greenButtonText}>ฉันได้ตรวจสอบและยอมรับสินค้า</Text>
+                  <Text style={styles.greenButtonText}>{t("home.getProduct")}</Text>
                 </TouchableOpacity>
 )}
 
@@ -567,11 +605,11 @@ export default function Tracking() {
         <MaterialIcons name="email" size={24} color="#e67e22" />
       )}
       <View style={styles.textContainer}>
-        <Text style={styles.title}>{loading ? 'กำลัง' : ''}ส่งใบเสร็จรับเงิน</Text>
+        <Text style={styles.title}>{loading ? 'กำลัง' : ''}{t("home.Send_a_receipt")}</Text> 
         {userProfile?.Receiptemail ? (
-          <Text style={styles.subtitle}>ส่งไปที่ {userProfile?.Receiptemail}</Text>
+          <Text style={styles.subtitle}>{t("home.Send_to")} {userProfile?.Receiptemail}</Text>
         ) : (
-          <Text style={styles.subtitle}>กรุณาตั้งค่าอีเมล ที่ต้องการรับ</Text>
+          <Text style={styles.subtitle}>{t("home.set_mail")}</Text> 
         )}
       </View>
     </TouchableOpacity>
@@ -581,7 +619,7 @@ export default function Tracking() {
     <TouchableOpacity style={styles.button} onPress={() => handleDownloadPDF(order?.id)}>
       <Feather name="download" size={24} color="#e67e22" />
       <View style={styles.textContainer}>
-        <Text style={styles.title}>ดาวน์โหลด PDF</Text>
+        <Text style={styles.title}>Download PDF</Text>
       </View>
     </TouchableOpacity>
 

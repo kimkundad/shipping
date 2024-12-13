@@ -7,6 +7,7 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import api from '../../hooks/api'; // Axios instance
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from "react-i18next";
 
 // Define the route parameters
 type RootStackParamList = {
@@ -63,6 +64,7 @@ const imgsize_height = 160;
   const [selected2, setSelected2] = useState(false);
   const [dataSetting, setDataSetting] = useState(null);
   const [branchId, setBranchId] = useState(0);
+  const { i18n, t } = useTranslation();
 
   const fetchData = async () => {
 
@@ -149,11 +151,12 @@ const getImageForSize = (size) => {
         { type: 'พรีเมียม', price: '฿2' },
     ];
 
+
     const packageTypes = [
-        { type: 'สินค้าทั่วไป', icon: 'logo-dropbox' },
-        { type: 'เครื่องจักร', icon: 'settings' },
-        { type: 'วาฟเฟิล', icon: 'ice-cream-outline' },
-    ];
+    { type: t("ride.nomalProduct"), icon: 'logo-dropbox' },
+    { type: t("ride.machineProduct"), icon: 'settings' },
+    { type: t("ride.waffle"), icon: 'ice-cream-outline' },
+];
 
     // Toggle package type selection
     const togglePackageType = (type) => {
@@ -301,41 +304,7 @@ const getImageForSize = (size) => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
             <View style={{ flex: 1, backgroundColor: '#fff' }}>
-                {/* <Stack.Screen options={{
-                    headerTransparent: true,
-                    headerTitle: ' รายละเอียดการจัดส่ง',
-                    headerTitleStyle: {
-                        color: 'white', // กำหนดสีของ headerTitle
-                        fontFamily: 'Prompt_500Medium', // กำหนดฟอนต์
-                        fontSize: 18
-                    },
-                    headerLeft: () => (
-                        <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(tabs)')}>
-                            <View
-                                style={{
-                                    backgroundColor: Colors.white,
-                                    padding: 6,
-                                    borderRadius: 10
-                                }}
-                            >
-                                <Ionicons name="chevron-back" size={20} color="black" />
-                            </View>
-                        </TouchableOpacity>
-                    ),
-                    headerRight: () => (
-                        <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(setting)/selectBarnch')}>
-                            <View
-                                style={{
-                                    backgroundColor: Colors.white,
-                                    padding: 6,
-                                    borderRadius: 10
-                                }}
-                            >
-                                <MaterialIcons name="bookmark-border" size={20} color="black" />
-                            </View>
-                        </TouchableOpacity>
-                    )
-                }} /> */}
+               
 
 <View>
     <Image source={bg} style={styles.bgImg} />
@@ -357,7 +326,7 @@ const getImageForSize = (size) => {
 
             <View style={styles.textListHead}>
                 <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
-                     รายละเอียดการจัดส่ง
+                {t("ride.head")}
                 </Text>
             </View>
 
@@ -411,7 +380,7 @@ const getImageForSize = (size) => {
                                     <View style={styles.row}>
                                         <Ionicons name="location-sharp" size={22} color="#e74c3c" />
                                         <TouchableOpacity onPress={() => router.push('(setting)/mapsDestination')}>
-                                            <Text style={styles.linkTextnull}>เพิ่มข้อมูลจุดส่ง *</Text>
+                                            <Text style={styles.linkTextnull}>{t("ride.addPoint")} *</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -422,7 +391,7 @@ const getImageForSize = (size) => {
                     </View>
 
                     <Text style={styles.helperText}>
-                        ข้อมูลนี้จะช่วยให้คนขับดูแลพัสดุของคุณได้อย่างเหมาะสม
+                         {t("ride.title")}
                     </Text>
 
                     <View style={{ alignItems: 'center' }}>
@@ -432,7 +401,7 @@ const getImageForSize = (size) => {
                     <View style={styles.rows}>
 
                     <View style={{ display: 'flex' }}>
-                        <Text style={styles.label}>ขนาด*</Text>
+                        <Text style={styles.label}>{t("ride.size")}*</Text>
                         <View style={styles.sizeSelector}>
                         {sizes.map((size) => (
                             <TouchableOpacity
@@ -457,10 +426,10 @@ const getImageForSize = (size) => {
                         </View>
                         
                         <View style={styles.weightContainer}>
-                            <Text style={styles.label2}>จำนวนทั้งหมด*</Text>
+                            <Text style={styles.label2}>{t("ride.total")}*</Text>
                             <TextInput 
                                 style={styles.weightInput} 
-                                placeholder="ชิ้น" 
+                                placeholder={t("ride.piece")}
                                 value={weight}
                                 onChangeText={setWeight}
                                 keyboardType="numeric" // Ensure only numeric input
@@ -473,7 +442,7 @@ const getImageForSize = (size) => {
                     {/* Type of Package */}
                     {/* Type of Package */}
                     <View style={{ marginTop: 15 }}>
-                        <Text style={styles.label}>ประเภทพัสดุ </Text>
+                        <Text style={styles.label}>{t("home.type")} </Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
                             {packageTypes.map((pkg, index) => (
                                 <TouchableOpacity
@@ -510,10 +479,10 @@ const getImageForSize = (size) => {
 
                         {selectedType.includes('วาฟเฟิล') && (
                             <View style={styles.warbContainer}>
-                                <Text style={styles.label3}>จำนวนวาฟเฟิล*</Text>
+                                <Text style={styles.label3}>{t("ride.sumWaffle")}*</Text> 
                                 <TextInput 
                                 style={styles.warbInput} 
-                                placeholder="จำนวนวาฟเฟิล" 
+                                placeholder={t("ride.sumWaffle")}
                                 value={warb}
                                 onChangeText={setWarb}
                                 keyboardType="numeric" // Ensure only numeric input
@@ -523,10 +492,10 @@ const getImageForSize = (size) => {
                             )}
                             {selectedType.includes('เครื่องจักร') && (
                             <View style={styles.warbContainer}>
-                                <Text style={styles.label3}>จำนวนเครื่องจักร*</Text>
+                                <Text style={styles.label3}>{t("ride.sumMachine")}*</Text> 
                                 <TextInput 
                                 style={styles.warbInput} 
-                                placeholder="จำนวนเครื่องจักร" 
+                                placeholder={t("ride.sumMachine")}
                                 value={machinery}
                                 onChangeText={setMachinery}
                                 keyboardType="numeric" // Ensure only numeric input
@@ -539,7 +508,7 @@ const getImageForSize = (size) => {
                                 
                                 </View>
                                 <View >
-                                    <Text style={styles.textNote}>**หมายเหตุ สินค้าประเถทต่างๆจะรวมอยู่ใน จำนวนทั้งหมดแล้ว เพียงแต่ระบุให้ทราบว่ามีอยู่จำนวนเท่าไหร่ </Text>
+                                    <Text style={styles.textNote}>** {t("ride.remerk")}</Text>
                                 </View>
                             </View>
 
@@ -559,8 +528,8 @@ const getImageForSize = (size) => {
                         style={styles.radioButton}
                         />
                         <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                            <Text style={styles.timeText}> บริการยกของจัดเรียงชั้น1</Text>
-                            <Text style={styles.timeTextPrice}> 5บาท/ชิ้น</Text>
+                            <Text style={styles.timeText}>{t("ride.service1")}</Text>
+                            <Text style={styles.timeTextPrice}>{t("ride.service1Price")}</Text>
                         </View>
                     </TouchableOpacity>
                     </View>
@@ -574,15 +543,15 @@ const getImageForSize = (size) => {
                         style={styles.radioButton}
                         />
                         <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                            <Text style={styles.timeText}> บริการยกของจัดเรียงชั้น2</Text>
-                            <Text style={styles.timeTextPrice}> 15บาท/ชิ้น</Text>
+                            <Text style={styles.timeText}>{t("ride.service2")}</Text>
+                            <Text style={styles.timeTextPrice}>{t("ride.service2Price")}</Text>
                         </View>
                     </TouchableOpacity>
                     </View>
 
 
-                    <Text style={styles.remarkText}>*ยกของจัดเรียงชั้น2 1-20ชิ้น ราคาชิ้นละ15บาท</Text>
-                    <Text style={styles.remarkText}>*ราคายกของจัดเรียงขึ้นชั้น2 21ชิ้นขึ้นไป คิดราคาเหมา 300บาทค่ะ🫶🏻🫶🏻</Text>
+                    <Text style={styles.remarkText}>*{t("ride.serviceMark1")}</Text> 
+                    <Text style={styles.remarkText}>*{t("ride.serviceMark2")}🫶🏻🫶🏻</Text> 
 
                     </View>
 
@@ -592,29 +561,29 @@ const getImageForSize = (size) => {
                     
                     {selectedType.includes('วาฟเฟิล') && (
                         <View style={styles.priceBoxsub}>
-                            <Text style={styles.priceHeadsub}>จำนวนวาฟเฟิล</Text>
+                            <Text style={styles.priceHeadsub}>{t("ride.sumWaffle")}</Text>
                             <Text style={styles.priceSumsub}>{warb}</Text>
                         </View>
                     )}
                     {selectedType.includes('เครื่องจักร') && (
                         <View style={styles.priceBoxsub}>
-                            <Text style={styles.priceHeadsub}>จำนวนเครื่องจักร</Text>
+                            <Text style={styles.priceHeadsub}>{t("ride.sumMachine")}</Text>
                             <Text style={styles.priceSumsub}>{machinery}</Text>
                         </View>
                     )}
                     {weight && (
                         <View style={styles.priceBoxsub}>
-                            <Text style={styles.priceHeadsub}>จำนวนสินค้าทั้งหมด</Text>
+                            <Text style={styles.priceHeadsub}>{t("ride.totalProduct")}</Text> 
                             <Text style={styles.priceSumsub}>{weight}</Text>
                         </View>
                     )}
                     <View style={styles.priceBox}>
-                        <Text style={styles.priceHead}>รวมทั้งหมด</Text>
+                        <Text style={styles.priceHead}>{t("ride.totalPrice")}</Text> 
                         <Text style={styles.priceSum}>฿ {price.toFixed(2)}</Text>
                     </View>
                     <View style={styles.footer}>
-                        <TouchableOpacity style={styles.checkButton} onPress={handleCreate} disabled={loading}>
-                            <Text style={styles.checkButtonText}>กดใช้บริการ</Text>
+                        <TouchableOpacity style={styles.checkButton} onPress={handleCreate} disabled={loading}> 
+                            <Text style={styles.checkButtonText}>{t("ride.submitBtn")}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -881,7 +850,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Prompt_500Medium',
         marginTop: 0,
         marginLeft: 10,
-        fontSize: 16,
+        fontSize: 15,
     },
     linkText: {
         color: '#3498db',
@@ -898,6 +867,7 @@ const styles = StyleSheet.create({
         maxWidth: '80%',
     },
     helperText: {
+        paddingHorizontal: 10,
         marginTop: 15,
         fontSize: 14,
         color: 'gray',

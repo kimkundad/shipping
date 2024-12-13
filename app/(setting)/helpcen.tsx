@@ -12,6 +12,7 @@ import { Entypo } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../../hooks/api'; // Axios instance
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get('window');
 
@@ -20,6 +21,7 @@ const { width } = Dimensions.get('window');
 const Helpcen = () => {
 
     const [dataSetting, setDataSetting] = useState(null);
+    const { i18n, t } = useTranslation();
 
     const fetchData = async () => {
 
@@ -118,7 +120,7 @@ const Helpcen = () => {
 
                             <View style={styles.textListHead}>
                                 <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
-                                    ศูนย์ช่วยเหลือ
+                                {t("help.subHeader")}
                                 </Text>
                             </View>
 
@@ -141,23 +143,28 @@ const Helpcen = () => {
                             style={{ width: 360, height: 202, marginBottom: 10, borderRadius: 8 }} />
                             <View>
                                 <Text style={{ 
-                    color:Colors.black, fontSize:17, fontFamily: 'Prompt_500Medium', marginTop: 10, marginBottom: 20
+                    color:Colors.black, fontSize:15, textAlign: 'center',  fontFamily: 'Prompt_500Medium', marginTop: 10, marginBottom: 20
                     }}>
-                                    อยากให้เราช่วยเรื่องอะไร บอกมาได้เลย
+                                    {t("help.detail")}
                                 </Text>
                             </View>
                         </View>
                         
 
                         <View style={styles.textListHead2}>
-                                <View style={styles.profile}>
-                                    <View>
-                                        <Ionicons name="chatbox-ellipses-outline" size={24} color="black" />
+                        <TouchableOpacity  onPress={() => {
+                                    // handle onPress
+                                    router.push('(contact)/chat');
+                                    }}>
+                                    <View style={styles.profile}>
+                                        <View>
+                                            <Ionicons name="chatbox-ellipses-outline" size={24} color="black" />
+                                        </View>
+                                        <View>
+                                            <Text style={ styles.textSeting}> {t("help.chat")} </Text>
+                                        </View>
                                     </View>
-                                    <View>
-                                        <Text style={ styles.textSeting}> แชทพูดคุยกับเรา</Text>
-                                    </View>
-                                </View>
+                                </TouchableOpacity>
                                 
                             </View>
 
@@ -199,17 +206,7 @@ const Helpcen = () => {
                                 </TouchableOpacity>
                                 
                             </View>
-                            {/* <View style={styles.textListHead2}>
-                                <View style={styles.profile}>
-                                    <View>
-                                        <FontAwesome name="fax" size={24} color="black" />
-                                    </View>
-                                    <View>
-                                        <Text style={ styles.textSeting}> 064025xxxx</Text>
-                                    </View>
-                                </View>
-                                
-                            </View> */}
+                           
 
 
                         </View>

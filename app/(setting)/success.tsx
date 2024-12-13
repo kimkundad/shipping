@@ -4,8 +4,11 @@ import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-na
 import { AntDesign } from '@expo/vector-icons';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { Link, useNavigation, router } from 'expo-router';
+import { useTranslation } from "react-i18next";
 
 export default function Success() {
+  const { i18n, t } = useTranslation();
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.iconContainer}>
@@ -14,13 +17,13 @@ export default function Success() {
           <Path d="M17 8L10 15L7 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </Svg>
       </View>
-      <Text style={styles.title}>แจ้งชำระค่าบริการสำเร็จ!</Text>
-      <Text style={styles.subtitle}>เจ้าหน้าที่จะเร่งทำการตรวจสอบ คุณสามารถกดปุ่ม ยืนยันความสำเร็จ เพื่อกลับไปยังหน้าหลัก</Text>
+      <Text style={styles.title}>{t("pay.sucHead")}! </Text>
+      <Text style={styles.subtitle}>{t("pay.sucDetail")} </Text>
       <TouchableOpacity style={styles.button} onPress={() => {
                         // handle onPress
                         router.push('/(tabs)');
                         }}>
-        <Text style={styles.buttonText}>ยืนยันความสำเร็จ</Text>
+        <Text style={styles.buttonText}> {t("pay.btnBack")}</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

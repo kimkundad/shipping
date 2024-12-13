@@ -17,6 +17,7 @@ import {
   configureReanimatedLogger,
   ReanimatedLogLevel,
 } from 'react-native-reanimated';
+import { useTranslation } from "react-i18next";
 
 
 // This is the default configuration
@@ -44,6 +45,7 @@ export default function HomeScreen({ navigation }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [userOrders, setUserOrders] = useState(false);
   const [getPrice, setGetPrice] = useState(0);
+  const { i18n, t } = useTranslation();
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -178,7 +180,7 @@ export default function HomeScreen({ navigation }) {
                     <View style={styles.showflex}>
                       <Text style={{
                         color: Colors.white, fontSize: 14, fontFamily: 'Prompt_500Medium', fontWeight: 700, marginRight: 5
-                      }}>รหัส</Text>
+                      }}>{t("home.codeUser")}</Text>
                       <Text style={{
                         color: Colors.white, fontSize: 14, fontFamily: 'Prompt_400Regular',
                       }}>{userProfile.code_user}</Text>
@@ -219,7 +221,7 @@ export default function HomeScreen({ navigation }) {
                 color="black"
               />
               <TextInput
-                placeholder="Enter your tracking Number"
+                placeholder={t("home.trackingSearch")}
                 style={styles.TextInput}
                 value={searchInput}
                 onChangeText={setSearchInput}
@@ -295,7 +297,7 @@ export default function HomeScreen({ navigation }) {
             >
               <View style={styles.showflex2}>
                 <View>
-                  <Text style={styles.TextPay}>ยอดค่าใช้บริการ</Text>
+                  <Text style={styles.TextPay}>{t("home.pay")}</Text>
                   <Text style={styles.TextPaySum}>{getPrice?.toFixed(2)}</Text>
                 </View>
                 {getPrice === 0 ? (
@@ -305,7 +307,7 @@ export default function HomeScreen({ navigation }) {
                     }}
                   >
                     <View style={styles.btnPay}>
-                      <Text style={styles.btnTextPay}>ประวัติการชำระ</Text>
+                      <Text style={styles.btnTextPay}>{t("home.payHis")}</Text>
                     </View>
                   </TouchableOpacity>
                 ) : (
@@ -315,7 +317,7 @@ export default function HomeScreen({ navigation }) {
                     }}
                   >
                     <View style={styles.btnPay}>
-                      <Text style={styles.btnTextPay}>ชำระค่าบริการ</Text>
+                      <Text style={styles.btnTextPay}>{t("home.payBtn")}</Text>
                     </View>
                   </TouchableOpacity>
                 )}
@@ -336,7 +338,7 @@ export default function HomeScreen({ navigation }) {
                   <Image source={require('../../assets/images/box1.png')}
                     style={{ width: 55, height: 55 }} />
                 </View>
-                <Text style={{ fontSize: 13, marginTop: 5, fontFamily: 'Prompt_400Regular', }}>สาขา</Text>
+                <Text style={{ fontSize: 13, marginTop: 5, fontFamily: 'Prompt_400Regular', }}>{t("home.branch")}</Text>
               </View>
             </Link>
             <Link replace href="/(setting)/service">
@@ -345,7 +347,7 @@ export default function HomeScreen({ navigation }) {
                   <Image source={require('../../assets/images/box3.png')}
                     style={{ width: 55, height: 55 }} />
                 </View>
-                <Text style={{ fontSize: 12, marginTop: 5, fontFamily: 'Prompt_400Regular' }}>เรียกรถ</Text>
+                <Text style={{ fontSize: 12, marginTop: 5, fontFamily: 'Prompt_400Regular' }}>{t("home.ride")}</Text>
               </View>
             </Link>
             <Link replace href="/(holiday)">
@@ -354,7 +356,7 @@ export default function HomeScreen({ navigation }) {
                   <Image source={require('../../assets/images/box2.png')}
                     style={{ width: 55, height: 55 }} />
                 </View>
-                <Text style={{ fontSize: 12, marginTop: 5, fontFamily: 'Prompt_400Regular' }}>แจ้งวันหยุด</Text>
+                <Text style={{ fontSize: 12, marginTop: 5, fontFamily: 'Prompt_400Regular' }}>{t("home.holidays")}</Text>
               </View>
             </Link>
 
@@ -364,7 +366,7 @@ export default function HomeScreen({ navigation }) {
                   <Image source={require('../../assets/images/box4.png')}
                     style={{ width: 55, height: 55 }} />
                 </View>
-                <Text style={{ fontSize: 13, marginTop: 5, fontFamily: 'Prompt_400Regular', }}>ติดต่อเรา</Text>
+                <Text style={{ fontSize: 13, marginTop: 5, fontFamily: 'Prompt_400Regular', }}>{t("home.contact")}</Text>
               </View>
             </Link>
           </View>
@@ -374,7 +376,7 @@ export default function HomeScreen({ navigation }) {
           {/* list item */}
           <View style={styles.listItemCon}>
             <View style={styles.textListHead}>
-              <Text style={{ fontSize: 17, fontFamily: 'Prompt_500Medium' }}>ใช้บริการล่าสุด</Text>
+              <Text style={{ fontSize: 17, fontFamily: 'Prompt_500Medium' }}>{t("home.lasrService")}</Text>
             </View>
             <View>
 
@@ -389,8 +391,7 @@ export default function HomeScreen({ navigation }) {
                           pathname: '(setting)/tracking',
                           params: {
                             id: order.id,
-                            getLatitude: order.latitude2,
-                            getLongitude: order.longitude2
+                            dataOrder: JSON.stringify(order)
                           }, // ส่งพารามิเตอร์ id ของ order
                         });
                       }}>
@@ -403,19 +404,19 @@ export default function HomeScreen({ navigation }) {
                             </View>
                             <View >
                               <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 14 }}>#{order.code_order}</Text>
-                              <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>กำหนดส่ง : {order.dri_date}</Text>
+                              <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>{t("home.deadline")} : {order.dri_date}</Text>
                             </View>
                           </View>
                           <DeviveryStatus order={order} />
                         </View>
                         <View style={styles.textBoxDetail}>
                           <View style={styles.flexItem}>
-                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
+                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>{t("home.destination")}</Text>
                             <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13 }}>{order.province2}</Text>
                           </View>
                           <View style={styles.flexItem}>
-                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ค่าบรริการ</Text>
-                            <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13, color: '#f47524' }}>{order?.price?.toFixed(2)} บาท</Text>
+                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>{t("home.price")}</Text>
+                            <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13, color: '#f47524' }}>{order?.price?.toFixed(2)} {t("home.baht")}</Text>
                           </View>
                         </View>
                         {order?.order_status === 2 &&
@@ -424,11 +425,11 @@ export default function HomeScreen({ navigation }) {
     {order?.user_re_status === 0 ?
 (
                   <View style={styles.textBoxDetailbot}>
-                    <Text style={styles.textget}>รอการกดยืนยันรับสินค้า</Text>
+                    <Text style={styles.textget}>{t("home.wait_for_confirmation")}</Text>
                   </View>
 ):(
   <View style={styles.textBoxDetailbot}>
-                    <Text style={styles.textgetsuccess}>กดยืนยันรับสินค้าเสร็จแล้ว</Text>
+                    <Text style={styles.textgetsuccess}>{t("home.press_to_confirm")}</Text>
                   </View>
 )}
 
@@ -606,6 +607,7 @@ const styles = StyleSheet.create({
   TextInput: {
     flex: 1, // ใช้ flex 1 เพื่อให้ช่องป้อนข้อมูลขยายได้เต็มที่
     paddingHorizontal: 10, // เพิ่ม padding ภายใน TextInput
+    fontFamily: 'Prompt_400Regular',
   },
   searchBar: {
     marginTop: 15,

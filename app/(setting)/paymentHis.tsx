@@ -8,11 +8,13 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../../hooks/api'; // Axios instance
 import PayStatus from '../../components/PayStatus'
+import { useTranslation } from "react-i18next";
 
 const PaymentHis = () => {
 
     const [userPayment, setUserPayment] = useState(false);
     const [refreshing, setRefreshing] = useState(false); 
+    const { i18n, t } = useTranslation();
 
     const fetchOrders = async () => {
         try {
@@ -66,7 +68,7 @@ const PaymentHis = () => {
 
                             <View style={styles.textListHead}>
                                 <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
-                                    ประวัติการชำระ
+                                     {t("pay.hisTitle")}
                                 </Text>
                             </View>
 
@@ -93,8 +95,8 @@ const PaymentHis = () => {
                                             <MaterialIcons name="payment" size={25} style={styles.icon} />
                                             <View>
                                                 <PayStatus order={order} />
-                                                <Text style={styles.subText}>เลขที่แจ้งชำระ {order.code_payment}</Text>
-                                                <Text style={styles.subText}>แจ้งชำระวันที่ {order.date_payment} </Text>
+                                                <Text style={styles.subText}>{t("pay.hisNo")} {order.code_payment}</Text> 
+                                                <Text style={styles.subText}>{t("pay.hisDate")} {order.date_payment} </Text> 
                                             </View>
                                         </View>
 

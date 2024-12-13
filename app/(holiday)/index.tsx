@@ -6,6 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../../hooks/api'; // Axios instance
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get('window');
 
@@ -13,6 +14,7 @@ const { width } = Dimensions.get('window');
 const Holiday = () => {
 
     const [news, setNews] = useState(false);
+    const { i18n, t } = useTranslation();
 
     const fetchNews = async () => {
         try {
@@ -56,7 +58,7 @@ const Holiday = () => {
 
                             <View style={styles.textListHead}>
                                 <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
-                                แจ้งวันหยุด
+                                {t("home.holidays")}
                                 </Text>
                             </View>
 
@@ -82,7 +84,7 @@ const Holiday = () => {
                             </View>
                         ))
                     ) : (
-                        <Text style={{ fontSize: 17, fontFamily: 'Prompt_400Regular', marginBottom: 5 }}>กำลังโหลดข้อมูล...</Text>
+                        <Text style={{ fontSize: 17, fontFamily: 'Prompt_400Regular', marginBottom: 5 }}>{t("home.loading")}...</Text>
                     )}
                 </View>
                 </View>

@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import api from '../../hooks/api'; // Axios instance
 import { UserContext } from '../../hooks/UserContext';
 import * as ImagePicker from 'expo-image-picker';
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get('window');
 
@@ -21,6 +22,7 @@ const Payment = () => {
     const [refreshing, setRefreshing] = useState(false); // Track refresh state
     const [files, setFiles] = useState(null);
     const [selectedImageUri, setSelectedImageUri] = useState(null);
+    const { i18n, t } = useTranslation();
 
     const fetchOrders = async () => {
         try {
@@ -169,7 +171,7 @@ const Payment = () => {
 
                             <View style={styles.textListHead}>
                                 <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
-                                    ชำระค่าบริการ
+                                   {t("pay.head")}
                                 </Text>
                             </View>
 
@@ -211,8 +213,8 @@ const Payment = () => {
                 <View style={styles.container}>
                     {/* Content here */}
                     <View>
-                        <Text style={styles.infoText}>รหัสลูกค้า {userProfile?.code_user}</Text>
-                        <Text style={styles.infoText1}>ชื่อลูกค้า {userProfile?.name}</Text>
+                        <Text style={styles.infoText}>{t("home.codeUser")} {userProfile?.code_user}</Text>
+                        <Text style={styles.infoText1}>{t("pay.name")} : {userProfile?.name}</Text>
                     </View>
 
                     <View
@@ -221,7 +223,7 @@ const Payment = () => {
                     >
                         <View style={styles.showflex2}>
                             <View>
-                                <Text style={styles.TextPay}>ยอดค่าใช้บริการ</Text>
+                                <Text style={styles.TextPay}>{t("pay.sum")}</Text> 
 
                             </View>
 
@@ -241,9 +243,9 @@ const Payment = () => {
                                         <View style={styles.row}>
                                             <Ionicons name="checkmark-circle" size={24} color="black" style={styles.icon} />
                                             <View>
-                                                <Text style={styles.boldText}>กำหนดชำระ: {order?.payDate}</Text>
-                                                <Text style={styles.subText}>เลขที่ใบแจ้งค่าบริการ {order?.code_order}</Text>
-                                                <Text style={styles.subText}>ใช้บริการวันที่ {order?.useDate} </Text>
+                                                <Text style={styles.boldText}>{t("pay.limit")}: {order?.payDate}</Text> 
+                                                <Text style={styles.subText}>{t("pay.invo")} {order?.code_order}</Text>
+                                                <Text style={styles.subText}>{t("pay.date")} {order?.useDate} </Text> 
                                             </View>
                                         </View>
 
@@ -270,13 +272,13 @@ const Payment = () => {
 
                         {/* ข้อมูลบัญชี */}
                         <Text style={styles.infoText}>
-                            <Text style={styles.label}>ชื่อบัญชี: </Text>{getBank?.bankName}
+                            <Text style={styles.label}>{t("pay.bName")}: </Text>{getBank?.bankName} 
                         </Text>
                         <Text style={styles.infoText}>
-                            <Text style={styles.label}>เลขที่บัญชี: </Text>{getBank?.bankNo}
+                            <Text style={styles.label}>{t("pay.bAcc")}: </Text>{getBank?.bankNo} 
                         </Text>
                         <Text style={styles.infoText}>
-                            <Text style={styles.label}>ประเภท: </Text>{getBank?.bankType}
+                            <Text style={styles.label}>{t("pay.bType")}: </Text>{getBank?.bankType} 
                         </Text>
                     </View>
 
@@ -288,7 +290,7 @@ const Payment = () => {
                             source={selectedImageUri ? { uri: selectedImageUri } : require('../../assets/images/file.png')}
                             style={styles.iconfile}
                         />
-                        <Text style={styles.instruction}>คลิกเพื่อเลือกอัพโหลดสลิปการโอนเงิน</Text>
+                        <Text style={styles.instruction}>{t("pay.slipClick")}</Text> 
                         <View style={styles.buttonUp}>
                             <Text style={styles.buttonText}>Browse</Text>
                         </View>
@@ -296,12 +298,12 @@ const Payment = () => {
                     </TouchableOpacity>
 
 
-                    <Text style={styles.remark}>**อัพโหลดสลิปการโอนเงินของท่าน</Text>
+                    <Text style={styles.remark}>**{t("pay.remark")}</Text> 
 
                     <View style={styles.formAction}>
                         <TouchableOpacity onPress={handlePayment} disabled={loading}>
                             <View style={styles.btn}>
-                                <Text style={styles.btnText}>{loading ? 'กำลังแจ้งชำระค่าบริการ...' : 'แจ้งชำระค่าบริการ'}</Text>
+                                <Text style={styles.btnText}>{loading ? `${t("pay.btnPay1")}...` : `${t("pay.btnPay1")}`}</Text> 
                             </View>
                         </TouchableOpacity>
                     </View>
@@ -553,7 +555,7 @@ const styles = StyleSheet.create({
     infoText1: {
         color: 'black',
         fontFamily: 'Prompt_400Regular',
-        fontSize: 16
+        fontSize: 15
     },
     infoText: {
         color: 'black',

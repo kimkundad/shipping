@@ -11,7 +11,7 @@ import { Feather } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 import api from '../../hooks/api'; // Axios instance
-
+import { useTranslation } from "react-i18next";
 const { width } = Dimensions.get('window');
 
 
@@ -19,6 +19,7 @@ const { width } = Dimensions.get('window');
 const Helpcen = () => {
 
     const [dataSetting, setDataSetting] = useState(null);
+    const { i18n, t } = useTranslation();
 
     const fetchData = async () => {
 
@@ -95,8 +96,8 @@ const Helpcen = () => {
                 
                 <View style={{ alignItems: 'center' }}>
                 <View style={styles.headHelp}>
-                    <Text style={styles.smallHead}>Need Help?</Text>
-                    <Text style={styles.bigHead}>Help Ceneter</Text>
+                    <Text style={styles.smallHead}>{t("help.header")}</Text>
+                    <Text style={styles.bigHead}>{t("help.subHeader")}</Text>
                 </View>
                 </View>
 
@@ -110,9 +111,9 @@ const Helpcen = () => {
                             style={{ width: 360, height: 202 }} />
                             <View>
                                 <Text style={{ 
-                    color: '#666', fontSize:16,  lineHeight: 18, fontFamily: 'Prompt_500Medium', marginTop: 15, marginBottom: 20
+                    color: '#666', fontSize:15, textAlign: 'center',  lineHeight: 18, fontFamily: 'Prompt_500Medium', marginTop: 15, marginBottom: 20
                     }}>
-                                    Our Customer Service is available from Monday to Friday from 8 a.m. to 10 p.m.
+                                    {t("help.detail")}
                                 </Text>
                             </View>
                         </View>
@@ -120,15 +121,15 @@ const Helpcen = () => {
 
                         <View style={styles.textListHead2}>
                                 <TouchableOpacity  onPress={() => {
-                  // handle onPress
-                  router.push('(contact)/chat');
-                }}>
+                                    // handle onPress
+                                    router.push('(contact)/chat');
+                                    }}>
                                     <View style={styles.profile}>
                                         <View>
                                             <Ionicons name="chatbox-ellipses-outline" size={24} color="black" />
                                         </View>
                                         <View>
-                                            <Text style={ styles.textSeting}> แชทพูดคุยกับเรา </Text>
+                                            <Text style={ styles.textSeting}> {t("help.chat")} </Text>
                                         </View>
                                     </View>
                                 </TouchableOpacity>

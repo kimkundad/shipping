@@ -11,6 +11,7 @@ import axios from 'axios';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DeviveryStatus from '../../components/DeviveryStatus'
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get('window');
 
@@ -25,6 +26,7 @@ const Shop = () => {
     const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { i18n, t } = useTranslation();
 
 
   useEffect(() => {
@@ -92,7 +94,7 @@ const Shop = () => {
 
                             <View style={styles.textListHead}>
                                 <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
-                                สาขา{data?.name_branch}
+                                {data?.name_branch}
                                 </Text>
                             </View>
 
@@ -125,7 +127,7 @@ const Shop = () => {
                                             style={styles.userImage}
                                             source={{ uri: 'https://wpnrayong.com/admin/assets/media/avatars/300-12.jpg' }} />
                                         <View>
-                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 13, color: '#666' }}>ผู้ดูแลสาขา,</Text>
+                                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 13, color: '#666' }}>{t("branch.caretaker")},</Text>
                                             <View style={styles.showflex}>
                                                 <AntDesign name="star" size={22} color="#f47524" />
                                                 <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 15 }}>{data?.admin_branch}</Text>
@@ -136,7 +138,6 @@ const Shop = () => {
                                     <View style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
                                         
                                             <Feather name="phone" size={24} color="black" onPress={handlePress} />
-                                      
                                         
                                         <MaterialCommunityIcons name="tooltip-edit-outline" size={24} color="black" />
                                     </View>
@@ -147,15 +148,15 @@ const Shop = () => {
                                     <View style={{ display: 'flex', flexDirection: 'row', gap: 10, marginTop: 25, justifyContent: 'space-between', }}>
                                         <View>
                                             <Text style={styles.headMenu}>{data?.code_branch}</Text>
-                                            <Text style={styles.subHeadMenu}>หมายเลขสาขา</Text>
+                                            <Text style={styles.subHeadMenu}>{t("branch.code")}</Text>
                                         </View>
                                         <View>
                                             <Text style={styles.headMenu}>{data?.phone}</Text>
-                                            <Text style={styles.subHeadMenu}>เบอร์ติดต่อ</Text>
+                                            <Text style={styles.subHeadMenu}>{t("profile.phone")}</Text>
                                         </View>
                                         <View>
-                                            <Text style={styles.headMenu}>0 </Text>
-                                            <Text style={styles.subHeadMenu}>ยอดสั่งสินค้า</Text>
+                                            <Text style={styles.headMenu}>{data?.province} </Text>
+                                            <Text style={styles.subHeadMenu}>{t("branch.province")}</Text>
                                         </View>
                                     </View>
                                 </View>
@@ -164,11 +165,11 @@ const Shop = () => {
 
                             <View>
 
-                                <Text style={{ fontSize: 17, fontFamily: 'Prompt_400Regular', }}>รายการล่าสุด</Text>
+                                <Text style={{ fontSize: 14, fontFamily: 'Prompt_400Regular', }}>{t("home.lasrService")}</Text> 
 
 
 
-                                {data?.order && data?.order.length > 0 && (
+                                {/* {data?.order && data?.order.length > 0 && (
                                 <View>
                                     {data?.order.map(order => (
                               <TouchableOpacity
@@ -208,7 +209,70 @@ const Shop = () => {
                             </TouchableOpacity>
                                 ))}
                                 </View>
-                              )}
+                              )} */}
+
+
+
+{data && data?.order?.length > 0 && (
+                <View>
+                  {data?.order.map(order => (
+                    <TouchableOpacity
+                      key={order.id}
+                      onPress={() => {
+                        // handle onPress
+                        router.push({
+                          pathname: '(setting)/tracking',
+                          params: {
+                            id: order.id,
+                            dataOrder: JSON.stringify(order)
+                          }, // ส่งพารามิเตอร์ id ของ order
+                        });
+                      }}>
+                      <View style={styles.boxItemList}>
+                        <View style={styles.containerOrderMain}>
+                          <View style={styles.containerOrder}>
+                            <View >
+                              <Image source={require('../../assets/images/icon_truck.png')}
+                                style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
+                            </View>
+                            <View >
+                              <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 14 }}>#{order.code_order}</Text>
+                              <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>{t("home.deadline")} : {order.dri_date}</Text>
+                            </View>
+                          </View>
+                          <DeviveryStatus order={order} />
+                        </View>
+                        <View style={styles.textBoxDetail}>
+                          <View style={styles.flexItem}>
+                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>{t("home.destination")}</Text>
+                            <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13 }}>{order.province2}</Text>
+                          </View>
+                          <View style={styles.flexItem}>
+                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>{t("home.price")}</Text>
+                            <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13, color: '#f47524' }}>{order?.price?.toFixed(2)} {t("home.baht")}</Text>
+                          </View>
+                        </View>
+                        {order?.order_status === 2 &&
+(
+  <View>
+    {order?.user_re_status === 0 ?
+(
+                  <View style={styles.textBoxDetailbot}>
+                    <Text style={styles.textget}>{t("home.wait_for_confirmation")}</Text>
+                  </View>
+):(
+  <View style={styles.textBoxDetailbot}>
+                    <Text style={styles.textgetsuccess}>{t("home.press_to_confirm")}</Text>
+                  </View>
+)}
+
+                  </View>
+)}
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
 
 
                                

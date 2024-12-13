@@ -9,6 +9,7 @@ import api from '../../hooks/api'; // Axios instance
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../hooks/UserContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from "react-i18next";
 
 const Receipt = () => {
 
@@ -18,6 +19,7 @@ const Receipt = () => {
     const [data, setData] = useState(false);
     const [refreshing, setRefreshing] = useState(false); // Track refresh state
     const { userProfile, setUserProfile } = useContext(UserContext);
+    const { i18n, t } = useTranslation();
 
   const [form, setForm] = useState({
     Receiptname: '',
@@ -147,7 +149,7 @@ const Receipt = () => {
 
                             <View style={styles.textListHead}>
                                 <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
-                                  ข้อมูลใบเสร็จรับเงิน
+                                {t("setting.Receipt_information")}
                                 </Text>
                             </View>
 
@@ -168,18 +170,18 @@ const Receipt = () => {
               </View>
 
               <View style={styles.input}>
-                <Text style={styles.inputLabel}>ชื่อบริษัทหรือในนามบุคคล </Text>
+                <Text style={styles.inputLabel}>{t("receipt.Receiptname")} </Text>
                 <TextInput
                   clearButtonMode="while-editing"
                   onChangeText={Receiptname => setForm({ ...form, Receiptname })}
-                  placeholder="ชื่อ-นามสกุล"
+                  placeholder={t("receipt.Receiptname")}
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}
                   value={form.Receiptname} />
               </View>
 
               <View style={styles.input}>
-                <Text style={styles.inputLabel}>โทรศัพท์</Text>
+                <Text style={styles.inputLabel}>{t("receipt.Receiptphone")}</Text>
                 <TextInput
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -193,7 +195,7 @@ const Receipt = () => {
               </View>
 
               <View style={styles.input}>
-                <Text style={styles.inputLabel}>อีเมล (**ที่ใช้รับใบเสร็จ)</Text>
+                <Text style={styles.inputLabel}>{t("receipt.Receiptemail")} (**{t("receipt.ReceiptMark")})</Text>
                 <TextInput
                   clearButtonMode="while-editing"
                   onChangeText={Receiptemail => setForm({ ...form, Receiptemail })}
@@ -205,11 +207,11 @@ const Receipt = () => {
 
 
               <View style={styles.input}>
-                <Text style={styles.inputLabel}>ที่อยู่</Text>
+                <Text style={styles.inputLabel}>{t("receipt.Receiptaddress")}</Text>
                     <TextInput
                       clearButtonMode="while-editing"
                       onChangeText={Receiptaddress => setForm({ ...form, Receiptaddress })}
-                      placeholder="ระบุที่อยู่"
+                      placeholder={t("receipt.ReceiptaddressMark")}
                       placeholderTextColor="#6b7280"
                       style={[styles.inputControl, { height: 80 }]}
                       value={form.Receiptaddress}
@@ -219,7 +221,7 @@ const Receipt = () => {
 
 
                   <View style={styles.input}>
-                <Text style={styles.inputLabel}>เลขประจำตัวผู้เสียภาษี</Text>
+                <Text style={styles.inputLabel}>{t("receipt.ReceiptTax")}</Text>
                 <TextInput
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -235,7 +237,7 @@ const Receipt = () => {
               <View style={styles.formAction}>
               <TouchableOpacity onPress={handleUpdateProfile} disabled={loading}>
                 <View style={styles.btn}>
-                  <Text style={styles.btnText}>{loading ? 'Updating...' : 'Update'}</Text>
+                  <Text style={styles.btnText}>{loading ? ` ${t("profile.btn2")}...` : ` ${t("profile.btn")} `}</Text>
                 </View>
               </TouchableOpacity>
             </View>

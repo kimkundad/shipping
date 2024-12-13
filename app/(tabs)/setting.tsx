@@ -225,7 +225,7 @@ export default function Setting() {
                 <View style={styles.showflex}>
                   <Text style={{
                     color: Colors.black, fontSize: 14, fontFamily: 'Prompt_500Medium', fontWeight: 700, marginRight: 5
-                  }}>รหัสลูกค้า</Text>
+                  }}>{t("home.codeUser")}</Text>
                   <Text style={{
                     color: Colors.black, fontSize: 14, fontFamily: 'Prompt_400Regular',
                   }}>{userProfile?.code_user}</Text>
@@ -249,7 +249,7 @@ export default function Setting() {
                       <AntDesign name="user" size={20} color="black" />
                     </View>
                     <View>
-                      <Text style={styles.textSeting}>ข้อมูลส่วนตัว</Text>
+                      <Text style={styles.textSeting}>{t("setting.profile")}</Text>
                     </View>
                   </View>
                   <View>
@@ -269,7 +269,7 @@ export default function Setting() {
                       <Entypo name="documents" size={20} color="black" />
                     </View>
                     <View>
-                      <Text style={styles.textSeting}>ข้อมูลใบเสร็จรับเงิน</Text>
+                      <Text style={styles.textSeting}>{t("setting.Receipt_information")}</Text>
                     </View>
                   </View>
                   <View>
@@ -335,7 +335,7 @@ export default function Setting() {
                       <Feather name="phone" size={20} color="black" />
                     </View>
                     <View>
-                      <Text style={styles.textSeting}>Help Center</Text>
+                      <Text style={styles.textSeting}>{t("help.subHeader")}</Text>
                     </View>
                   </View>
                   <View>
@@ -376,7 +376,7 @@ export default function Setting() {
                         <MaterialIcons name="lock-outline" size={20} color="black" />
                       </View>
                       <View>
-                        <Text style={styles.textSeting}>privacy policy</Text>
+                        <Text style={styles.textSeting}>{t("setting.policy")}</Text>
                       </View>
                     </View>
                     <View>
@@ -397,7 +397,7 @@ export default function Setting() {
                       <Feather name="info" size={20} color="black" />
                     </View>
                     <View>
-                      <Text style={styles.textSeting}>About Us</Text>
+                      <Text style={styles.textSeting}>{t("setting.about")}</Text>
                     </View>
                   </View>
                   <View>
@@ -406,25 +406,10 @@ export default function Setting() {
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={() => {
-                  // handle onPress
-                  router.push('(setting)/test');
-                }}>
-                <View style={styles.textListHead2}>
-                  <View style={styles.profile}>
-                    <View>
-                      <Feather name="info" size={20} color="black" />
-                    </View>
-                    <View>
-                      <Text style={styles.textSeting}>test Us</Text>
-                    </View>
-                  </View>
-                  <View>
-                    <Feather name="chevron-right" size={24} color="black" />
-                  </View>
-                </View>
-              </TouchableOpacity>
+
+              
+
+
               {/* <TouchableOpacity
                 onPress={() => {
                   // handle onPress
@@ -475,7 +460,7 @@ export default function Setting() {
                       <AntDesign name="logout" size={20} color="#dc3545" />
                     </View>
                     <View>
-                      <Text style={styles.textSeting3}>Logout</Text>
+                      <Text style={styles.textSeting3}>{t("setting.Logout")}</Text>
                     </View>
                   </View>
                   <View>

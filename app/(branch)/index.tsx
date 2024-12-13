@@ -10,6 +10,7 @@ import axios from 'axios';
 import api from '../../hooks/api'; // Axios instance
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from "react-i18next";
 
 const POLL_INTERVAL = 555000; // Poll every 5 seconds
 const { width } = Dimensions.get('window');
@@ -17,6 +18,7 @@ const { width } = Dimensions.get('window');
 const Index = () => {
 
     const { userBranch, setUserBranch } = useContext(UserContext);
+    const { i18n, t } = useTranslation();
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -61,7 +63,7 @@ const Index = () => {
 
                             <View style={styles.textListHead}>
                                 <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
-                                จัดการสาขา
+                                {t("branch.title")}
                                 </Text>
                             </View>
 
@@ -100,13 +102,13 @@ const Index = () => {
                                                 </View>
                                                 <View>
                                                     <Text style={styles.serviceText}>{brach.name_branch}</Text>
-                                                    <Text style={styles.locationText}>{brach.province}</Text>
+                                                    <Text style={styles.locationText}>{t("branch.province")} : {brach.province}</Text>
                                                 </View>
                                             </View>
 
 
                                                 <View style={styles.rightSection}>
-                                                    <Text style={styles.dateText}> ผู้ดูแล</Text>
+                                                    <Text style={styles.dateText}> {t("branch.caretaker")}</Text>
                                                     <Text style={styles.nameText}>{brach.admin_branch}</Text>
                                                 </View>
                                                 
@@ -141,7 +143,7 @@ const Index = () => {
                                             <Ionicons style={styles.iconAdd} name="add-circle-outline" size={22} color="black" />
                                         </View>
                                         <View>
-                                            <Text style={{ fontSize: 15, color: '#f47524', fontFamily: 'Prompt_400Regular', }}>เพิ่มสาขาใหม่</Text>
+                                            <Text style={{ fontSize: 15, color: '#f47524', fontFamily: 'Prompt_400Regular', }}>{t("branch.addBtn")}</Text>
                                         </View>
                                     </View>
 

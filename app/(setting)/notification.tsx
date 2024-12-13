@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { StatusBar } from 'expo-status-bar';
 import { Feather } from '@expo/vector-icons';
 import api from '../../hooks/api'; // Axios instance
-
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get('window');
 
@@ -14,6 +14,7 @@ const Notification = () => {
 
     const router = useRouter();
     const [dataNoti, setDataNoti] = useState(null);
+    const { i18n, t } = useTranslation();
 
     const fetchData = async () => {
 
@@ -49,7 +50,7 @@ const Notification = () => {
                             
                             </TouchableOpacity>
                         <View style={styles.textListHead} >
-                            <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium' }}>การแจ้งเตือน</Text>
+                            <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium' }}> {t("home.headNoti")} </Text>
                         </View>
                         <View style={{ width: 50 }}></View>
                     </View>
@@ -63,7 +64,7 @@ const Notification = () => {
                             <View style={styles.showflex}>
                             <Ionicons name="notifications-outline" size={22} color="white" />
                             <View style={{ flex: 1, justifyContent: 'center',  }}>
-                                <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'Prompt_400Regular' }}> การแจ้งเตือนและข่าวสาร</Text>
+                                <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'Prompt_400Regular' }}> {t("home.NotiTitle")} </Text> 
                             </View>
                                 
                             </View>
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
       },
     textStatus: {
         backgroundColor: '#f47524',
-        width: 230,
+        width: 250,
         borderRadius: 99,
         padding: 6,
         paddingHorizontal: 8,

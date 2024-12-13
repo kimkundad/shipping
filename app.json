@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "shipping-app",
+    "name": "LoadMaster",
     "slug": "shipping-app",
-    "version": "1.0.0",
+    "version": "2.0.0", 
     "newArchEnabled": true,
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -21,6 +21,7 @@
         "NSDocumentDirectoryUsageDescription": "This app needs access to your documents to store PDFs."
       },
       "bundleIdentifier": "com.shippingapp",
+      "buildNumber": "2",
       "config": {
         "googleMapsApiKey": "AIzaSyCsgTpv6fjOh2YRd1X0N92QdIV76A0gPX0"
       }
@@ -38,6 +39,7 @@
         "ACCESS_COARSE_LOCATION"
       ],
       "package": "com.shippingapp",
+      "versionCode": 2,
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyDCv_atMLlGFWZYYWS-2uElJeq1_hdFgRo"

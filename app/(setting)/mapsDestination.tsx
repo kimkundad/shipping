@@ -9,6 +9,7 @@ import { Stack, router } from 'expo-router';
 import provinceData from '../../assets/raw/raw_database.json';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { useTranslation } from "react-i18next";
 
 type LocationType = {
   latitude: number;
@@ -47,6 +48,7 @@ export default function MapsDestination() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const { i18n, t } = useTranslation();
 
   const GOOGLE_API_KEY =
   Platform.OS === 'ios'
@@ -312,7 +314,7 @@ export default function MapsDestination() {
         style={styles.searchButton}
         onPress={() => setIsModalVisible(true)}
       >
-        <Text style={styles.searchButtonText}>ค้นหาสถานที่</Text>
+        <Text style={styles.searchButtonText}>{t("branch.findMap")}</Text>
       </TouchableOpacity>
 
              
@@ -329,7 +331,7 @@ export default function MapsDestination() {
             <View style={styles.modalContent}>
               {/* Input สำหรับการค้นหา */}
               <TextInput
-                placeholder="ค้นหาสถานที่"
+                placeholder={t("branch.findMap")}
                 value={query}
                 onChangeText={searchPlaces}
                 style={styles.inputControl}
@@ -365,7 +367,7 @@ export default function MapsDestination() {
                   <TextInput
                     clearButtonMode="while-editing"
                     onChangeText={adddress2 => setForm({ ...form, adddress2 })}
-                    placeholder="ระบุบ้านเลขที่"
+                    placeholder={t("receipt.ReceiptaddressMark")}
                     placeholderTextColor="#6b7280"
                     style={[styles.inputControl, { height: 80 }]}
                     value={form.adddress2}
@@ -377,7 +379,7 @@ export default function MapsDestination() {
                   <TextInput
                     clearButtonMode="while-editing"
                     onChangeText={name2 => setForm({ ...form, name2 })}
-                    placeholder="ชื่อ"
+                    placeholder={t("branch.name")}
                     placeholderTextColor="#6b7280"
                     style={styles.inputControl}
                     value={form.name2}
@@ -388,7 +390,7 @@ export default function MapsDestination() {
                   <TextInput
                     clearButtonMode="while-editing"
                     onChangeText={phone2 => setForm({ ...form, phone2 })}
-                    placeholder="เบอร์โทรศัพท์"
+                    placeholder={t("profile.phone")}
                     placeholderTextColor="#6b7280"
                     style={styles.inputControl}
                     value={form.phone2}
@@ -399,8 +401,8 @@ export default function MapsDestination() {
                   <TextInput
                     clearButtonMode="while-editing"
                     onChangeText={remark2 => setForm({ ...form, remark2 })}
-                    placeholder="หมายเหตุถึงคนขับรถ"
-                    placeholderTextColor="#6b7280"
+                    placeholder={t("branch.remarkDri")}
+                    placeholderTextColor="#6b7280" 
                     style={styles.inputControl}
                     value={form.remark2}
                   />
@@ -444,7 +446,7 @@ export default function MapsDestination() {
                   });
                 }}
               >
-                <Text style={styles.greenButtonText}>เลือกจุดหมายปลายทางนี้</Text>
+                <Text style={styles.greenButtonText}>{t("branch.btnF")}</Text>
               </TouchableOpacity>
             </View>
           )}

@@ -1,15 +1,19 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from "react-i18next";
 
 const PayStatus = ({ order }) => {
+
+  const { i18n, t } = useTranslation();
+
   const renderStatus = () => {
     switch (order?.status) {
       case 1:
         return (
-            <Text style={styles.textStatus2}>ชำระเงินสำเร็จ</Text>
+            <Text style={styles.textStatus2}>{t("pay.hisPaySuccess")}</Text> 
         );
       default:
         return (
-            <Text style={styles.textStatus}>กำลังตรวจสอบ</Text>
+            <Text style={styles.textStatus}>{t("pay.hisPayChecking")}</Text> 
         );
     }
   };
@@ -21,12 +25,13 @@ const PayStatus = ({ order }) => {
   );
 };
 
+
 export default PayStatus;
 
 const styles = {
   textStatus: {
     color: '#f47524',
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Prompt_500Medium',
   },
   textStatus2: {

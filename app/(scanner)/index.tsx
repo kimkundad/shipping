@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import * as ImagePicker from 'expo-image-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import api from '../../hooks/api'; // เพิ่ม api instance สำหรับเรียก API
+import { useTranslation } from "react-i18next";
 
 export default function Home() {
   const qrLock = useRef(false);
@@ -25,6 +26,7 @@ export default function Home() {
   const [qrData, setQRData] = useState(null);
   const router = useRouter(); 
   const intervalId = useRef(null); // ใช้ Ref เพื่อเก็บ interval id
+  const { i18n, t } = useTranslation();
 
   useEffect(() => {
     return () => {
@@ -111,13 +113,12 @@ export default function Home() {
       {/* แสดงกล้อง */}
       {selectedImage === null ? (
         <CameraView
-        style={StyleSheet.absoluteFillObject}
+        style={[StyleSheet.absoluteFill, { flex: 1 }]}
         facing="back"
         onBarcodeScanned={({ data }) => {
           if (data && !qrLock.current) {
             qrLock.current = true; // ล็อกการสแกนไม่ให้ทำงานซ้ำ
             setTimeout(async () => {
-              console.log('scanner', data);
               checkQRCode(data); // ตรวจสอบ QR code หลังจากสแกนได้
             }, 200);
           }
@@ -135,10 +136,10 @@ export default function Home() {
       <View style={styles.bottomBar}>
         <View style={styles.bottomBarstyle}>
           <TouchableOpacity style={styles.galleryButton} onPress={() => router.push('(tabs)')}>
-            <Text style={styles.buttonText}>กลับ</Text>
+            <Text style={styles.buttonText}>{t("home.back")}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.galleryButton} onPress={pickImage}>
-            <Text style={styles.buttonText}>เลือกจากเครื่อง</Text>
+            <Text style={styles.buttonText}>{t("home.file")}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -167,19 +168,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  listItemCon: {
-    paddingTop: 40,
-    paddingHorizontal: 0,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 1,
-    elevation: 10,
-  },
+  
   image: {
     width: '100%',
     height: '100%',

@@ -10,6 +10,7 @@ import api from '../../hooks/api'; // Axios instance
 import provinceData from '../../assets/raw/raw_database.json';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { useTranslation } from "react-i18next";
 
 type LocationType = {
   latitude: number;
@@ -50,6 +51,7 @@ export default function CreateBranch() {
   const mapRef = useRef(null); // ใช้สำหรับ MapView
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
+  const { i18n, t } = useTranslation();
 
   const pinImage = require('../../assets/images/pin_app.png');
   
@@ -370,7 +372,7 @@ export default function CreateBranch() {
 
                 <View style={styles.input}>
                   <TextInput
-        placeholder="ค้นหาสถานที่"
+        placeholder={t("branch.findMap")}
         value={query}
         onChangeText={searchPlaces}
         style={[styles.inputControl]}
@@ -393,7 +395,7 @@ export default function CreateBranch() {
                     <TextInput
                       clearButtonMode="while-editing"
                       onChangeText={address => setForm({ ...form, address })}
-                      placeholder="ระบุที่อยู่"
+                      placeholder={t("receipt.ReceiptaddressMark")}
                       placeholderTextColor="#6b7280"
                       style={[styles.inputControl, { height: 80 }]}
                       value={form.address}
@@ -407,7 +409,7 @@ export default function CreateBranch() {
                     <TextInput
                       clearButtonMode="while-editing"
                       onChangeText={name => setForm({ ...form, name })}
-                      placeholder="ชื่อสาขา"
+                      placeholder={t("branch.branch_name")}
                       placeholderTextColor="#6b7280"
                       style={styles.inputControl}
                       value={form.name}
@@ -418,7 +420,7 @@ export default function CreateBranch() {
                     <TextInput
                       clearButtonMode="while-editing"
                       onChangeText={code => setForm({ ...form, code })}
-                      placeholder="รหัสสาขา"
+                      placeholder={t("branch.code")}
                       placeholderTextColor="#6b7280"
                       style={styles.inputControl}
                       value={form.code}
@@ -429,7 +431,7 @@ export default function CreateBranch() {
                     <TextInput
                       clearButtonMode="while-editing"
                       onChangeText={admin_branch => setForm({ ...form, admin_branch })}
-                      placeholder="ชื่อเจ้าหน้าที่รับของ"
+                      placeholder={t("branch.receiving")}
                       placeholderTextColor="#6b7280"
                       style={styles.inputControl}
                       value={form.admin_branch}
@@ -440,7 +442,7 @@ export default function CreateBranch() {
                     <TextInput
                       clearButtonMode="while-editing"
                       onChangeText={timer => setForm({ ...form, timer })}
-                      placeholder="ช่วงเวลาส่งของ 09.00 - 17.00"
+                      placeholder={t("branch.time")}
                       placeholderTextColor="#6b7280"
                       style={styles.inputControl}
                       value={form.timer}
@@ -454,7 +456,7 @@ export default function CreateBranch() {
                       clearButtonMode="while-editing"
                       keyboardType="number-pad"
                       onChangeText={phone => setForm({ ...form, phone })}
-                      placeholder="เบอร์ติดต่อ 09578512xxx"
+                      placeholder={t("profile.phone")}
                       placeholderTextColor="#6b7280"
                       style={styles.inputControl}
                       value={form.phone}
@@ -481,7 +483,7 @@ export default function CreateBranch() {
                   onPress={handleCreate}
                   disabled={loading}
                 >
-                  <Text style={styles.greenButtonText}>สร้างสาขา</Text>
+                  <Text style={styles.greenButtonText}>{t("branch.createBtn")}</Text>
                 </TouchableOpacity>
               </View>
             )}

@@ -10,11 +10,13 @@ import { UserContext } from '../../hooks/UserContext';
 import axios from 'axios';
 import api from '../../hooks/api'; // Axios instance
 import DeviveryStatus from '../../components/DeviveryStatus'
+import { useTranslation } from "react-i18next";
 
 export default function History() {
 
   const { userOrders, setUserOrders } = useContext(UserContext);
   const [refreshing, setRefreshing] = useState(false); // Track refresh state
+  const { i18n, t } = useTranslation();
 
   const fetchOrders = async () => {
     try {
@@ -54,8 +56,8 @@ export default function History() {
         
       <View style={{ alignItems: 'center' }}>
                 <View style={styles.headHelp}>
-                    <Text style={styles.bigHead}>Activity</Text>
-                    <Text style={styles.smallHead}>Always tracking your order</Text>
+                    <Text style={styles.bigHead}>{t("explore.activity")}</Text>
+                    <Text style={styles.smallHead}>{t("explore.articlesLinkText")}</Text>
                 </View>
                 </View>
 
@@ -64,62 +66,65 @@ export default function History() {
           
        
         {userOrders && userOrders.length > 0 && (
-              <View>
-                {userOrders.map(order => (
-                  <TouchableOpacity
-                  key={order.id}
-                  onPress={() => {
-                    // handle onPress
-                    router.push({
-                      pathname: '(setting)/tracking',
-                      params: { id: order.id }, // ส่งพารามิเตอร์ id ของ order
-                    });
-                  }}>
-                <View  style={styles.boxItemList}>
-                  <View style={styles.containerOrderMain}>
-                    <View style={styles.containerOrder}>
-                      <View >
-                        <Image source={require('../../assets/images/icon_truck.png')}
-                          style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
-                      </View>
-                      <View >
-                        <Text style={{ fontWeight: 700, fontSize: 16 }}>#{order.code_order}</Text>
-                        <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>{order.dri_time}</Text>
-                      </View>
-                    </View>
-                    <DeviveryStatus order={order} />
-                  </View>
-                  <View style={styles.textBoxDetail}>
-                    <View style={styles.flexItem}>
-                      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ปลายทาง</Text>
-                      <Text style={{ fontWeight: 700, fontSize: 13 }}>{order.b_name}</Text>
-                    </View>
-                    <View style={styles.flexItem}>
-                      <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>ค่าบรริการ</Text>
-                      <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13, color: '#f47524' }}>{order.price.toFixed(2)} บาท</Text>
-                    </View>
-                  </View>
-                  {order?.order_status === 2 &&
+                <View>
+                  {userOrders.map(order => (
+                    <TouchableOpacity
+                      key={order.id}
+                      onPress={() => {
+                        // handle onPress
+                        router.push({
+                          pathname: '(setting)/tracking',
+                          params: {
+                            id: order.id,
+                            dataOrder: JSON.stringify(order)
+                          }, // ส่งพารามิเตอร์ id ของ order
+                        });
+                      }}>
+                      <View style={styles.boxItemList}>
+                        <View style={styles.containerOrderMain}>
+                          <View style={styles.containerOrder}>
+                            <View >
+                              <Image source={require('../../assets/images/icon_truck.png')}
+                                style={{ width: 40, height: 40, gap: 10, marginRight: 8 }} />
+                            </View>
+                            <View >
+                              <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 14 }}>#{order.code_order}</Text>
+                              <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666', marginTop: 0 }}>{t("home.deadline")} : {order.dri_date}</Text>
+                            </View>
+                          </View>
+                          <DeviveryStatus order={order} />
+                        </View>
+                        <View style={styles.textBoxDetail}>
+                          <View style={styles.flexItem}>
+                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>{t("home.destination")}</Text>
+                            <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13 }}>{order.province2}</Text>
+                          </View>
+                          <View style={styles.flexItem}>
+                            <Text style={{ fontFamily: 'Prompt_400Regular', fontSize: 12, color: '#666' }}>{t("home.price")}</Text>
+                            <Text style={{ fontFamily: 'Prompt_500Medium', fontSize: 13, color: '#f47524' }}>{order?.price?.toFixed(2)} {t("home.baht")}</Text>
+                          </View>
+                        </View>
+                        {order?.order_status === 2 &&
 (
   <View>
     {order?.user_re_status === 0 ?
 (
                   <View style={styles.textBoxDetailbot}>
-                    <Text style={styles.textget}>รอการกดยืนยันรับสินค้า</Text>
+                    <Text style={styles.textget}>{t("home.wait_for_confirmation")}</Text>
                   </View>
 ):(
   <View style={styles.textBoxDetailbot}>
-                    <Text style={styles.textgetsuccess}>กดยืนยันรับสินค้าเสร็จแล้ว</Text>
+                    <Text style={styles.textgetsuccess}>{t("home.press_to_confirm")}</Text>
                   </View>
 )}
 
                   </View>
 )}
+                      </View>
+                    </TouchableOpacity>
+                  ))}
                 </View>
-                </TouchableOpacity>
-                ))}
-              </View>
-            )}
+              )}
           
 
         </View>

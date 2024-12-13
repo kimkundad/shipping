@@ -1,36 +1,42 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from "react-i18next";
+
+
 
 const DeviveryStatus = ({ order }) => {
+
+  const { i18n, t } = useTranslation();
+
   const renderStatus = () => {
     switch (order?.order_status) {
       case 1:
         return (
           <View style={styles.textStatus}>
-            <Text style={{ color: '#fff', fontSize: 12 }}>On Delivery</Text>
+            <Text style={{ color: '#fff', fontSize: 12 }}>{t("home.on_Delivery")}</Text>
           </View>
         );
       case 2:
         return (
           <View style={styles.textStatus2}>
-            <Text style={{ color: '#fff', fontSize: 12 }}>Success</Text>
+            <Text style={{ color: '#fff', fontSize: 12 }}>{t("home.success")}</Text>
           </View>
         );
       case 3:
         return (
           <View style={styles.textStatus3}>
-            <Text style={{ color: '#fff', fontSize: 12 }}>Accident</Text>
+            <Text style={{ color: '#fff', fontSize: 12 }}>{t("home.accident")}</Text>
           </View>
         );
         case 4:
         return (
           <View style={styles.textStatus3}>
-            <Text style={{ color: '#fff', fontSize: 12 }}>ยกเลิก</Text>
+            <Text style={{ color: '#fff', fontSize: 12 }}>{t("home.cancel")}</Text>
           </View>
         );
       default:
         return (
           <View style={styles.textStatusDefault}>
-            <Text style={{ color: '#fff', fontSize: 12 }}>รอดำเนินการ</Text>
+            <Text style={{ color: '#fff', fontSize: 12 }}>{t("home.onprocess")}</Text>
           </View>
         );
     }

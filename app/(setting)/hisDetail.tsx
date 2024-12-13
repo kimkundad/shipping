@@ -9,6 +9,7 @@ import api from '../../hooks/api'; // Axios instance
 import { UserContext } from '../../hooks/UserContext';
 import { StatusBar } from 'expo-status-bar';
 import PayStatus from '../../components/PayStatus'
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get('window');
 const paddingHorizontal = 20;
@@ -27,6 +28,7 @@ const hisDetail = () => {
     const [refreshing, setRefreshing] = useState(false); // Track refresh state
     const [files, setFiles] = useState(null);
     const [selectedImageUri, setSelectedImageUri] = useState(null);
+    const { i18n, t } = useTranslation();
 
     const fetchOrders = async () => {
         try {
@@ -80,7 +82,7 @@ const hisDetail = () => {
 
                             <View style={styles.textListHead}>
                                 <Text style={{ fontSize: 18, fontFamily: 'Prompt_500Medium', color: '#fff', textAlign: 'center' }}>
-                                    ประวัติการชำระ
+                                     {t("home.payHis")}
                                 </Text>
                             </View>
 
@@ -101,8 +103,8 @@ const hisDetail = () => {
                                         alignItems: 'center' }}>
                         <PayStatus order={payData} />
                         </View>
-                        <Text style={styles.infoText}>วันที่แจ้งชำระ #{payData?.date_payment}</Text>
-                        <Text style={styles.infoText1}>เลขที่แจ้งชำระ #{payData?.code_payment}</Text>
+                        <Text style={styles.infoText}>{t("pay.hisDate")} #{payData?.date_payment}</Text>
+                        <Text style={styles.infoText1}>{t("pay.hisNo")} #{payData?.code_payment}</Text>
                     </View>
 
                     <View
@@ -111,7 +113,7 @@ const hisDetail = () => {
                     >
                         <View style={styles.showflex2}>
                             <View>
-                                <Text style={styles.TextPay}>ยอดค่าใช้บริการ</Text>
+                                <Text style={styles.TextPay}>{t("home.pay")}</Text>
 
                             </View>
 
@@ -131,9 +133,9 @@ const hisDetail = () => {
                                         <View style={styles.row}>
                                             <Ionicons name="checkmark-circle" size={24} color="black" style={styles.icon} />
                                             <View>
-                                                <Text style={styles.boldText}>กำหนดชำระ: {order?.payDate}</Text>
-                                                <Text style={styles.subText}>เลขที่ใบแจ้งค่าบริการ {order?.code_order}</Text>
-                                                <Text style={styles.subText}>ใช้บริการวันที่ {order?.useDate} </Text>
+                                                <Text style={styles.boldText}>{t("pay.limit")}: {order?.payDate}</Text>
+                                                <Text style={styles.subText}>{t("pay.invo")} {order?.code_order}</Text>
+                                                <Text style={styles.subText}>{t("pay.date")} {order?.useDate} </Text>
                                             </View>
                                         </View>
 
@@ -158,13 +160,13 @@ const hisDetail = () => {
 
                         {/* ข้อมูลบัญชี */}
                         <Text style={styles.infoText}>
-                            <Text style={styles.label}>ชื่อบัญชี: </Text>{getBank?.bankName}
+                            <Text style={styles.label}>{t("pay.bName")}: </Text>{getBank?.bankName}
                         </Text>
                         <Text style={styles.infoText}>
-                            <Text style={styles.label}>เลขที่บัญชี: </Text>{getBank?.bankNo}
+                            <Text style={styles.label}>{t("pay.bAcc")}: </Text>{getBank?.bankNo}
                         </Text>
                         <Text style={styles.infoText}>
-                            <Text style={styles.label}>ประเภท: </Text>{getBank?.bankType}
+                            <Text style={styles.label}>{t("pay.bType")}: </Text>{getBank?.bankType}
                         </Text>
                     </View>
 

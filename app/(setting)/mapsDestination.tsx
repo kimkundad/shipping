@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, Modal, ScrollView, Alert, ActivityIndicator, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import * as Location from 'expo-location';
-import MapView, { Marker, Circle } from 'react-native-maps';
+import MapView, { Marker, Circle, PROVIDER_GOOGLE  } from 'react-native-maps';
 import { useNavigation, useRoute } from '@react-navigation/native'; 
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons, MaterialIcons, EvilIcons  } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import provinceData from '../../assets/raw/raw_database.json';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { useTranslation } from "react-i18next";
 
 type LocationType = {
@@ -49,12 +48,11 @@ export default function MapsDestination() {
   const [results, setResults] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { i18n, t } = useTranslation();
+  const [logapi, setLogapi] = useState('');
+  
 
   const GOOGLE_API_KEY =
-  Platform.OS === 'ios'
-    ? Constants.expoConfig?.ios?.config?.googleMapsApiKey
-    : Constants.expoConfig?.android?.config?.googleMaps?.apiKey;
-
+  Platform.OS === 'ios' ? process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_IOS : process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_ANDROID;
 
   const pinImage = require('../../assets/images/pin_app.png');
 
@@ -69,7 +67,7 @@ export default function MapsDestination() {
   useEffect(() => {
     (async () => {
 
-      console.log('GOOGLE_API_KEY', GOOGLE_API_KEY)
+      console.log('EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_ANDROID', process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_ANDROID)
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission Denied', 'Permission to access location was denied');
@@ -169,6 +167,7 @@ export default function MapsDestination() {
         }
       );
       console.log('searchPlaces', response)
+      setLogapi(response?.data);
       setResults(response.data.predictions); // เก็บผลลัพธ์การค้นหา
     } else {
       setResults([]); // หากข้อความสั้นเกินไป ให้ล้างผลลัพธ์
@@ -186,6 +185,8 @@ export default function MapsDestination() {
           },
         }
       );
+
+      
 
       setIsModalVisible(false); // ปิด Modal หลังจากเลือกสถานที่
 
@@ -231,6 +232,8 @@ export default function MapsDestination() {
           adddress2: description,
         }));
         setResults([]);
+
+        
       }
     } catch (error) {
       console.error('Error fetching place details:', error);
@@ -268,6 +271,7 @@ export default function MapsDestination() {
 
           {location ? (
             <MapView
+              provider={PROVIDER_GOOGLE}
               ref={mapRef} // อ้างอิงถึง MapView
               style={styles.map}
               initialRegion={location}
@@ -375,6 +379,25 @@ export default function MapsDestination() {
                   />
                 </View>
 
+                {/* <ScrollView style={{ flex: 1, padding: 10 }}>
+
+  <View style={{ marginBottom: 20 }}>
+    <Text style={{ fontWeight: 'bold', marginBottom: 10 }}>Raw Response:</Text>
+    <ScrollView
+      style={{
+        maxHeight: 300, 
+        borderWidth: 1,
+        borderColor: '#ccc',
+        padding: 10,
+        borderRadius: 5,
+      }}
+    >
+      <Text>{JSON.stringify(logapi, null, 2)}</Text>
+    </ScrollView>
+  </View>
+
+</ScrollView> */}
+
                 <View style={styles.input}>
                   <TextInput
                     clearButtonMode="while-editing"
@@ -446,7 +469,7 @@ export default function MapsDestination() {
                   });
                 }}
               >
-                <Text style={styles.greenButtonText}>{t("branch.btnF")}</Text>
+                <Text style={styles.greenButtonText}>{t("branch.btnF")} </Text>
               </TouchableOpacity>
             </View>
           )}

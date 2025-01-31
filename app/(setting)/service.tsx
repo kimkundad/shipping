@@ -295,7 +295,7 @@ const getImageForSize = (size) => {
 
     return (
         <>
-       <KeyboardAvoidingView
+       <View
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
@@ -590,7 +590,7 @@ const getImageForSize = (size) => {
             </View>
             </ScrollView>
       </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+    </View>
         </>
     );
 }

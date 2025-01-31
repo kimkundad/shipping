@@ -125,7 +125,7 @@
       "name": "First name and last name",
       "phone": "Phone number",
       "email": "Email",
-      "btn": "ํUpdate",
+      "btn": "Update",
       "btn2": "Updating"
     },
     "receipt": {
@@ -192,3 +192,4 @@
 ]
   }
   }
+  

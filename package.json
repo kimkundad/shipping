@@ -60,6 +60,7 @@
     "react-native-autocomplete-input": "^5.4.0",
     "react-native-beautiful-timeline": "^1.0.1",
     "react-native-canvas": "^0.1.40",
+    "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "~2.20.2",
     "react-native-gifted-chat": "^2.6.4",
     "react-native-google-places-autocomplete": "^2.5.7",

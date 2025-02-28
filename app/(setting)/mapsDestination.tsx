@@ -166,7 +166,7 @@ export default function MapsDestination() {
           },
         }
       );
-      console.log('searchPlaces', response)
+      console.log('response.data.predictions', response.data.predictions)
       setLogapi(response?.data);
       setResults(response.data.predictions); // เก็บผลลัพธ์การค้นหา
     } else {

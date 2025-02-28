@@ -100,10 +100,9 @@ export default function Tracking() {
   });
 
 
-  const GOOGLE_MAPS_APIKEY =
-  Platform.OS === 'ios'
-    ? Constants.expoConfig?.ios?.config?.googleMapsApiKey
-    : Constants.expoConfig?.android?.config?.googleMaps?.apiKey;
+
+      const GOOGLE_MAPS_APIKEY =
+      Platform.OS === 'ios' ? process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_IOS : process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_ANDROID;
   
   const fetchOrder = async () => {
     setLoading(true);

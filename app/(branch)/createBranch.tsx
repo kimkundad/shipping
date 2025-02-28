@@ -57,9 +57,7 @@ export default function CreateBranch() {
   
   
   const GOOGLE_API_KEY =
-  Platform.OS === 'ios'
-    ? Constants.expoConfig?.ios?.config?.googleMapsApiKey
-    : Constants.expoConfig?.android?.config?.googleMaps?.apiKey;
+  Platform.OS === 'ios' ? process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_IOS : process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_ANDROID;
 
 
   const [form, setForm] = useState({
@@ -250,6 +248,7 @@ export default function CreateBranch() {
           },
         }
       );
+      console.log('response.data.predictions', response)
       setResults(response.data.predictions); // เก็บผลลัพธ์การค้นหา
     } else {
       setResults([]); // หากข้อความสั้นเกินไป ให้ล้างผลลัพธ์
@@ -268,6 +267,8 @@ export default function CreateBranch() {
         }
       );
 
+      console.log('response.data', response.data)
+
       if (response.data && response.data.result) {
         const { lat, lng } = response.data.result.geometry.location;
 
@@ -285,6 +286,7 @@ export default function CreateBranch() {
             1000 // เวลาในหน่วยมิลลิวินาที
           );
         }
+
 
       //  setQuery(description);
         setForm((prevForm) => ({
@@ -325,6 +327,7 @@ export default function CreateBranch() {
                             </TouchableOpacity>
          
             </View>
+
 
             {isMapVisible && location ? (
               <MapView

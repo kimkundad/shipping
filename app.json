@@ -2,7 +2,7 @@
   "expo": {
     "name": "LoadMaster",
     "slug": "shipping-app",
-    "version": "2.0.0", 
+    "version": "2.0.0",
     "newArchEnabled": true,
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -18,12 +18,12 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show relevant information.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "We need access to your location to provide accurate services.",
-        "NSDocumentDirectoryUsageDescription": "This app needs access to your documents to store PDFs."
+        "NSDocumentDirectoryUsageDescription": "This app needs access to your documents to store PDFs.",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "bundleIdentifier": "com.shippingapp",
       "buildNumber": "2",
-      "config": {
-      }
+      "config": {}
     },
     "android": {
       "googleServicesFile": "./google-services.json",
@@ -39,8 +39,7 @@
       ],
       "package": "com.shippingapp",
       "versionCode": 2,
-      "config": {
-      },
+      "config": {},
       "intentFilters": [
         {
           "action": "VIEW",

@@ -167,6 +167,37 @@ export default function Setting() {
       }
   };
 
+
+  const handleDeleteAccount = async () => {
+    Alert.alert(
+      "Confirm Account Deletion",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          onPress: async () => {
+            try {
+                
+                const response = await api.post('/delete_account');
+  
+                Alert.alert("Account Deleted", "Your account has been successfully deleted.");
+  
+                // หน่วงเวลา 5 วินาทีแล้วค่อย Logout 584
+                setTimeout(async () => {
+                    await logout();
+                }, 5000);
+  
+            } catch (error) {
+              console.error(error);
+              Alert.alert("Error", "Something went wrong. Please try again later.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#fff' }} >
       <Stack.Screen options={{
@@ -473,6 +504,32 @@ export default function Setting() {
             {/* Menu Setting */}
 
 
+            <TouchableOpacity
+                                onPress={handleDeleteAccount}
+                                style={{ marginTop: 40 }}
+                            >
+                                <View style={styles.textListHead3}>
+                                    <View style={styles.profile}>
+                                       
+                                        <View style={styles.obtnRed}>
+                                            <View
+                                                style={{
+                                                    padding: 6,
+                                                    borderRadius: 50
+                                                }}
+                                            >
+                                                <Ionicons name="trash-bin-outline" size={20} color="#dc3545" />
+                                            </View>
+                                        </View>
+
+                                        <View>
+                                            <Text style={styles.textSeting3}>Delete Account</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+
+
           </View>
         </View>
       </ScrollView>
@@ -493,6 +550,24 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
   },
+  textListHead3: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    paddingHorizontal: 10,
+    paddingVertical:8,
+    borderColor: '#dc3545',
+    borderWidth: 0.3,
+    borderRadius: 20,
+    marginBottom: 30
+},
+obtnRed: {
+  backgroundColor: 'rgba(244, 67, 54, 0.2)',
+  borderRadius: 50,
+  padding: 4,
+  alignItems: 'center',
+},
   textSeting: {
     fontSize: 16,
     fontFamily: 'Prompt_400Regular'

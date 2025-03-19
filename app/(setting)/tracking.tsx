@@ -42,6 +42,7 @@ export default function Tracking() {
     longitude2: number;    // เพิ่ม longitude2
   }
 
+
   const { id, dataOrder } = useLocalSearchParams(); // รับพารามิเตอร์ id
   
   let parsedDataOrder = null;
@@ -368,7 +369,7 @@ export default function Tracking() {
 
       <View style={styles.backButtonContainer}>
               
-              <TouchableOpacity style={styles.btnBack} onPress={() => navigation.goBack()}>
+              <TouchableOpacity style={styles.btnBack} onPress={() => router.push('/(tabs)')}>
                                 <View
                                     style={{
                                         backgroundColor: 'rgba(255, 255, 255, 1)',

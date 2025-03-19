@@ -88,7 +88,7 @@
       "service2Price": "15 baht/piece",
       "sumMachine": "Number of machines",
       "sumWaffle": "Number of waffles",
-      "remark": "Note: Various types of products are included in The total number Just indicate how many there are. ",
+      "getRemark": "Note: Various types of products are included in The total number Just indicate how many there are. ",
       "title": "This information will help the driver take proper care of your package.",
       "articlesLinkText": "请跟踪您的产品。"
     },

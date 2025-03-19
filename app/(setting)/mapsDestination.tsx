@@ -67,12 +67,12 @@ export default function MapsDestination() {
   useEffect(() => {
     (async () => {
 
-      console.log('EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_ANDROID', process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_ANDROID)
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission Denied', 'Permission to access location was denied');
         return;
       }
+      
 
       try {
 
@@ -174,6 +174,7 @@ export default function MapsDestination() {
     }
   };
 
+
   const selectPlace = async (placeId, description) => {
     try {
       const response = await axios.get(
@@ -267,11 +268,9 @@ export default function MapsDestination() {
       
 
         <View style={styles.container}>
-          
 
           {location ? (
             <MapView
-              provider={PROVIDER_GOOGLE}
               ref={mapRef} // อ้างอิงถึง MapView
               style={styles.map}
               initialRegion={location}

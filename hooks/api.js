@@ -1,7 +1,7 @@
+// api.js
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axiosRetry from 'axios-retry';
-import { useNavigation } from '@react-navigation/native';
 
 // Create Axios instance
 const api = axios.create({
@@ -18,33 +18,29 @@ axiosRetry(api, {
 // Refresh token function
 const refreshToken = async () => {
   try {
-    const storedRefreshToken = await AsyncStorage.getItem('refresh_token');
+    const storedRefreshToken = await AsyncStorage.getItem('refresh_token'); // ดึง refresh_token จาก Storage
     if (!storedRefreshToken) {
       throw new Error('No refresh token found');
     }
 
-    // Request new token using refresh token
+    // Request new token using refresh token (ตามโครงสร้าง Laravel API)
     const response = await axios.post(
       'https://api.loadmasterth.com/api/refresh-token',
-      {},
-      {
-        headers: { Authorization: `Bearer ${storedRefreshToken}` },
-      }
+      { refresh_token: storedRefreshToken }, // ส่ง refresh_token ใน body
+      { headers: { 'Content-Type': 'application/json' } }
     );
 
-    const newToken = response.data.token;
+    const newToken = response.data.access_token; // Laravel ส่งคืนเป็น `access_token`
     if (!newToken) {
-      throw new Error('Failed to receive new token');
+      throw new Error('Failed to receive new access token');
     }
 
- //   console.log('New token received:', newToken);
-
-    // Store the new token in AsyncStorage
+    // บันทึก Access Token ใหม่
     await AsyncStorage.setItem('jwt_token', newToken);
     return newToken;
   } catch (error) {
     console.error('Token refresh failed:', error.response?.data || error.message);
-    throw error; // Ensure error is thrown to handle logout or retry logic
+    throw error; // ส่ง error ออกไปให้ handle logout หรือ retry logic
   }
 };
 
@@ -52,40 +48,28 @@ const refreshToken = async () => {
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('jwt_token');
- //   console.log('token api', token)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor to handle token expiration and retry logic
 api.interceptors.response.use(
-  (response) => {
-    // Check if the response indicates an expired token (even if the status is 200)
-    if (response.data.message === "Token expired" && !response.config._retry) {
-      response.config._retry = true; // Mark the request as retried
-
-      return refreshToken().then(newToken => {
-        // Update the authorization header with the new token
-        response.config.headers.Authorization = `Bearer ${newToken}`;
-        // Retry the original request with the updated token
-        return api(response.config);
-      }).catch(error => {
-        console.error("Failed to refresh token:", error);
-        return Promise.reject(error);
-      });
+  (response) => response,
+  async (error) => {
+    if (error.response && error.response.status === 401) {
+      try {
+        const newToken = await refreshToken(); // รีเฟรช token
+        error.config.headers.Authorization = `Bearer ${newToken}`;
+        return api(error.config); // รีเทรย์ request เดิม
+      } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError);
+        return Promise.reject(refreshError);
+      }
     }
-
-    // Return the response if no token issues were found
-    return response;
-  },
-  (error) => {
-    // Handle other types of errors (like 401 or network issues)
     return Promise.reject(error);
   }
 );

@@ -224,12 +224,15 @@ const getImageForSize = (size) => {
           
         //  // ส่งคำขอแบบ POST ไปยัง API
           const response = await api.post('/createOrdere', orderData);
-          console.log('response', response.data)
+          console.log('Creating order with data response', response.data)
           if (response.data.success === true) {
             Alert.alert('สำเร็จ', 'สร้างออเดอร์ใหม่สำเร็จแล้ว');
             router.push({
                 pathname: '(setting)/tracking',
-                params: { id: response.data.order.id }, // ส่งพารามิเตอร์ id ของ order
+                params: {
+                    id: response.data.order.id,
+                    dataOrder: JSON.stringify(response.data.order)
+                  }, // ส่งพารามิเตอร์ id ของ order // ส่งพารามิเตอร์ id ของ order
               });
           } else {
             Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างออเดอร์ได้');
@@ -504,11 +507,10 @@ const getImageForSize = (size) => {
                             </View>
                             )}
 
-
                                 
                                 </View>
                                 <View >
-                                    <Text style={styles.textNote}>** {t("ride.remerk")}</Text>
+                                    <Text style={styles.textNote}>** {t("ride.getRemark")}</Text>
                                 </View>
                             </View>
 

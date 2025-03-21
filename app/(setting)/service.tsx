@@ -31,8 +31,8 @@ type RootStackParamList = {
       };
     };
   };
-
-const { width } = Dimensions.get('window');
+  const { width } = Dimensions.get('window');
+  const carouselHeight = width * (6.5 / 16);
 const img_height = 110; // ปรับความสูงของภาพตามความต้องการ
 const imgsize_height = 160;
 
@@ -732,8 +732,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     sizeImg: {
-        width: '100%',
-        height: imgsize_height
+        width: width,
+        height: carouselHeight
     },
     rows: {
         flexDirection: 'row',

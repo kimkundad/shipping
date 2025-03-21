@@ -93,6 +93,7 @@ export default function HomeScreen({ navigation }) {
       // No need to manually fetch the token, as it's added by the interceptor
       const response = await api.get('/user-order-cus');
       setUserOrders(response.data.order); // Set the orders from the response
+      console.log('setUserOrders', response.data)
       setGetPrice(response.data.price)
     } catch (error) {
       console.error('Error fetching orders:', error);

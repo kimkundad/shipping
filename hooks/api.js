@@ -6,6 +6,7 @@ import axiosRetry from 'axios-retry';
 // Create Axios instance
 const api = axios.create({
   baseURL: 'https://api.loadmasterth.com/api',
+  timeout: 10000, // เพิ่ม timeout เพื่อป้องกันการค้าง
 });
 
 // Configure retry logic
@@ -15,61 +16,81 @@ axiosRetry(api, {
   retryCondition: (error) => error.response && error.response.status === 429,
 });
 
-// Refresh token function
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+// ฟังก์ชันรีเฟรช Token
 const refreshToken = async () => {
   try {
-    const storedRefreshToken = await AsyncStorage.getItem('refresh_token'); // ดึง refresh_token จาก Storage
-    if (!storedRefreshToken) {
-      throw new Error('No refresh token found');
-    }
+    const storedRefreshToken = await AsyncStorage.getItem('refresh_token');
+    if (!storedRefreshToken) throw new Error('No refresh token found');
 
-    // Request new token using refresh token (ตามโครงสร้าง Laravel API)
+    // ส่ง request รีเฟรช token
     const response = await axios.post(
       'https://api.loadmasterth.com/api/refresh-token',
-      { refresh_token: storedRefreshToken }, // ส่ง refresh_token ใน body
+      { refresh_token: storedRefreshToken },
       { headers: { 'Content-Type': 'application/json' } }
     );
 
-    const newToken = response.data.access_token; // Laravel ส่งคืนเป็น `access_token`
-    if (!newToken) {
-      throw new Error('Failed to receive new access token');
-    }
+    const newToken = response.data.access_token;
+    if (!newToken) throw new Error('Failed to receive new access token');
 
-    // บันทึก Access Token ใหม่
+    // บันทึก token ใหม่
     await AsyncStorage.setItem('jwt_token', newToken);
+
+    // แจ้งให้ทุก request ที่รออยู่ใช้ token ใหม่
+    refreshSubscribers.forEach((callback) => callback(newToken));
+    refreshSubscribers = [];
+
     return newToken;
   } catch (error) {
     console.error('Token refresh failed:', error.response?.data || error.message);
-    throw error; // ส่ง error ออกไปให้ handle logout หรือ retry logic
+    throw error;
   }
 };
 
-// Request interceptor to add JWT token to headers
+// Interceptor สำหรับแนบ JWT Token ในทุก request
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('jwt_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle token expiration and retry logic
+// Interceptor สำหรับจัดการเมื่อ token หมดอายุ
 api.interceptors.response.use(
-  (response) => response,
+  (response) => response, // ผ่าน response ไปตามปกติถ้าไม่มี error
   async (error) => {
-    if (error.response && error.response.status === 401) {
+    const originalRequest = error.config;
+
+    // ถ้า token หมดอายุ (401 Unauthorized)
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          refreshSubscribers.push((newToken) => {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            resolve(api(originalRequest)); // รีเทรย์ request เดิม
+          });
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
       try {
-        const newToken = await refreshToken(); // รีเฟรช token
-        error.config.headers.Authorization = `Bearer ${newToken}`;
-        return api(error.config); // รีเทรย์ request เดิม
+        const newToken = await refreshToken();
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return api(originalRequest); // รีเทรย์ request เดิม
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError);
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
+
     return Promise.reject(error);
   }
 );

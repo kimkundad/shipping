@@ -22,6 +22,8 @@ const refreshToken = async () => {
       { headers: { 'Content-Type': 'application/json' } }
     );
 
+    console.log('response', response)
+
     const newToken = response.data.access_token;
     if (!newToken) throw new Error('Failed to receive new access token');
 

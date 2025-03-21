@@ -13,7 +13,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import api from '../../hooks/api'; // Axios instance
 import { useTranslation } from "react-i18next";
 const { width } = Dimensions.get('window');
-
+const carouselHeight = width * (6.5 / 16);
 
 
 const Helpcen = () => {
@@ -108,7 +108,7 @@ const Helpcen = () => {
 
                         <View style={{ alignItems: 'center' }}>
                         <Image source={require('../../assets/images/help_center.webp')}
-                            style={{ width: 360, height: 202 }} />
+                            style={{ width: width, height: carouselHeight }} />
                             <View>
                                 <Text style={{ 
                     color: '#666', fontSize:15, textAlign: 'center',  lineHeight: 18, fontFamily: 'Prompt_500Medium', marginTop: 15, marginBottom: 20

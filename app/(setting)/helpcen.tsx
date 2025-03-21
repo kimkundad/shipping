@@ -15,6 +15,7 @@ import api from '../../hooks/api'; // Axios instance
 import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get('window');
+const carouselHeight = width * (6.5 / 16);
 
 
 
@@ -140,7 +141,7 @@ const Helpcen = () => {
 
                         <View style={{ alignItems: 'center' }}>
                         <Image source={require('../../assets/images/help_center.webp')}
-                            style={{ width: 360, height: 202, marginBottom: 10, borderRadius: 8 }} />
+                                                    style={{ width: width, height: carouselHeight }} />
                             <View>
                                 <Text style={{ 
                     color:Colors.black, fontSize:15, textAlign: 'center',  fontFamily: 'Prompt_500Medium', marginTop: 10, marginBottom: 20

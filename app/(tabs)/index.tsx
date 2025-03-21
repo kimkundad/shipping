@@ -27,6 +27,7 @@ configureReanimatedLogger({
 });
 
 const { width: screenWidth } = Dimensions.get('window');
+const carouselHeight = screenWidth * (6.5 / 16);
 
 
 LogBox.ignoreLogs([
@@ -244,7 +245,7 @@ export default function HomeScreen({ navigation }) {
                   <Carousel
                     loop
                     width={carouselWidth}
-                    height={175}
+                    height={carouselHeight}
                     autoPlay={true}
                     autoPlayInterval={4000}
                     data={news}

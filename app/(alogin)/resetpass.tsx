@@ -5,88 +5,64 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useRouter, useLocalSearchParams, Link } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setSecureItem } from '@/utils/secureStorage';
 
 
 export default function Resetpass() {
+  const navigation = useNavigation();
+  const inputRefs = useRef([]);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { phone } = useLocalSearchParams();
 
-    const navigation = useNavigation();
-    const inputRefs = useRef([]); // Array of refs for OTP inputs
-    const [loading, setLoading] = useState(false); // Loading state to disable actions while verifying
-    const router = useRouter();
-    const { phone } = useLocalSearchParams(); // Get phone param from the route
+  const [form, setForm] = useState({
+    password: '',
+    confirmPassword: '',
+  });
 
-    const [form, setForm] = useState({
-        password: '',
-        confirmPassword: '',
-      });
-
-       // Centralized form handler to reduce repetitive code
   const handleInputChange = (name, value) => {
     setForm((prevForm) => ({ ...prevForm, [name]: value }));
   };
 
-      const handleSubmit = async () => {
+  const handleSubmit = async () => {
+    const { password, confirmPassword } = form;
 
-        console.log('phone', phone)
-        const { password, confirmPassword } = form;
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
 
-        if (password !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match');
-            return;
-          }
-      
-          setLoading(true); // Show loading state
+    setLoading(true);
 
-        try {
+    try {
+      const response = await axios.post('https://api.loadmasterth.com/api/reserPass', {
+        password,
+        c_password: confirmPassword,
+        phone,
+      });
 
-            const response = await axios.post('https://api.loadmasterth.com/api/reserPass', {
-                password,
-                c_password: confirmPassword,
-                phone
-              });
-      
-            //   if (response.data.pass == 1) {
-            //     // ค่าแสดงว่าเกิน 3 นาทีแล้ว
-            //     Alert.alert('Success', 'OTP has been resent!');
-            //   } else if (response.data.pass == 0) {
-            //     // ค่าแสดงว่ายังไม่เกิน 3 นาที
-            //     Alert.alert('Wait', 'Please wait a few minutes before requesting again.');
-            //   }
+      const { token, user } = response.data || {};
+      const refreshToken = token;
 
-            console.log('response', response.data);
-  
-            if (response.data.token) {
-              // Extract tokens and user profile from the response
-              const token = response.data.token;
-              const refreshToken = response.data.token;
-              const userProfile = response.data.user;
-    
-              console.log('token', token, 'refreshToken', refreshToken, 'userProfile', userProfile);
-      
-              // Ensure tokens and user data are valid before storing
-              if (token && refreshToken && userProfile) {
-                // Store tokens and user data in AsyncStorage
-                await AsyncStorage.setItem('jwt_token', token);
-                await AsyncStorage.setItem('refresh_token', refreshToken);
-                await AsyncStorage.setItem('user_profile', JSON.stringify(userProfile));
-      
-                Alert.alert('Success', 'Verification successful!');
-                router.push('(tabs)'); // Navigate to the main app screen
-              } else {
-                Alert.alert('Error', 'Invalid token or user data received.');
-              }
-            } else {
-              Alert.alert('Error', 'Invalid verification code.');
-            }
-          } catch (error) {
-            console.error('Error during verification:', error);
-            Alert.alert('Error', 'Something went wrong, please try again.');
-          } finally {
-            setLoading(false); // Hide loading state
-          }
+      if (token && user) {
 
-      };
+        await setSecureItem('jwt_token', token);
+        await setSecureItem('refresh_token', refreshToken);
+        await setSecureItem('user_profile', JSON.stringify(user));
+
+        Alert.alert('Success', 'Verification successful!');
+        router.push('/(tabs)');
+      } else {
+        Alert.alert('Error', 'Invalid token or user data received.');
+      }
+
+    } catch (error) {
+      console.error('Error during verification:', error);
+      Alert.alert('Error', 'Something went wrong, please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
   
 
     return (

@@ -4,7 +4,7 @@ import { Text, View, Image, TouchableOpacity, TextInput, StyleSheet, Alert } fro
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { registerForPushNotificationsAsync } from "@/utils/registerForPushNotificationsAsync";
 
 export default function Login() {
@@ -17,86 +17,94 @@ export default function Login() {
   useEffect(() => {
     const checkTokenAndRedirect = async () => {
       try {
-        const token = await AsyncStorage.getItem('jwt_token');
+        const token = await SecureStore.getItemAsync('jwt_token');
         
         if (token) {
           // If token exists, navigate to the main app screen
-          router.push('(tabs)');
+          console.log('SecureStore', SecureStore)
+          router.push('/(tabs)');
         }
       } catch (error) {
-        console.error('Error checking JWT token:', error);
+        console.error('Error reading JWT token from SecureStore:', error);
       }
     };
 
     checkTokenAndRedirect();
-  }, [router]);
+  }, []);
 
   const [form, setForm] = useState({
-    email: '',
+    phone: '',
     password: '',
   });
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!form.email || !form.password) {
-      Alert.alert('Error', 'Please enter both phone and password');
+    if (!form.phone || !form.password) {
+      Alert.alert('Validation Error', 'Please fill in both phone number and password.');
       return;
     }
 
     //setLoading(true);
 
     try {
-      console.log('try')
+      
       // Replace with your API endpoint
       const response = await axios.post('https://api.loadmasterth.com/api/login', {
-        phone: form.email,
+        phone: form.phone,
         password: form.password,
       });
       
-
+      
       // Handle different `verify` statuses
-      const { token, verify, user, refresh_token } = response.data;
+    //  const { success, token, verify, user, refresh_token } = response.data;
+      const { success, token, verify, user, refresh_token, message } = response.data || {};
+      console.log('success', success)
+
+      if (!success) {
+        Alert.alert('Login Failed', message || 'Login unsuccessful. Please check your credentials.');
+        return;
+      }
       
       if (verify === 0) {
         // The user has not verified their phone number, prompt them to verify OTP
         Alert.alert('Verification Required', 'Please verify your phone number with the OTP.');
         router.push('/verify'); // Redirect to OTP verification screen
 
-        router.push({ pathname: '(alogin)/verify', params: { phone: '+66'+form.email } });
+        router.push({ pathname: '/(alogin)/verify', params: { phone: '+66'+form.phone } });
 
-      } else if (verify === 1 && token) {
+      } 
+      
+      if (verify === 1 && token && user) {
         // User is logged in successfully, save the tokens and user info
-        await AsyncStorage.setItem('jwt_token', token);
-        await AsyncStorage.setItem('refresh_token', refresh_token); // Assuming refresh_token is the same as the token here
-        await AsyncStorage.setItem('user_profile', JSON.stringify(user));
-        console.log('user', user.id)
-        await registerForPushNotificationsAsync(user.id);
-        Alert.alert('Success', 'Login successful!');
-        router.push('(tabs)'); // Navigate to the main app screen after successful login
-      } else if (verify === 2) {
-        // Invalid credentials
-        Alert.alert('Error', 'Invalid phone number or password.');
+        
+        try {
+          
+          await SecureStore.setItemAsync('jwt_token', token);
+          await SecureStore.setItemAsync('refresh_token', refresh_token ?? '');
+          await SecureStore.setItemAsync('user_profile', JSON.stringify(user));
+          
+          if (user?.id) {
+            await registerForPushNotificationsAsync(user.id);
+          }
+      
+          Alert.alert('Success', 'Login successful!');
+          router.push('/(tabs)');
+        } catch (storageError) {
+          console.error('Storage error:', storageError);
+          Alert.alert('Storage Error', 'Unable to save login data. Please try again.');
+        }
+
       } else {
-        // Fallback case if something else happens
-        Alert.alert('Error', 'Something went wrong, please try again.');
+        Alert.alert('Login Error', 'Unexpected response received. Please contact support.');
       }
 
     } catch (error) {
-      console.log('Error during login:', error);
-    
       if (error.response) {
-        // Server responded with a status other than 2xx
-        console.log('Error response status:', error.response.status);
-        console.log('Error response data:', error.response.data);
-        Alert.alert('Error', `Server responded with an error: ${error.response.data.message || 'Unknown error'}`);
+        Alert.alert('Login Failed', error.response.data.message || 'Server error.');
       } else if (error.request) {
-        // No response was received after the request was sent
-        console.log('No response received:', error.request);
-        Alert.alert('Error', 'No response received from server. Please check your internet connection or try again later.');
+        Alert.alert('Network Error', 'No response from server. Please check internet.');
       } else {
-        // Something else went wrong while setting up the request
-        console.log('Error setting up the request:', error.message);
-        Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+        Alert.alert('Unexpected Error', error.message || 'Unexpected error occurred. Please contact support.');
       }
     } finally {
       setLoading(false);
@@ -122,11 +130,11 @@ export default function Login() {
                 autoCorrect={false}
                 clearButtonMode="while-editing"
                 placeholder="092XXXXXXX"
-                onChangeText={(email) => setForm({ ...form, email })}
+                onChangeText={(phone) => setForm({ ...form, phone })}
                 placeholderTextColor="#6b7280"
                 keyboardType='number-pad'
                 style={styles.inputControl}
-                value={form.email}
+                value={form.phone}
               />
             </View>
 

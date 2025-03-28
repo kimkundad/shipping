@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import api from './api'; // Axios instance
-import { useNavigation } from '@react-navigation/native'; // React Navigation
+import { useNavigation } from '@react-navigation/native';
 
 export const UserContext = createContext();
 
@@ -9,33 +9,49 @@ export const UserProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [userOrders, setUserOrders] = useState([]);
   const [userBranch, setUserBranch] = useState([]);
-  const navigation = useNavigation(); // Access navigation
+  const navigation = useNavigation();
+
+  const getSecureItem = async (key) => {
+    try {
+      return await SecureStore.getItemAsync(key);
+    } catch (err) {
+      console.error(`Error getting ${key}:`, err);
+      return null;
+    }
+  };
+
+  const deleteSecureItem = async (key) => {
+    try {
+      await SecureStore.deleteItemAsync(key);
+    } catch (err) {
+      console.error(`Error deleting ${key}:`, err);
+    }
+  };
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const token = await AsyncStorage.getItem('jwt_token');
-        //console.log('Retrieved token:', token); // Debug token retrieval
-        const dataUser = await AsyncStorage.getItem('user_profile');
-        //console.log('Retrieved user profile:', dataUser);
+        const token = await getSecureItem('jwt_token');
+        const dataUser = await getSecureItem('user_profile');
 
         if (dataUser) {
           setUserProfile(JSON.parse(dataUser));
         }
 
         const ordersResponse = await api.get('/user-order');
-        if (ordersResponse) {
-          setUserOrders(ordersResponse.data.order);
-        }
+        setUserOrders(ordersResponse.data.order);
 
         const branchResponse = await api.get('/user-branch');
-      //  console.log('branch response----> 1:', branchResponse.data);
-        if (branchResponse) {
-          setUserBranch(branchResponse.data.branch);
-        }
-
+        setUserBranch(branchResponse.data.branch);
       } catch (error) {
         console.error('Failed to retrieve user profile:', error);
+
+        if (error.response?.status === 401) {
+          await SecureStore.deleteItemAsync('jwt_token');
+          await SecureStore.deleteItemAsync('refresh_token');
+          await SecureStore.deleteItemAsync('user_profile');
+          navigation.navigate('(alogin)');
+        }
       }
     };
 
@@ -44,20 +60,28 @@ export const UserProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem('jwt_token');
-      await AsyncStorage.removeItem('refresh_token');
-      await AsyncStorage.removeItem('user_profile');
+      await deleteSecureItem('jwt_token');
+      await deleteSecureItem('refresh_token');
+      await deleteSecureItem('user_profile');
       setUserProfile(null);
       setUserOrders([]);
-      // Navigate to login screen or another appropriate action
-      navigation.navigate('(alogin)'); // Ensure 'Login' matches your route name
+      setUserBranch([]);
+      navigation.navigate('(alogin)');
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
 
   return (
-    <UserContext.Provider value={{ userProfile, userOrders, setUserProfile, setUserOrders, logout, userBranch, setUserBranch }}>
+    <UserContext.Provider value={{
+      userProfile,
+      userOrders,
+      userBranch,
+      setUserProfile,
+      setUserOrders,
+      setUserBranch,
+      logout
+    }}>
       {children}
     </UserContext.Provider>
   );

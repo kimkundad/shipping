@@ -14,9 +14,13 @@
     },
     "production": {
       "autoIncrement": true,
+      "credentialsSource": "remote",
       "distribution": "store",
       "android": {
-        "buildType": "apk"
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "enterpriseProvisioning": "universal"
       }
     }
   },

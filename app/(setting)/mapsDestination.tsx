@@ -65,6 +65,10 @@ export default function MapsDestination() {
   });
 
   useEffect(() => {
+  console.log('GOOGLE_API_KEY', GOOGLE_API_KEY)
+  }, [GOOGLE_API_KEY]);
+
+  useEffect(() => {
     (async () => {
 
       let { status } = await Location.requestForegroundPermissionsAsync();

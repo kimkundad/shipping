@@ -6,16 +6,16 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useNavigation, router ,useRouter , useLocalSearchParams  } from 'expo-router';
 import Feather from '@expo/vector-icons/Feather';
 import { AntDesign } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DeviveryStatus from '../../components/DeviveryStatus'
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from "react-i18next";
+import api from '../../hooks/api'; // Axios instance
 
 const { width } = Dimensions.get('window');
 
 const Shop = () => {
+
 
     const navigation = useNavigation();
   const router = useRouter();
@@ -34,12 +34,8 @@ const Shop = () => {
    
         try {
 
-            const token1 = await AsyncStorage.getItem('jwt_token');
-        
-            const response = await axios.get(`https://api.loadmasterth.com/api/user-branch-${id}`, {
-              headers: { Authorization: `Bearer ${token1}` },
-            });
-            console.log('rrrr', response.data.branch)
+          const response = await api.get(`/user-branch-${id}`);
+            console.log('response.data.branch', response.data.branch)
           setData(response.data.branch);
         } catch (error) {
           setError(error);

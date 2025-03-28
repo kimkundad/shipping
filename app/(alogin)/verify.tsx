@@ -5,7 +5,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useRouter, useLocalSearchParams, Link } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setSecureItem, deleteSecureItem } from '@/utils/secureStorage';
 import { registerForPushNotificationsAsync } from "@/utils/registerForPushNotificationsAsync";
 
 export default function Verify() {
@@ -77,9 +77,9 @@ export default function Verify() {
   
       try {
         // Clear existing session data
-        await AsyncStorage.removeItem('jwt_token');
-        await AsyncStorage.removeItem('refresh_token');
-        await AsyncStorage.removeItem('user_profile');
+        await deleteSecureItem('jwt_token');
+        await deleteSecureItem('refresh_token');
+        await deleteSecureItem('user_profile');
 
         console.log('otp', otp.join(''));
   
@@ -102,14 +102,14 @@ export default function Verify() {
   
           // Ensure tokens and user data are valid before storing
           if (token && refreshToken && userProfile) {
-            // Store tokens and user data in AsyncStorage
-            await AsyncStorage.setItem('jwt_token', token);
-            await AsyncStorage.setItem('refresh_token', refreshToken);
-            await AsyncStorage.setItem('user_profile', JSON.stringify(userProfile));
+   
+            await setSecureItem('jwt_token', token);
+            await setSecureItem('refresh_token', refreshToken);
+            await setSecureItem('user_profile', JSON.stringify(userProfile));
             await registerForPushNotificationsAsync(userProfile.id);
   
             Alert.alert('Success', 'Verification successful!');
-            router.push('(tabs)'); // Navigate to the main app screen
+            router.push('/(tabs)'); // Navigate to the main app screen
           } else {
             Alert.alert('Error', 'Invalid token or user data received.');
           }
@@ -130,7 +130,7 @@ export default function Verify() {
                 <KeyboardAwareScrollView>
                     <View style={styles.topHeader}>
                         <View style={styles.headerBack}>
-                            <Link href="(alogin)">
+                            <Link href="/(alogin)">
                                 <Ionicons name="chevron-back-outline" size={28} color="black" />
                             </Link>
                         </View>

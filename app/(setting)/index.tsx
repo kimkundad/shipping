@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, router, Stack, useNavigation } from 'expo-router';
 import api from '../../hooks/api'; // Axios instance
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setSecureItem } from '@/utils/secureStorage';
 import { UserContext } from '../../hooks/UserContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from "react-i18next";
@@ -49,10 +49,10 @@ const EditProfile = () => {
       console.log('form', response.data)
       if (response.data.msgStatus === 200) {
         const updatedUser = response.data.user;
-        await AsyncStorage.setItem('user_profile', JSON.stringify(updatedUser));
+        await setSecureItem('user_profile', JSON.stringify(updatedUser));
         setUserProfile(updatedUser); // Update UserContext
         Alert.alert('Success', 'Profile updated successfully');
-        router.push('(tabs)/setting'); // Navigate to settings page
+        router.push('/(tabs)/setting'); // Navigate to settings page
       } else {
         Alert.alert('Error', 'Failed to update profile');
       }

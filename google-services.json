@@ -26,6 +26,25 @@
     },
     {
       "client_info": {
+        "mobilesdk_app_id": "1:621361222772:android:d83604bf370e4206526d21",
+        "android_client_info": {
+          "package_name": "com.loadmaster.shippingapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2FjxuVtyX_Baw1Qb350yzOAlNLURuPvs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:621361222772:android:a0961a8e095e35e2526d21",
         "android_client_info": {
           "package_name": "com.shippingapp"
@@ -34,8 +53,8 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyC2FjxuVtyX_Baw1Qb350yzOAlNLURuPvs"
-        }
+          "current_key": "AIzaSyC2FjxuVtyX_Baw1Qb350yzOAlNLURuPvs" 
+        } 
       ],
       "services": {
         "appinvite_service": {

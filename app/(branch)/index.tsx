@@ -4,7 +4,6 @@ import React, { useEffect, useContext, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useNavigation, router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../hooks/UserContext';
 import axios from 'axios';
 import api from '../../hooks/api'; // Axios instance
@@ -23,16 +22,12 @@ const Index = () => {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const token1 = await AsyncStorage.getItem('jwt_token');
-                const response = await api.get('/user-branch', {
-                    headers: { Authorization: `Bearer ${token1}` },
-                });
-                //  console.log('response', response)
-                setUserBranch(response.data.branch);
+              const response = await api.get('/user-branch'); // api จะใส่ token ให้เอง
+              setUserBranch(response.data.branch);
             } catch (error) {
-                console.error(error);
+              console.error(error);
             }
-        };
+          };
 
         fetchOrders();
      

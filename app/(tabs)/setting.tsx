@@ -12,7 +12,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigation, router, Stack } from 'expo-router';
 import { UserContext } from '../../hooks/UserContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setSecureItem } from '@/utils/secureStorage';
 import api from '../../hooks/api'; // Axios instance
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from "react-i18next";
@@ -59,7 +59,7 @@ export default function Setting() {
       });
       console.log('API Response:', response?.data?.data?.user); // Log ข้อมูลจาก API
       const updatedUser = response?.data?.data?.user;
-      await AsyncStorage.setItem('user_profile', JSON.stringify(updatedUser));
+      await setSecureItem('user_profile', JSON.stringify(updatedUser));
 
 
     } catch (error: unknown) { 
@@ -151,7 +151,7 @@ export default function Setting() {
           if (response.data.msgStatus === 200) {
             console.log('user-->', response.data?.user)
             const updatedUser = response.data.user;
-            await AsyncStorage.setItem('user_profile', JSON.stringify(updatedUser));
+            await setSecureItem('user_profile', JSON.stringify(updatedUser));
             setUserProfile(updatedUser); // Update UserContext
   
               Alert.alert('Success', 'Profile picture updated successfully');

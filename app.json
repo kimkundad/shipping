@@ -16,9 +16,10 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show relevant information.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "We need access to your location to provide accurate services.",
-        "NSDocumentDirectoryUsageDescription": "This app needs access to your documents to store PDFs.",
+        "NSLocationWhenInUseUsageDescription": "We need your location to accurately identify pickup and delivery locations for your shipments.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We use your location in the background to track shipment progress and improve delivery services.",
+        "NSCameraUsageDescription": "LoadMaster uses the camera to allow you to take photos of delivery receipts or packages for service verification.",
+        "NSPhotoLibraryUsageDescription": "LoadMaster needs access to your photo library so you can upload images of delivery documents or packages.",
         "ITSAppUsesNonExemptEncryption": false
       },
       "bundleIdentifier": "com.shippingapp",
@@ -37,9 +38,13 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION"
       ],
-      "package": "com.shippingapp",
-      "versionCode": 2,
-      "config": {},
+      "package": "com.loadmaster.shippingapp",
+      "versionCode": 1,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDCv_atMLlGFWZYYWS-2uElJeq1_hdFgRo"
+        }
+      },
       "intentFilters": [
         {
           "action": "VIEW",
@@ -63,7 +68,8 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-localization"
+      "expo-localization",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

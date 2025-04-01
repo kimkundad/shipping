@@ -62,30 +62,30 @@ export default function Login() {
       }
 
       if (verify === 1 && token) {
-        try {
-          
-          await AsyncStorage.setItem('jwt_token', token);
-          await AsyncStorage.setItem('refresh_token', refresh_token ?? '');
-          await AsyncStorage.setItem('user_profile', JSON.stringify(user));
-        } catch (storageError) {
-          Alert.alert('Storage Error', 'Unable to save login data. Please try again.');
-          return;
-        }
-
         Alert.alert('Welcome', 'Login successful!');
-        router.push('/(tabs)');
-
-        // Register push token separately
-        try {
-          if (user?.id) {
-            await registerForPushNotificationsAsync(user.id);
+        router.push('/(tabs)'); // ✅ Navigate immediately
+      
+        // Save data in background (non-blocking)
+        (async () => {
+          try {
+            await AsyncStorage.setItem('jwt_token', token);
+            await AsyncStorage.setItem('refresh_token', refresh_token ?? '');
+            await AsyncStorage.setItem('user_profile', JSON.stringify(user));
+          } catch (storageError) {
+            console.warn('⚠️ Failed to save login data to storage:', storageError);
+            // Optional: send to monitoring service
           }
-        } catch (e) {
-          // silently fail
+        })();
+      
+        // Register push token separately (non-blocking too)
+        if (user?.id) {
+          registerForPushNotificationsAsync(user.id).catch(() => {});
         }
+      
       } else {
         Alert.alert('Login Failed', 'Invalid phone number or password.');
       }
+      
     } catch (error: any) {
       if (error?.response?.data?.message) {
         Alert.alert('Login Failed', error.response.data.message);

@@ -71,6 +71,7 @@ export default function Login() {
             await AsyncStorage.setItem('jwt_token', token);
             await AsyncStorage.setItem('refresh_token', refresh_token ?? '');
             await AsyncStorage.setItem('user_profile', JSON.stringify(user));
+            console.log('AsyncStorage success')
           } catch (storageError) {
             console.warn('⚠️ Failed to save login data to storage:', storageError);
             // Optional: send to monitoring service
@@ -85,7 +86,7 @@ export default function Login() {
       } else {
         Alert.alert('Login Failed', 'Invalid phone number or password.');
       }
-      
+
     } catch (error: any) {
       if (error?.response?.data?.message) {
         Alert.alert('Login Failed', error.response.data.message);

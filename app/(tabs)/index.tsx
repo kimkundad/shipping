@@ -89,6 +89,7 @@ export default function HomeScreen({ navigation }) {
   
         if (token) {
           setIsAuthenticated(true);
+          console.log('AsyncStorage success', token)
         } else {
           navigation.navigate('Login');
         }

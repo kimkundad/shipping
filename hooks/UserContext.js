@@ -10,28 +10,32 @@ export const UserProvider = ({ children }) => {
   const [userOrders, setUserOrders] = useState([]);
   const [userBranch, setUserBranch] = useState([]);
   const navigation = useNavigation(); // Access navigation
-  const [isLoadingUserProfile, setIsLoadingUserProfile] = useState(true); // 👈 เพิ่มตรงนี้
-  
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        setIsLoadingUserProfile(true); // 🔄 เริ่มโหลด
+        const token = await AsyncStorage.getItem('jwt_token');
+        //console.log('Retrieved token:', token); // Debug token retrieval
         const dataUser = await AsyncStorage.getItem('user_profile');
+        //console.log('Retrieved user profile:', dataUser);
 
         if (dataUser) {
           setUserProfile(JSON.parse(dataUser));
         }
 
         const ordersResponse = await api.get('/user-order');
-        setUserOrders(ordersResponse?.data?.order || []);
+        if (ordersResponse) {
+          setUserOrders(ordersResponse.data.order);
+        }
 
         const branchResponse = await api.get('/user-branch');
-        setUserBranch(branchResponse?.data?.branch || []);
+      //  console.log('branch response----> 1:', branchResponse.data);
+        if (branchResponse) {
+          setUserBranch(branchResponse.data.branch);
+        }
+
       } catch (error) {
         console.error('Failed to retrieve user profile:', error);
-      } finally {
-        setIsLoadingUserProfile(false); // ✅ โหลดเสร็จ
       }
     };
 
@@ -53,16 +57,7 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={{
-          userProfile,
-          userOrders,
-          setUserProfile,
-          setUserOrders,
-          logout,
-          userBranch,
-          setUserBranch,
-          isLoadingUserProfile, // 👈 แชร์ออกไป
-        }}>
+    <UserContext.Provider value={{ userProfile, userOrders, setUserProfile, setUserOrders, logout, userBranch, setUserBranch }}>
       {children}
     </UserContext.Provider>
   );

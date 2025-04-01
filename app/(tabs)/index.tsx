@@ -1,4 +1,4 @@
-import { Image, View, Text, LogBox, StyleSheet, Dimensions, RefreshControl, Platform, TextInput, Alert, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import { Image, View, Text, LogBox, StyleSheet, Dimensions, RefreshControl, Platform, TextInput, Alert, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Link, useNavigation, router, Stack, useRouter } from 'expo-router';
 import React, { useEffect, useContext, useState, useRef } from 'react';
@@ -37,8 +37,8 @@ LogBox.ignoreLogs([
 export default function HomeScreen({ navigation }) {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isChecking, setIsChecking] = useState(true); // 👈 loading state
-  const { userProfile, isLoadingUserProfile } = useContext(UserContext);
+  
+  const { userProfile } = useContext(UserContext);
   const [permission, requestPermission] = useCameraPermissions();
   const isPermissionGranted = Boolean(permission?.granted);
   const [searchInput, setSearchInput] = useState('');
@@ -78,29 +78,14 @@ export default function HomeScreen({ navigation }) {
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        let token = await AsyncStorage.getItem('jwt_token');
-  
-        // 🕒 รอเผื่อ storage ยังไม่ set ทัน
-        if (!token) {
-          await new Promise((res) => setTimeout(res, 300)); // รอ 300ms
-          token = await AsyncStorage.getItem('jwt_token');
-        }
-  
-        if (token) {
-          setIsAuthenticated(true);
-          console.log('AsyncStorage success', token)
-        } else {
-          navigation.navigate('Login');
-        }
-      } catch (error) {
-        console.warn('Auth check failed:', error);
+      const token = await AsyncStorage.getItem('jwt_token');
+      if (token) {
+        setIsAuthenticated(true);
+      } else {
         navigation.navigate('Login');
-      } finally {
-        setIsChecking(false); // ✅ stop loading
       }
     };
-  
+
     checkAuth();
   }, []);
 
@@ -133,6 +118,11 @@ export default function HomeScreen({ navigation }) {
     fetchNews();
   }, []);
 
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('jwt_token');
+    setIsAuthenticated(false);
+    navigation.navigate('Login');
+  };
 
   const handleSearch = async () => {
     try {
@@ -159,22 +149,6 @@ export default function HomeScreen({ navigation }) {
 
   const padding = 20;
   const carouselWidth = screenWidth - padding * 2;
-
-  useEffect(() => {
-    console.log('🔁 userProfile changed:', userProfile);
-  }, [userProfile]);
-
-  if (isLoadingUserProfile) {
-    return <ActivityIndicator size="large" />;
-  }
-
-  if (!userProfile) {
-    return (
-      <View>
-        <Text>No profile found. Please try again later.</Text>
-      </View>
-    );
-  }
 
   return (
     <SafeAreaProvider style={{ flex: 1, backgroundColor: '#f6f6f6' }} >

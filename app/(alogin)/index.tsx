@@ -153,6 +153,9 @@ export default function Login() {
             <Text style={styles.formLink}>Forgot password?</Text>
             </TouchableOpacity>
           </View>
+          <View style={styles.ver}>
+              <Text style={styles.verText}>Ver. 2.0.0 (22)</Text>
+          </View>
         </KeyboardAwareScrollView>
 
         <TouchableOpacity
@@ -163,6 +166,7 @@ export default function Login() {
             <Text style={{ textDecorationLine: 'underline' }}>Sign up</Text>
           </Text>
         </TouchableOpacity>
+         
       </View>
     </SafeAreaProvider>
   );
@@ -265,4 +269,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  ver: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  verText: {
+    fontSize: 14,
+    color: '#222',
+  }
 });

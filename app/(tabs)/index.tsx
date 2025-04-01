@@ -38,7 +38,7 @@ export default function HomeScreen({ navigation }) {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isChecking, setIsChecking] = useState(true); // 👈 loading state
-  const { userProfile } = useContext(UserContext);
+  const { userProfile, isLoadingUserProfile } = useContext(UserContext);
   const [permission, requestPermission] = useCameraPermissions();
   const isPermissionGranted = Boolean(permission?.granted);
   const [searchInput, setSearchInput] = useState('');
@@ -160,8 +160,16 @@ export default function HomeScreen({ navigation }) {
   const padding = 20;
   const carouselWidth = screenWidth - padding * 2;
 
-  if (isChecking) {
-    return <ActivityIndicator />;
+  if (isLoadingUserProfile) {
+    return <ActivityIndicator size="large" />;
+  }
+
+  if (!userProfile) {
+    return (
+      <View>
+        <Text>No profile found. Please try again later.</Text>
+      </View>
+    );
   }
 
   return (

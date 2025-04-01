@@ -160,6 +160,10 @@ export default function HomeScreen({ navigation }) {
   const padding = 20;
   const carouselWidth = screenWidth - padding * 2;
 
+  useEffect(() => {
+    console.log('🔁 userProfile changed:', userProfile);
+  }, [userProfile]);
+
   if (isLoadingUserProfile) {
     return <ActivityIndicator size="large" />;
   }

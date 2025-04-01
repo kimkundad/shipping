@@ -71,7 +71,7 @@ export default function Login() {
             await AsyncStorage.setItem('jwt_token', token);
             await AsyncStorage.setItem('refresh_token', refresh_token ?? '');
             await AsyncStorage.setItem('user_profile', JSON.stringify(user));
-            console.log('AsyncStorage success')
+            console.log('AsyncStorage success', user)
           } catch (storageError) {
             console.warn('⚠️ Failed to save login data to storage:', storageError);
             // Optional: send to monitoring service

@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useNavigation, router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from "react-i18next";
-import { getSecureItem, setSecureItem } from '@/utils/secureStorage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Language = () => {
 
@@ -15,8 +15,9 @@ const Language = () => {
   const currentLanguage = i18n.language;
 
   useEffect(() => {
+    // โหลดภาษาที่เคยบันทึกไว้ใน AsyncStorage
     const loadLanguage = async () => {
-      const savedLanguage = await getSecureItem("language");
+      const savedLanguage = await AsyncStorage.getItem("language");
       if (savedLanguage) {
         i18n.changeLanguage(savedLanguage);
         setChecked(savedLanguage);
@@ -26,9 +27,10 @@ const Language = () => {
   }, [i18n]);
 
   const changeLanguage = async (lang: string) => {
-    await setSecureItem("language", lang);
-    i18n.changeLanguage(lang);
-    setChecked(lang);
+    console.log('lang', lang)
+    await AsyncStorage.setItem("language", lang); // บันทึกภาษาที่เลือกใน AsyncStorage
+    i18n.changeLanguage(lang); // เปลี่ยนภาษา
+    setChecked(lang); // อัปเดตสถานะที่เลือก
   };
 
   return (
@@ -42,7 +44,7 @@ const Language = () => {
                 >
                     <View style={styles.listItemCon}>
                         <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 }}>
-                            <TouchableOpacity style={styles.btnBack} onPress={() => router.push('/(tabs)/setting')}>
+                            <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(tabs)/setting')}>
                                 <View
                                     style={{
                                         backgroundColor: 'rgba(255, 255, 255, 0.8)',

@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useNavigation, router, Stack, useLocalSearchParams } from 'expo-router';
 import Dropdown from "../../components/DropDown";
 import api from '../../hooks/api'; // Axios instance
-import { setSecureItem } from '@/utils/secureStorage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../hooks/UserContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from "react-i18next";
@@ -84,7 +84,7 @@ const Receipt = () => {
       if (response.data.msgStatus === 200) {
         const updatedUser = response.data.user;
         console.log('response', response.data.user)
-        await setSecureItem('user_profile', JSON.stringify(updatedUser));
+        await AsyncStorage.setItem('user_profile', JSON.stringify(updatedUser));
         setUserProfile(updatedUser); // Update UserContext
         setData(updatedUser); // Update UserContext
 
@@ -135,7 +135,7 @@ const Receipt = () => {
                 >
                     <View style={styles.listItemCon}>
                         <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 }}>
-                            <TouchableOpacity style={styles.btnBack} onPress={() => router.push('/(tabs)/setting')}>
+                            <TouchableOpacity style={styles.btnBack} onPress={() => router.push('(tabs)/setting')}>
                                 <View
                                     style={{
                                         backgroundColor: 'rgba(255, 255, 255, 0.8)',

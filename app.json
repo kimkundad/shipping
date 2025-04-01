@@ -2,7 +2,7 @@
   "expo": {
     "name": "LoadMaster",
     "slug": "shipping-app",
-    "version": "3.0.0",
+    "version": "2.0.0",
     "newArchEnabled": true,
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -15,7 +15,6 @@
     },
     "ios": {
       "supportsTablet": true,
-      "usesSecureStore": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "We need your location to accurately identify pickup and delivery locations for your shipments.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "We use your location in the background to track shipment progress and improve delivery services.",
@@ -24,7 +23,7 @@
         "ITSAppUsesNonExemptEncryption": false
       },
       "bundleIdentifier": "com.shippingapp",
-      "buildNumber": "4",
+      "buildNumber": "2",
       "config": {}
     },
     "android": {
@@ -70,13 +69,7 @@
       "expo-router",
       "expo-font",
       "expo-localization",
-      [
-        "expo-secure-store",
-        {
-          "keychainAccessible": "WHEN_UNLOCKED_THIS_DEVICE_ONLY",
-          "isAccessibleAfterFirstUnlock": false
-        }
-      ]
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigation, router } from 'expo-router';
-import { Text, View, Image, TouchableOpacity, TextInput, StyleSheet, Alert } from 'react-native';
+import { Text, View, Image, TouchableOpacity, TextInput, StyleSheet, Alert, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
-import { registerForPushNotificationsAsync } from "@/utils/registerForPushNotificationsAsync";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { registerForPushNotificationsAsync } from '@/utils/registerForPushNotificationsAsync';
 
 export default function Login() {
   const navigation = useNavigation();
@@ -17,94 +17,82 @@ export default function Login() {
   useEffect(() => {
     const checkTokenAndRedirect = async () => {
       try {
-        const token = await SecureStore.getItemAsync('jwt_token');
-        
+        const token = await AsyncStorage.getItem('jwt_token');
         if (token) {
-          // If token exists, navigate to the main app screen
-          console.log('SecureStore', SecureStore)
           router.push('/(tabs)');
         }
       } catch (error) {
-        console.error('Error reading JWT token from SecureStore:', error);
+        // fallback quietly
       }
     };
-
     checkTokenAndRedirect();
   }, []);
 
-  const [form, setForm] = useState({
-    phone: '',
-    password: '',
-  });
+  const [form, setForm] = useState({ phone: '', password: '' });
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!form.phone || !form.password) {
-      Alert.alert('Validation Error', 'Please fill in both phone number and password.');
+
+    const trimmedPhone = form.phone.trim();
+    const password = form.password.trim();
+
+    if (!trimmedPhone || !password) {
+      Alert.alert('Login Failed', 'Please enter both phone and password.');
       return;
     }
 
-    //setLoading(true);
+    setLoading(true);
 
     try {
-      
-      // Replace with your API endpoint
       const response = await axios.post('https://api.loadmasterth.com/api/login', {
-        phone: form.phone,
+        phone: trimmedPhone,
         password: form.password,
       });
-      
-      
-      // Handle different `verify` statuses
-    //  const { success, token, verify, user, refresh_token } = response.data;
-      const { success, token, verify, user, refresh_token, message } = response.data || {};
-      console.log('success', success)
 
-      if (!success) {
-        Alert.alert('Login Failed', message || 'Login unsuccessful. Please check your credentials.');
-        return;
-      }
-      
+      console.log('trimmedPhone', trimmedPhone)
+
+      const { token, verify, user, refresh_token } = response.data;
+
       if (verify === 0) {
-        // The user has not verified their phone number, prompt them to verify OTP
-        Alert.alert('Verification Required', 'Please verify your phone number with the OTP.');
-        router.push('/verify'); // Redirect to OTP verification screen
+        Alert.alert(
+          'Verification Required',
+          'Please verify your phone number. Contact support if you did not receive the code.'
+        );
+        return; // Stop here, don't redirect
+      }
 
-        router.push({ pathname: '/(alogin)/verify', params: { phone: '+66'+form.phone } });
-
-      } 
-      
-      if (verify === 1 && token && user) {
-        // User is logged in successfully, save the tokens and user info
-        
+      if (verify === 1 && token) {
         try {
           
-          await SecureStore.setItemAsync('jwt_token', token);
-          await SecureStore.setItemAsync('refresh_token', refresh_token ?? '');
-          await SecureStore.setItemAsync('user_profile', JSON.stringify(user));
-          
+          await AsyncStorage.setItem('jwt_token', token);
+          await AsyncStorage.setItem('refresh_token', refresh_token ?? '');
+          await AsyncStorage.setItem('user_profile', JSON.stringify(user));
+        } catch (storageError) {
+          Alert.alert('Storage Error', 'Unable to save login data. Please try again.');
+          return;
+        }
+
+        Alert.alert('Welcome', 'Login successful!');
+        router.push('/(tabs)');
+
+        // Register push token separately
+        try {
           if (user?.id) {
             await registerForPushNotificationsAsync(user.id);
           }
-      
-          Alert.alert('Success', 'Login successful!');
-          router.push('/(tabs)');
-        } catch (storageError) {
-          console.error('Storage error:', storageError);
-          Alert.alert('Storage Error', 'Unable to save login data. Please try again.');
+        } catch (e) {
+          // silently fail
         }
-
       } else {
-        Alert.alert('Login Error', 'Unexpected response received. Please contact support.');
+        Alert.alert('Login Failed', 'Invalid phone number or password.');
       }
-
-    } catch (error) {
-      if (error.response) {
-        Alert.alert('Login Failed', error.response.data.message || 'Server error.');
-      } else if (error.request) {
-        Alert.alert('Network Error', 'No response from server. Please check internet.');
+    } catch (error: any) {
+      if (error?.response?.data?.message) {
+        Alert.alert('Login Failed', error.response.data.message);
+      } else if (error?.request) {
+        Alert.alert('Network Error', 'Could not connect to server. Please try again.');
       } else {
-        Alert.alert('Unexpected Error', error.message || 'Unexpected error occurred. Please contact support.');
+        Alert.alert('Error', 'An unexpected error occurred.');
       }
     } finally {
       setLoading(false);

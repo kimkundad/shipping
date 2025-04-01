@@ -6,7 +6,7 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { StatusBar } from 'expo-status-bar';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Carousel from 'react-native-reanimated-carousel';
-import { getSecureItem, deleteSecureItem } from '@/utils/secureStorage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../hooks/UserContext';
 import api from '../../hooks/api'; // Axios instance
 import { useCameraPermissions } from "expo-camera";
@@ -77,14 +77,14 @@ export default function HomeScreen({ navigation }) {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = await getSecureItem('jwt_token');
+      const token = await AsyncStorage.getItem('jwt_token');
       if (token) {
         setIsAuthenticated(true);
       } else {
         navigation.navigate('Login');
       }
     };
-  
+
     checkAuth();
   }, []);
 
@@ -118,7 +118,7 @@ export default function HomeScreen({ navigation }) {
   }, []);
 
   const handleLogout = async () => {
-    await deleteSecureItem('jwt_token');
+    await AsyncStorage.removeItem('jwt_token');
     setIsAuthenticated(false);
     navigation.navigate('Login');
   };
@@ -132,7 +132,7 @@ export default function HomeScreen({ navigation }) {
         Alert.alert('สำเร็จ', 'กำลังโหลดข้อมูล');
 
         router.push({
-          pathname: '/(setting)/tracking',
+          pathname: '(setting)/tracking',
           params: { id: response.data.order.id },
         });
       } else {
@@ -203,7 +203,7 @@ export default function HomeScreen({ navigation }) {
               <TouchableOpacity
                 onPress={() => {
                   // handle onPress
-                  router.push('/(setting)/notification');
+                  router.push('(setting)/notification');
                 }}>
                 <View>
                   <Ionicons name="notifications-outline" size={27} color="white" />
@@ -254,7 +254,7 @@ export default function HomeScreen({ navigation }) {
                     renderItem={({ index }) => (
                       <View>
                         <TouchableOpacity onPress={() => router.push({
-                          pathname: '/(setting)/modalNew',
+                          pathname: '(setting)/modalNew',
                           params: { id: news[index].id },
                         })}>
                           <Image
@@ -304,7 +304,7 @@ export default function HomeScreen({ navigation }) {
                 {getPrice === 0 ? (
                   <TouchableOpacity
                     onPress={() => {
-                      router.push('/(setting)/paymentHis');
+                      router.push('(setting)/paymentHis');
                     }}
                   >
                     <View style={styles.btnPay}>
@@ -314,7 +314,7 @@ export default function HomeScreen({ navigation }) {
                 ) : (
                   <TouchableOpacity
                     onPress={() => {
-                      router.push('/(setting)/payment');
+                      router.push('(setting)/payment');
                     }}
                   >
                     <View style={styles.btnPay}>
@@ -389,7 +389,7 @@ export default function HomeScreen({ navigation }) {
                       onPress={() => {
                         // handle onPress
                         router.push({
-                          pathname: '/(setting)/tracking',
+                          pathname: '(setting)/tracking',
                           params: {
                             id: order.id,
                             dataOrder: JSON.stringify(order)

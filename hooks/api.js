@@ -1,44 +1,19 @@
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Create Axios instance
 const api = axios.create({
   baseURL: 'https://api.loadmasterth.com/api',
-  timeout: 10000,
+  timeout: 10000, // ตั้ง timeout กัน API ค้าง
 });
 
 let isRefreshing = false;
 let refreshSubscribers = [];
 
-const getSecureItem = async (key) => {
-  try {
-    return await SecureStore.getItemAsync(key);
-  } catch (error) {
-    console.error(`Error getting ${key} from SecureStore:`, error);
-    return null;
-  }
-};
-
-const setSecureItem = async (key, value) => {
-  try {
-    await SecureStore.setItemAsync(key, value);
-  } catch (error) {
-    console.error(`Error setting ${key} to SecureStore:`, error);
-  }
-};
-
-const deleteSecureItem = async (key) => {
-  try {
-    await SecureStore.deleteItemAsync(key);
-  } catch (error) {
-    console.error(`Error deleting ${key} from SecureStore:`, error);
-  }
-};
-
 // ฟังก์ชัน Refresh Token
 const refreshToken = async () => {
   try {
-    const storedRefreshToken = await getSecureItem('refresh_token');
+    const storedRefreshToken = await AsyncStorage.getItem('refresh_token');
     if (!storedRefreshToken) throw new Error('No refresh token found');
 
     const response = await axios.post(
@@ -50,8 +25,9 @@ const refreshToken = async () => {
     const newToken = response.data.access_token;
     if (!newToken) throw new Error('Failed to receive new access token');
 
-    await setSecureItem('jwt_token', newToken);
-    console.log('refresh token success');
+    await AsyncStorage.setItem('jwt_token', newToken);
+
+    console.log('refresh token success')
 
     refreshSubscribers.forEach((callback) => callback(newToken));
     refreshSubscribers = [];
@@ -61,11 +37,12 @@ const refreshToken = async () => {
   } catch (error) {
     console.error('Token refresh failed:', error.response?.data || error.message);
 
-    // เคลียร์ข้อมูล + logout
-    await deleteSecureItem('jwt_token');
-    await deleteSecureItem('refresh_token');
-    await deleteSecureItem('user_profile');
+    // 🧼 เคลียร์ข้อมูล + logout
+    await AsyncStorage.removeItem('jwt_token');
+    await AsyncStorage.removeItem('refresh_token');
+    await AsyncStorage.removeItem('user_profile');
 
+    // 🧭 เปลี่ยนเส้นทางไป login
     import('expo-router').then(({ router }) => {
       router.replace('/(alogin)');
     });
@@ -74,10 +51,11 @@ const refreshToken = async () => {
   }
 };
 
+
 // ✅ Interceptor เพิ่ม Token ให้ทุก Request
 api.interceptors.request.use(
   async (config) => {
-    const token = await getSecureItem('jwt_token');
+    const token = await AsyncStorage.getItem('jwt_token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
@@ -87,13 +65,14 @@ api.interceptors.request.use(
 // ✅ Interceptor จัดการกรณี Token หมดอายุ
 api.interceptors.response.use(
   (response) => {
-    if (response.data?.message === "Token expired") {
+    // ✅ ตรวจสอบถ้า API ส่ง `{"message": "Token expired"}`
+    if (response.data.message === "Token expired") {
       const originalRequest = response.config;
       if (!originalRequest._retry) {
         originalRequest._retry = true;
         return refreshToken().then(newToken => {
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return api(originalRequest);
+          return api(originalRequest); // รีเทรย์คำขอเดิม
         });
       }
     }
@@ -102,15 +81,13 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (
-      error.response &&
-      (error.response.status === 401 || error.response.data?.message === "Token expired")
-    ) {
+    // ✅ รองรับกรณี API ส่ง HTTP 401
+    if (error.response && (error.response.status === 401 || error.response.data.message === "Token expired")) {
       if (isRefreshing) {
         return new Promise((resolve) => {
           refreshSubscribers.push((newToken) => {
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            resolve(api(originalRequest));
+            resolve(api(originalRequest)); // รีเทรย์คำขอเดิม
           });
         });
       }
@@ -121,7 +98,7 @@ api.interceptors.response.use(
       try {
         const newToken = await refreshToken();
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return api(originalRequest);
+        return api(originalRequest); // รีเทรย์คำขอเดิม
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError);
         return Promise.reject(refreshError);
